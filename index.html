@@ -53,21 +53,21 @@
 
         function App() {
             const [candidates, setCandidates] = useState(() => {
-                const saved = localStorage.getItem('amnco_v8_final');
+                const saved = localStorage.getItem('amnco_v9_final');
                 return saved ? JSON.parse(saved) : [];
             });
             const [search, setSearch] = useState('');
             const [form, setForm] = useState({
-                name: '', empId: '', dept: 'الحلول الأمنية', project: '', branch: '', 
+                name: '', empId: '', jobTitle: '', dept: 'الحلول الأمنية', project: '', branch: '', 
                 startDay: '', salary: '', phone: ''
             });
 
             useEffect(() => {
-                localStorage.setItem('amnco_v8_final', JSON.stringify(candidates));
+                localStorage.setItem('amnco_v9_final', JSON.stringify(candidates));
             }, [candidates]);
 
-            // تسلسل المراحل الجديد
-            const steps = ["", "قرار التعيين", "دمج الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
+            // تسلسل المراحل المحدث
+            const steps = ["", "قرار التعيين", "إكمال الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
 
             const calcDuration = (start) => {
                 if (!start) return "جاري الحساب...";
@@ -77,39 +77,32 @@
                 return hrs > 0 ? `${hrs} ساعة و ${mins % 60} دقيقة` : `${mins} دقيقة`;
             };
 
-            const sendEmail = (c, nextStepIdx) => {
-                const target = c.dept === "الحلول النقدية" ? "Almnarr@gmail.com" : "Majidsinani@amnco.com.sa";
-                const subject = `تحديث توظيف: ${c.name} - ${c.empId}`;
-                const body = `المرشح: ${c.name}\n` +
-                             `الرقم الوظيفي: ${c.empId}\n` +
-                             `الفرع: ${c.branch}\n` +
-                             `المشروع: ${c.project}\n\n` +
-                             `تم إنجاز الخطوة السابقة. الحالة الحالية هي: [ ${steps[nextStepIdx]} ]`;
-                
-                window.location.href = `mailto:${target}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            };
-
             const handleNext = (id) => {
                 setCandidates(candidates.map(c => {
                     if (c.id === id && c.step < 5) {
-                        const nextIdx = c.step + 1;
-                        sendEmail(c, nextIdx);
-                        return { ...c, step: nextIdx, lastUpdate: new Date().toISOString() };
+                        return { ...c, step: c.step + 1, lastUpdate: new Date().toISOString() };
                     }
                     return c;
                 }));
             };
 
             const addCandidate = () => {
+                // التأكد من عدم تكرار الرقم الوظيفي
+                const isDuplicate = candidates.some(c => c.empId === form.empId);
+                if (isDuplicate) {
+                    return alert("خطأ: هذا الرقم الوظيفي موجود مسبقاً في النظام!");
+                }
+
                 if(!form.name || !form.empId) return alert("الاسم والرقم الوظيفي مطلوبان");
+                
                 const newEntry = { ...form, id: Date.now(), step: 1, lastUpdate: new Date().toISOString() };
                 setCandidates([newEntry, ...candidates]);
-                setForm({ ...form, name: '', empId: '', project: '', branch: '', salary: '', phone: '' });
+                setForm({ ...form, name: '', empId: '', jobTitle: '', project: '', branch: '', salary: '', phone: '' });
             };
 
             const exportExcel = () => {
                 const data = candidates.map(c => ({
-                    "الاسم": c.name, "ID": c.empId, "الفرع": c.branch, "الإدارة": c.dept, 
+                    "الاسم": c.name, "ID": c.empId, "المسمى الوظيفي": c.jobTitle, "الفرع": c.branch, "الإدارة": c.dept, 
                     "الحالة": steps[c.step], "آخر تحديث": new Date(c.lastUpdate).toLocaleString()
                 }));
                 const ws = XLSX.utils.json_to_sheet(data);
@@ -124,35 +117,47 @@
                     
                     <button className="btn-excel" onClick={exportExcel}>📥 تصدير تقرير Excel</button>
                     
-                    <input style={{border: '2px solid #1a73e8'}} placeholder="🔍 ابحث بالاسم، الرقم، أو الفرع..." onChange={e => setSearch(e.target.value)} />
+                    <input style={{border: '2px solid #1a73e8'}} placeholder="🔍 ابحث بالاسم، الرقم، المسمى أو الفرع..." onChange={e => setSearch(e.target.value)} />
 
                     <div className="form-box">
                         <input placeholder="اسم المرشح" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
                         <div className="grid">
                             <input placeholder="الرقم الوظيفي" value={form.empId} onChange={e => setForm({...form, empId: e.target.value})} />
+                            <input placeholder="المسمى الوظيفي" value={form.jobTitle} onChange={e => setForm({...form, jobTitle: e.target.value})} />
+                        </div>
+                        <div className="grid">
                             <select value={form.dept} onChange={e => setForm({...form, dept: e.target.value})}>
                                 <option value="الحلول الأمنية">الحلول الأمنية</option>
                                 <option value="الحلول النقدية">الحلول النقدية</option>
                             </select>
-                        </div>
-                        <div className="grid">
-                            <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
                             <input placeholder="الفرع" value={form.branch} onChange={e => setForm({...form, branch: e.target.value})} />
                         </div>
                         <div className="grid">
+                            <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
                             <input placeholder="الراتب" type="number" value={form.salary} onChange={e => setForm({...form, salary: e.target.value})} />
+                        </div>
+                        <div className="grid">
+                            <input placeholder="رقم الجوال" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                             <input type="date" value={form.startDay} onChange={e => setForm({...form, startDay: e.target.value})} />
                         </div>
                         <button className="btn-main" onClick={addCandidate}>إضافة مرشح جديد</button>
                     </div>
 
-                    {candidates.filter(c => c.name.includes(search) || c.empId.includes(search) || c.branch.includes(search)).map(c => (
+                    {candidates.filter(c => 
+                        c.name.includes(search) || 
+                        c.empId.includes(search) || 
+                        c.branch.includes(search) || 
+                        c.jobTitle.includes(search)
+                    ).map(c => (
                         <div key={c.id} className="card" style={{borderColor: c.dept === 'الحلول النقدية' ? '#9b59b6' : '#1a73e8'}}>
                             <button className="delete-btn" onClick={() => window.confirm("هل تريد الحذف؟") && setCandidates(candidates.filter(x => x.id !== c.id))}>🗑️</button>
                             
                             <strong>{c.name}</strong> <small>({c.empId})</small>
                             <div style={{fontSize: '13px', marginTop: '5px'}}>
-                                📍 الفرع: {c.branch} | 🏗️ المشروع: {c.project}
+                                💼 المسمى: {c.jobTitle} | 📍 الفرع: {c.branch}
+                            </div>
+                            <div style={{fontSize: '12px', color: '#666'}}>
+                                🏗️ المشروع: {c.project} | 🏢 الإدارة: {c.dept}
                             </div>
                             
                             <div className="status-section">
@@ -162,7 +167,7 @@
                             
                             {c.step < 5 && (
                                 <button className="btn-next" onClick={() => handleNext(c.id)}>
-                                    تمت مرحلة ({steps[c.step]}) ➔ انتقال
+                                    تمت مرحلة ({steps[c.step]}) ➔ انتقال للخطوة التالية
                                 </button>
                             )}
                         </div>
