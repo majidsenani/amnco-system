@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - لوحة البيانات الشاملة 🛡️</title>
+    <title>نظام أمنكو - الإصدار المستقر 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -20,7 +20,8 @@
         table { width: 100%; border-collapse: collapse; min-width: 1100px; text-align: right; }
         th { background-color: #1a73e8; color: white; padding: 12px; font-size: 13px; white-space: nowrap; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; white-space: nowrap; }
-        tr:hover { background-color: #f9f9f9; }
+        tr:nth-child(even) { background-color: #fcfcfc; }
+        tr:hover { background-color: #f1f5f9; }
         .step-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .s1 { background: #fff3e0; color: #ef6c00; } 
         .s2 { background: #e3f2fd; color: #1565c0; } 
@@ -28,77 +29,94 @@
         .s4 { background: #e0f2f1; color: #00695c; } 
         .s5 { background: #e8f5e9; color: #2e7d32; }
         .btn-add { background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .btn-excel { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 15px; width: 100%; }
-        .btn-next { background: #ff8c00; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
-        .btn-del { color: #e74c3c; background: none; border: none; cursor: pointer; font-size: 16px; }
+        .btn-excel { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
+        .btn-next { background: #ff8c00; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-del { color: #e74c3c; background: none; border: none; cursor: pointer; font-size: 18px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
         function App() {
+            // تحميل البيانات
             const [candidates, setCandidates] = useState(() => {
-                const saved = localStorage.getItem('amnco_v14_excel_fix');
+                const saved = localStorage.getItem('amnco_v15_final');
                 return saved ? JSON.parse(saved) : [];
             });
-            const [search, setSearch] = useState('');
-            const [form, setForm] = useState({ name: '', empId: '', jobTitle: '', dept: 'الحلول الأمنية', project: '', branch: '', salary: '', phone: '', startDay: '' });
 
-            useEffect(() => { localStorage.setItem('amnco_v14_excel_fix', JSON.stringify(candidates)); }, [candidates]);
+            // الحالة الخاصة بالنموذج
+            const [form, setForm] = useState({ name: '', empId: '', jobTitle: '', dept: 'الحلول الأمنية', project: '', branch: '', salary: '', phone: '', startDay: '' });
+            const [search, setSearch] = useState('');
+
+            // حفظ البيانات عند كل تغيير
+            useEffect(() => {
+                localStorage.setItem('amnco_v15_final', JSON.stringify(candidates));
+            }, [candidates]);
 
             const steps = ["", "قرار التعيين", "إكمال الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
 
             const addCandidate = () => {
-                if (candidates.some(c => c.empId === form.empId)) return alert("⚠️ الرقم الوظيفي مُسجل مسبقاً!");
-                if (!form.name || !form.empId) return alert("يرجى إدخال الاسم والرقم الوظيفي");
+                if (!form.name || !form.empId) {
+                    alert("يرجى إدخال الاسم والرقم الوظيفي!");
+                    return;
+                }
+                if (candidates.some(c => c.empId === form.empId)) {
+                    alert("⚠️ هذا الرقم الوظيفي موجود مسبقاً!");
+                    return;
+                }
+
+                const newCandidate = { 
+                    ...form, 
+                    id: Date.now(), 
+                    step: 1, 
+                    lastUpdate: new Date().toISOString() 
+                };
+
+                // التحديث بطريقة تضمن ظهور السطر فوراً
+                setCandidates(prev => [newCandidate, ...prev]);
                 
-                const newEntry = { ...form, id: Date.now(), step: 1, lastUpdate: new Date().toISOString() };
-                setCandidates([newEntry, ...candidates]);
+                // تصفير الفورم
                 setForm({ name: '', empId: '', jobTitle: '', dept: 'الحلول الأمنية', project: '', branch: '', salary: '', phone: '', startDay: '' });
             };
 
             const handleNext = (id) => {
-                setCandidates(candidates.map(c => (c.id === id && c.step < 5) ? { ...c, step: c.step + 1, lastUpdate: new Date().toISOString() } : c));
+                setCandidates(prev => prev.map(c => 
+                    (c.id === id && c.step < 5) ? { ...c, step: c.step + 1, lastUpdate: new Date().toISOString() } : c
+                ));
             };
 
-            const exportExcel = () => {
-                if (candidates.length === 0) return alert("لا توجد بيانات لتصديرها");
-                
-                // تجهيز البيانات بشكل صريح للأعمدة
-                const dataToExport = candidates.map(c => ({
-                    "الاسم الكامل": c.name,
-                    "الرقم الوظيفي": c.empId,
-                    "المسمى الوظيفي": c.jobTitle,
-                    "الإدارة": c.dept,
-                    "المشروع": c.project,
-                    "الفرع": c.branch,
-                    "الراتب": c.salary,
-                    "تاريخ المباشرة": c.startDay,
-                    "رقم الجوال": c.phone,
-                    "الحالة الحالية": steps[c.step],
-                    "آخر تحديث": new Date(c.lastUpdate).toLocaleString('ar-SA')
+            const deleteCandidate = (id) => {
+                if(window.confirm("هل أنت متأكد من الحذف؟")) {
+                    setCandidates(prev => prev.filter(c => c.id !== id));
+                }
+            };
+
+            const exportToExcel = () => {
+                if (candidates.length === 0) return alert("الجدول فارغ!");
+                const exportData = candidates.map(c => ({
+                    "الاسم": c.name, "الرقم الوظيفي": c.empId, "المسمى": c.jobTitle, 
+                    "الإدارة": c.dept, "المشروع": c.project, "الفرع": c.branch, 
+                    "الراتب": c.salary, "المباشرة": c.startDay, "الجوال": c.phone, "الحالة": steps[c.step]
                 }));
-
-                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "تقرير التوظيف");
-                
-                // تحميل الملف
-                XLSX.writeFile(workbook, `تقرير_توظيف_أمنكو_${new Date().toLocaleDateString()}.xlsx`);
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Amnco");
+                XLSX.writeFile(wb, "تقرير_أمنكو.xlsx");
             };
 
-            const filtered = candidates.filter(c => 
-                c.name.includes(search) || c.empId.includes(search) || c.project.includes(search) || c.branch.includes(search)
+            // تصفية البحث
+            const filteredData = candidates.filter(c => 
+                c.name.includes(search) || c.empId.includes(search) || c.branch.includes(search)
             );
 
             return (
                 <div className="container">
-                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - التقارير والسطور 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو للتوظيف (جدول السطور) 🛡️</h2>
                     
-                    <button className="btn-excel" onClick={exportExcel}>📥 تصدير التقرير الكامل إلى Excel</button>
+                    <button className="btn-excel" onClick={exportToExcel}>📥 تصدير التقرير الكامل Excel</button>
                     
                     <div className="header-section">
                         <div className="grid">
@@ -112,14 +130,14 @@
                             <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
                             <input placeholder="الفرع" value={form.branch} onChange={e => setForm({...form, branch: e.target.value})} />
                             <input placeholder="الراتب" type="number" value={form.salary} onChange={e => setForm({...form, salary: e.target.value})} />
-                            <input placeholder="رقم الجوال" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                            <input placeholder="الجوال" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                             <input type="date" value={form.startDay} onChange={e => setForm({...form, startDay: e.target.value})} />
                         </div>
-                        <button className="btn-add" onClick={addCandidate}>+ إضافة للجدول</button>
+                        <button className="btn-add" onClick={addCandidate}>+ إضافة الموظف للجدول</button>
                     </div>
 
                     <div style={{marginBottom: '10px'}}>
-                        <input style={{width: '100%', border: '2px solid #1a73e8'}} placeholder="🔍 بحث في الجدول..." onChange={e => setSearch(e.target.value)} />
+                        <input style={{width: '100%', border: '2px solid #1a73e8'}} placeholder="🔍 بحث في الأسماء أو الأرقام..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
 
                     <div className="table-wrapper">
@@ -139,7 +157,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {filtered.map(c => (
+                                {filteredData.map(c => (
                                     <tr key={c.id}>
                                         <td style={{fontWeight:'bold', color:'#1a73e8'}}>{c.name}</td>
                                         <td>{c.empId}</td>
@@ -149,10 +167,11 @@
                                         <td>{c.salary}</td>
                                         <td>{c.startDay}</td>
                                         <td><span className={`step-pill s${c.step}`}>{steps[c.step]}</span></td>
-                                        <td>{c.step < 5 && <button className="btn-next" onClick={() => handleNext(c.id)}>التالي</button>}</td>
-                                        <td><button className="btn-del" onClick={() => window.confirm("حذف؟") && setCandidates(candidates.filter(x => x.id !== c.id))}>🗑️</button></td>
+                                        <td>{c.step < 5 && <button className="btn-next" onClick={() => handleNext(c.id)}>التالي ➔</button>}</td>
+                                        <td><button className="btn-del" onClick={() => deleteCandidate(c.id)}>🗑️</button></td>
                                     </tr>
                                 ))}
+                                {filteredData.length === 0 && <tr><td colSpan="10" style={{textAlign:'center', padding:'20px'}}>لا توجد بيانات حالياً</td></tr>}
                             </tbody>
                         </table>
                     </div>
@@ -160,7 +179,8 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
