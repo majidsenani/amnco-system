@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - الإصدار المصحح 🛡️</title>
+    <title>نظام أمنكو - النسخة المطابقة للمعايير 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,23 +11,21 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; direction: rtl; }
-        .container { max-width: 1900px; margin: auto; }
+        .container { max-width: 2000px; margin: auto; }
         .header-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
-        input, select { padding: 10px; border: 1px solid #ccd1d9; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; }
-        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 12px; border-radius: 10px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn { padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+        input, select { padding: 10px; border: 1px solid #ccd1d9; border-radius: 8px; font-size: 12px; width: 100%; box-sizing: border-box; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 10px; }
+        .btn { padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 13px; display: flex; align-items: center; gap: 5px; }
         .btn-upload { background: #6c5ce7; color: white; }
         .btn-download { background: #27ae60; color: white; }
         .btn-add { background: #1a73e8; color: white; width: 100%; margin-top: 15px; padding: 12px; font-size: 15px; border-radius: 8px; cursor: pointer; border:none; font-weight: bold; }
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; min-width: 1900px; text-align: right; }
-        th { background-color: #1a73e8; color: white; padding: 12px; font-size: 13px; border: 1px solid #1565c0; }
-        td { padding: 10px 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
-        .step-pill { padding: 4px 10px; border-radius: 15px; font-size: 11px; background: #e9ecef; font-weight: bold; }
-        .timer-active { color: #d63031; font-weight: bold; font-size: 11px; }
-        .nav-btn { cursor: pointer; padding: 5px 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 2000px; text-align: right; border: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #333; padding: 12px; font-size: 13px; border: 1px solid #ddd; white-space: nowrap; position: sticky; top: 0; }
+        td { padding: 10px; border: 1px solid #eee; font-size: 12px; }
+        .timer-active { color: #d63031; font-weight: bold; }
+        .nav-btn { cursor: pointer; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; margin: 0 2px; }
     </style>
 </head>
 <body>
@@ -38,52 +36,31 @@
 
         function App() {
             const [candidates, setCandidates] = useState(() => {
-                const saved = localStorage.getItem('amnco_v80_final');
+                const saved = localStorage.getItem('amnco_final_standard');
                 return saved ? JSON.parse(saved) : [];
             });
             const [selectedIds, setSelectedIds] = useState([]);
             const [form, setForm] = useState({ 
-                empId: '', name: '', nationalId: '', jobTitle: '', 
-                dept: 'الحلول الأمنية', project: '', salary: '', 
-                startDay: '', contractType: 'عقد قوى' 
+                name: '', empId: '', phone: '', nationalId: '', salary: '', 
+                startDay: '', dept: 'الحلول الأمنية', project: '', 
+                jobTitle: '', branch: '', contractType: 'عقد قوى' 
             });
 
-            useEffect(() => { localStorage.setItem('amnco_v80_final', JSON.stringify(candidates)); }, [candidates]);
+            useEffect(() => { localStorage.setItem('amnco_final_standard', JSON.stringify(candidates)); }, [candidates]);
 
             const steps = ["", "قرار التعيين", "إكمال الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
 
-            // دالة تصحيح تاريخ إكسل (تتعامل مع الرقم 46071 بشكل صحيح)
             const formatExcelDate = (serial) => {
                 if (!serial || isNaN(serial)) return serial;
-                // إكسل يحسب من 1/1/1900، ونحتاج لتصحيح إزاحة اليوم (leap year bug in 1900)
                 const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-                const y = date.getUTCFullYear();
-                const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-                const d = String(date.getUTCDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
+                return date.toISOString().split('T')[0];
             };
 
             const calculateDuration = (start, end) => {
                 const diff = (end ? new Date(end) : new Date()) - new Date(start);
                 const d = Math.floor(diff / 86400000);
                 const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                return `${d}ي ${h}س ${m}د`;
-            };
-
-            const exportToExcel = () => {
-                const reportData = candidates.map(c => ({
-                    "الرقم الوظيفي": c.empId,
-                    "الاسم": c.name,
-                    "رقم الهوية": c.nationalId,
-                    "المباشرة": c.startDay,
-                    "تاريخ رفع الطلب": new Date(c.createdAt).toLocaleString('en-GB'),
-                    "مدة الإنجاز": calculateDuration(c.createdAt, c.completedAt)
-                }));
-                const ws = XLSX.utils.json_to_sheet(reportData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "تقرير");
-                XLSX.writeFile(wb, "Amnco_Report.xlsx");
+                return `${d} يوم, ${h} ساعة`;
             };
 
             const handleFileUpload = (e) => {
@@ -96,69 +73,95 @@
                     const now = new Date().toISOString();
                     const newItems = data.map((row, i) => ({
                         id: Date.now() + i,
-                        empId: row["الرقم الوظيفي"] || row["ID"] || '',
                         name: row["الاسم"] || '',
+                        empId: row["الرقم الوظيفي"] || '',
+                        phone: row["رقم الجوال"] || '',
                         nationalId: row["الهوية"] || '',
-                        jobTitle: row["المسمى"] || '',
-                        dept: row["الإدارة"] || 'الحلول الأمنية',
-                        project: row["المشروع"] || '',
                         salary: row["الراتب"] || '',
-                        // تطبيق التصحيح هنا
                         startDay: typeof row["المباشرة"] === 'number' ? formatExcelDate(row["المباشرة"]) : (row["المباشرة"] || ''),
+                        dept: row["الإدارة"] || '',
+                        project: row["المشروع"] || '',
+                        jobTitle: row["المسمى"] || '',
+                        branch: row["الفرع"] || '',
                         contractType: row["نوع العقد"] || 'عقد قوى',
-                        step: 1, createdAt: now, completedAt: null
+                        createdAt: now,
+                        step: 1, completedAt: null
                     }));
                     setCandidates(prev => [...newItems, ...prev]);
                 };
                 reader.readAsBinaryString(file);
             };
 
+            const exportToExcel = () => {
+                const ws = XLSX.utils.json_to_sheet(candidates);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "التقرير");
+                XLSX.writeFile(wb, "Amnco_Report.xlsx");
+            };
+
             return (
                 <div className="container">
-                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - تصحيح التواريخ والتقارير 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - إدارة التوظيف (مطابق للصورة) 🛡️</h2>
                     
                     <div className="action-bar">
-                        <div className="btn-group">
-                            <label className="btn btn-upload">📁 رفع ملف <input type="file" style={{display:'none'}} onChange={handleFileUpload} accept=".xlsx, .xls" /></label>
-                            <button className="btn btn-download" onClick={exportToExcel}>📥 سحب تقرير Excel</button>
+                        <div style={{display:'flex', gap:'10px'}}>
+                            <label className="btn btn-upload">📁 رفع ملف Excel <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
+                            <button className="btn btn-download" onClick={exportToExcel}>📥 تحميل التقرير الحالي</button>
                         </div>
-                        {selectedIds.length > 0 && <button onClick={() => setCandidates(candidates.filter(c => !selectedIds.includes(c.id)))} className="btn" style={{background:'#e74c3c', color:'white'}}>🗑️ حذف المحدد</button>}
+                        {selectedIds.length > 0 && <button onClick={() => setCandidates(candidates.filter(c => !selectedIds.includes(c.id)))} className="btn" style={{backgroundColor:'#e74c3c', color:'white'}}>🗑️ حذف المحدد</button>}
                     </div>
 
                     <div className="header-section">
                         <div className="grid">
-                            <input placeholder="الرقم الوظيفي" value={form.empId} onChange={e => setForm({...form, empId: e.target.value})} />
                             <input placeholder="الاسم" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                            <input placeholder="الرقم الوظيفي" value={form.empId} onChange={e => setForm({...form, empId: e.target.value})} />
+                            <input placeholder="رقم الجوال" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                            <input placeholder="الهوية" value={form.nationalId} onChange={e => setForm({...form, nationalId: e.target.value})} />
+                            <input placeholder="الراتب" value={form.salary} onChange={e => setForm({...form, salary: e.target.value})} />
+                            <input type="date" title="المباشرة" value={form.startDay} onChange={e => setForm({...form, startDay: e.target.value})} />
+                            <input placeholder="الإدارة" value={form.dept} onChange={e => setForm({...form, dept: e.target.value})} />
                             <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
-                            <input type="date" value={form.startDay} onChange={e => setForm({...form, startDay: e.target.value})} />
+                            <input placeholder="المسمى" value={form.jobTitle} onChange={e => setForm({...form, jobTitle: e.target.value})} />
+                            <input placeholder="الفرع" value={form.branch} onChange={e => setForm({...form, branch: e.target.value})} />
+                            <select value={form.contractType} onChange={e => setForm({...form, contractType: e.target.value})}>
+                                <option value="عقد قوى">عقد قوى</option>
+                                <option value="عقد تدريب">عقد تدريب</option>
+                            </select>
                         </div>
                         <button className="btn-add" onClick={() => {
                             setCandidates([{ ...form, id: Date.now(), step: 1, createdAt: new Date().toISOString(), completedAt: null }, ...candidates]);
-                            setForm({ empId: '', name: '', nationalId: '', jobTitle: '', project: '', salary: '', startDay: '', contractType: 'عقد قوى' });
-                        }}>+ إضافة الطلب</button>
+                            setForm({ name:'', empId:'', phone:'', nationalId:'', salary:'', startDay:'', dept:'', project:'', jobTitle:'', branch:'', contractType:'عقد قوى' });
+                        }}>+ إضافة موظف جديد</button>
                     </div>
 
                     <div className="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" onChange={(e) => setSelectedIds(e.target.checked ? candidates.map(c=>c.id) : [])} /></th>
-                                    <th>الرقم الوظيفي</th><th>الاسم</th><th>رفع الطلب</th><th>المباشرة</th><th>المشروع</th><th>الحالة</th><th>مدة الإنجاز</th><th>تحكم</th>
+                                    <th><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? candidates.map(c=>c.id) : [])} /></th>
+                                    <th>الاسم</th><th>الرقم الوظيفي</th><th>رقم الجوال</th><th>الهوية</th><th>الراتب</th><th>المباشرة</th><th>الإدارة</th><th>المشروع</th><th>المسمى</th><th>تاريخ الطلب</th><th>الفرع</th><th>نوع العقد</th><th>الحالة</th><th>الإنجاز</th><th>تحكم</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {candidates.map(c => (
                                     <tr key={c.id}>
                                         <td><input type="checkbox" checked={selectedIds.includes(c.id)} onChange={() => setSelectedIds(prev => prev.includes(c.id) ? prev.filter(i=>i!==c.id) : [...prev, c.id])} /></td>
+                                        <td style={{fontWeight:'bold'}}>{c.name}</td>
                                         <td>{c.empId}</td>
-                                        <td style={{fontWeight:'bold', color:'#1a73e8'}}>{c.name}</td>
-                                        <td style={{fontSize:'11px'}}>{new Date(c.createdAt).toLocaleString('en-GB')}</td>
-                                        <td style={{fontWeight:'bold', color:'#2c3e50'}}>{c.startDay}</td>
+                                        <td>{c.phone}</td>
+                                        <td>{c.nationalId}</td>
+                                        <td>{c.salary}</td>
+                                        <td style={{color:'#1a73e8', fontWeight:'bold'}}>{c.startDay}</td>
+                                        <td>{c.dept}</td>
                                         <td>{c.project}</td>
-                                        <td><span className="step-pill">{steps[c.step]}</span></td>
+                                        <td>{c.jobTitle}</td>
+                                        <td style={{fontSize:'10px'}}>{new Date(c.createdAt).toLocaleString('en-GB')}</td>
+                                        <td>{c.branch}</td>
+                                        <td>{c.contractType}</td>
+                                        <td><span style={{fontSize:'11px', fontWeight:'bold'}}>{steps[c.step]}</span></td>
                                         <td className="timer-active">{calculateDuration(c.createdAt, c.completedAt)}</td>
-                                        <td>
-                                            <button className="nav-btn" onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step > 1 ? {...x, step: x.step-1} : x))}>↩️</button>
+                                        <td style={{whiteSpace:'nowrap'}}>
+                                            <button className="nav-btn" onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step > 1 ? {...x, step: x.step-1, completedAt: null} : x))}>↩️</button>
                                             <button className="nav-btn" style={{backgroundColor:'#1a73e8', color:'white'}} onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step < 5 ? {...x, step: x.step+1, completedAt: x.step+1 === 5 ? new Date().toISOString() : null} : x))}>➔</button>
                                         </td>
                                     </tr>
