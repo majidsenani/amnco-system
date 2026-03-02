@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - النسخة النهائية المكتملة 🛡️</title>
+    <title>نظام أمنكو - قياس الإنجاز 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,30 +11,34 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; direction: rtl; }
-        .container { max-width: 1600px; margin: auto; }
+        .container { max-width: 1700px; margin: auto; }
         .header-section { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        input, select { padding: 12px; border: 1px solid #ccd1d9; border-radius: 10px; font-family: 'Tajawal'; font-size: 14px; width: 100%; box-sizing: border-box; transition: 0.3s; }
-        input:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 5px rgba(26,115,232,0.2); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+        input, select { padding: 12px; border: 1px solid #ccd1d9; border-radius: 10px; font-family: 'Tajawal'; font-size: 14px; width: 100%; box-sizing: border-box; }
         
-        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 12px; }
+        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-excel { background: #27ae60; color: white; }
-        .btn-upload { background: #6c5ce7; color: white; position: relative; }
-        .btn-delete-multi { background: #e74c3c; color: white; border: 2px solid #c0392b; animation: slideIn 0.3s; }
-        .btn-add { background: #1a73e8; color: white; width: 100%; margin-top: 15px; padding: 14px; font-size: 16px; border: none; border-radius: 10px; cursor: pointer; }
+        .btn-upload { background: #6c5ce7; color: white; cursor: pointer; }
+        .btn-delete-multi { background: #e74c3c; color: white; }
+        .btn-add { background: #1a73e8; color: white; width: 100%; margin-top: 15px; padding: 14px; font-size: 16px; border-radius: 10px; cursor: pointer; border:none; }
 
         .table-wrapper { background: white; border-radius: 15px; overflow-x: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; min-width: 1500px; text-align: right; }
-        th { background-color: #1a73e8; color: white; padding: 15px; font-size: 14px; position: sticky; top: 0; }
-        td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
-        tr:hover { background-color: #f8f9fa; }
-        tr.selected-row { background-color: #fff9db !important; }
+        table { width: 100%; border-collapse: collapse; min-width: 1700px; text-align: right; }
+        th { background-color: #1a73e8; color: white; padding: 15px; font-size: 13px; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
         
-        .chk-box { width: 22px; height: 22px; cursor: pointer; accent-color: #1a73e8; }
-        .timer { font-size: 12px; color: #d63031; font-weight: bold; white-space: nowrap; }
-        .step-pill { padding: 5px 12px; border-radius: 20px; font-size: 12px; background: #e9ecef; font-weight: bold; color: #495057; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .chk-box { width: 20px; height: 20px; cursor: pointer; accent-color: #1a73e8; }
+        .timer-active { color: #d63031; font-weight: bold; font-size: 11px; }
+        .timer-done { color: #27ae60; font-weight: bold; font-size: 11px; }
+        .step-pill { padding: 5px 12px; border-radius: 20px; font-size: 11px; background: #e9ecef; font-weight: bold; white-space: nowrap; }
+        
+        .nav-btn { cursor: pointer; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; font-weight: bold; font-size: 11px; }
+        .btn-next { background: #1a73e8; color: white; border: none; }
+        .btn-prev { background: #f8f9fa; color: #333; margin-left: 5px; }
+        .contract-badge { padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        .qiwa { background: #e8f5e9; color: #2e7d32; }
+        .trainee { background: #fff3e0; color: #ef6c00; }
     </style>
 </head>
 <body>
@@ -45,33 +49,52 @@
 
         function App() {
             const [candidates, setCandidates] = useState(() => {
-                const saved = localStorage.getItem('amnco_v25_final');
+                const saved = localStorage.getItem('amnco_v27_final');
                 return saved ? JSON.parse(saved) : [];
             });
             const [selectedIds, setSelectedIds] = useState([]);
-            const [form, setForm] = useState({ empId: '', name: '', nationalId: '', dept: 'الحلول الأمنية', jobTitle: '', project: '', branch: '', salary: '', startDay: '' });
+            const [form, setForm] = useState({ empId: '', name: '', nationalId: '', dept: 'الحلول الأمنية', jobTitle: '', project: '', salary: '', startDay: '', contractType: 'عقد قوى' });
 
-            useEffect(() => { localStorage.setItem('amnco_v25_final', JSON.stringify(candidates)); }, [candidates]);
+            useEffect(() => { localStorage.setItem('amnco_v27_final', JSON.stringify(candidates)); }, [candidates]);
 
             const steps = ["", "قرار التعيين", "إكمال الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
 
-            const formatExcelDate = (serial) => {
-                if (!serial || isNaN(serial)) return serial;
-                const date = new Date((serial - 25569) * 86400 * 1000);
-                return date.toISOString().split('T')[0];
-            };
-
-            const getTimeElapsed = (date) => {
-                const diff = new Date() - new Date(date);
-                const hrs = Math.floor(diff / 3600000);
-                const mins = Math.floor((diff % 3600000) / 60000);
-                return `${hrs}س ${mins}د`;
+            const calculateDuration = (start, end) => {
+                const startTime = new Date(start);
+                const endTime = end ? new Date(end) : new Date();
+                const diff = endTime - startTime;
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const mins = Math.floor((diff / 1000 / 60) % 60);
+                
+                return `${days} يوم، ${hours} س، ${mins} د`;
             };
 
             const addCandidate = () => {
-                if (!form.empId || !form.name) return alert("يرجى إدخال الرقم الوظيفي والاسم!");
-                setCandidates([{ ...form, id: Date.now(), step: 1, createdAt: new Date().toISOString() }, ...candidates]);
+                if (!form.empId || !form.name) return alert("الاسم والرقم الوظيفي مطلوبان!");
+                const now = new Date().toISOString();
+                setCandidates([{ 
+                    ...form, 
+                    id: Date.now(), 
+                    step: 1, 
+                    createdAt: now, 
+                    completedAt: null 
+                }, ...candidates]);
                 setForm({ ...form, empId: '', name: '', nationalId: '', salary: '', startDay: '' });
+            };
+
+            const updateStep = (id, direction) => {
+                setCandidates(prev => prev.map(c => {
+                    if (c.id === id) {
+                        let nextStep = direction === 'next' ? c.step + 1 : c.step - 1;
+                        if (nextStep >= 1 && nextStep <= 5) {
+                            const completedAt = nextStep === 5 ? new Date().toISOString() : null;
+                            return { ...c, step: nextStep, completedAt: completedAt };
+                        }
+                    }
+                    return c;
+                }));
             };
 
             const handleFileUpload = (e) => {
@@ -79,129 +102,107 @@
                 const reader = new FileReader();
                 reader.onload = (evt) => {
                     const workbook = XLSX.read(evt.target.result, { type: 'binary' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const data = XLSX.utils.sheet_to_json(sheet);
-                    
+                    const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    const now = new Date().toISOString();
                     const newItems = data.map((row, i) => ({
                         id: Date.now() + i,
-                        empId: row["الرقم الوظيفي"] || row["ID"] || '',
+                        empId: row["الرقم الوظيفي"] || '',
                         name: row["الاسم"] || '',
                         nationalId: row["الهوية"] || '',
                         dept: row["الإدارة"] || 'الحلول الأمنية',
                         salary: row["الراتب"] || '',
                         project: row["المشروع"] || '',
-                        startDay: typeof row["المباشرة"] === 'number' ? formatExcelDate(row["المباشرة"]) : (row["المباشرة"] || ''),
+                        startDay: row["المباشرة"] || '',
+                        contractType: row["نوع العقد"] || 'عقد قوى',
                         step: 1,
-                        createdAt: new Date().toISOString()
+                        createdAt: now,
+                        completedAt: null
                     }));
                     setCandidates([...newItems, ...candidates]);
-                    alert(`تم رفع ${newItems.length} موظف بنجاح!`);
                 };
                 reader.readAsBinaryString(file);
             };
 
-            const toggleSelect = (id) => {
-                setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-            };
-
-            const deleteSelected = () => {
-                if (confirm(`هل أنت متأكد من حذف ${selectedIds.length} موظف؟`)) {
-                    setCandidates(candidates.filter(c => !selectedIds.includes(c.id)));
-                    setSelectedIds([]);
-                }
-            };
-
             return (
                 <div className="container">
-                    <h2 style={{textAlign:'center', color:'#1a73e8', marginBottom:'25px'}}>نظام أمنكو - إدارة الكوادر البشرية 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8', marginBottom:'25px'}}>نظام أمنكو - تتبع الإنجاز الزمني 🛡️</h2>
                     
                     <div className="action-bar">
                         <div style={{display:'flex', gap:'12px'}}>
                             <button className="btn btn-excel" onClick={() => {
-                                const ws = XLSX.utils.json_to_sheet(candidates);
-                                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data");
-                                XLSX.writeFile(wb, "Amnco_Full_Report.xlsx");
-                            }}>📥 تصدير Excel</button>
-                            
-                            <label className="btn btn-upload">
-                                📁 رفع ملف أسماء
-                                <input type="file" style={{display:'none'}} onChange={handleFileUpload} accept=".xlsx, .xls" />
-                            </label>
+                                const ws = XLSX.utils.json_to_sheet(candidates.map(c => ({
+                                    ...c,
+                                    "تاريخ الرفع": new Date(c.createdAt).toLocaleString('ar-SA'),
+                                    "مدة الإنجاز": calculateDuration(c.createdAt, c.completedAt)
+                                })));
+                                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report");
+                                XLSX.writeFile(wb, "Amnco_Performance.xlsx");
+                            }}>📥 تصدير التقرير</button>
+                            <label className="btn btn-upload">📁 رفع Excel <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
                         </div>
-                        
-                        {selectedIds.length > 0 && (
-                            <button className="btn btn-delete-multi" onClick={deleteSelected}>
-                                🗑️ حذف المحددين ({selectedIds.length})
-                            </button>
-                        )}
+                        {selectedIds.length > 0 && <button className="btn btn-delete-multi" onClick={() => setCandidates(candidates.filter(c => !selectedIds.includes(c.id)))}>🗑️ حذف المحدد</button>}
                     </div>
 
                     <div className="header-section">
                         <div className="grid">
-                            <input placeholder="الرقم الوظيفي (ID)" value={form.empId} onChange={e => setForm({...form, empId: e.target.value})} />
-                            <input placeholder="الاسم الكامل" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                            <input placeholder="رقم الهوية" value={form.nationalId} onChange={e => setForm({...form, nationalId: e.target.value})} />
-                            <select value={form.dept} onChange={e => setForm({...form, dept: e.target.value})}>
-                                <option value="الحلول الأمنية">الحلول الأمنية</option>
-                                <option value="الحلول النقدية">الحلول النقدية</option>
-                            </select>
-                            <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
+                            <input placeholder="ID الموظف" value={form.empId} onChange={e => setForm({...form, empId: e.target.value})} />
+                            <input placeholder="الاسم" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                            <input placeholder="الهوية" value={form.nationalId} onChange={e => setForm({...form, nationalId: e.target.value})} />
                             <input placeholder="الراتب" value={form.salary} onChange={e => setForm({...form, salary: e.target.value})} />
+                            <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
                             <input type="date" value={form.startDay} onChange={e => setForm({...form, startDay: e.target.value})} />
+                            <select value={form.contractType} onChange={e => setForm({...form, contractType: e.target.value})}>
+                                <option value="عقد قوى">عقد قوى</option>
+                                <option value="عقد تدريب">عقد تدريب</option>
+                            </select>
                         </div>
-                        <button className="btn-add" onClick={addCandidate}>+ إضافة الموظف للجدول</button>
+                        <button className="btn-add" onClick={addCandidate}>+ تسجيل الطلب في النظام</button>
                     </div>
 
                     <div className="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
-                                    <th style={{width:'50px'}}>
-                                        <input type="checkbox" className="chk-box" onChange={(e) => setSelectedIds(e.target.checked ? candidates.map(c=>c.id) : [])} />
-                                    </th>
-                                    <th>الرقم الوظيفي</th>
+                                    <th><input type="checkbox" onChange={(e) => setSelectedIds(e.target.checked ? candidates.map(c=>c.id) : [])} /></th>
+                                    <th>ID</th>
                                     <th>الاسم</th>
-                                    <th>رقم الهوية</th>
-                                    <th>الإدارة</th>
-                                    <th>الراتب</th>
+                                    <th>تاريخ الرفع</th>
+                                    <th>نوع العقد</th>
                                     <th>المشروع</th>
-                                    <th>المباشرة</th>
-                                    <th>مستغرق</th>
                                     <th>الحالة</th>
-                                    <th>تحديث</th>
+                                    <th>مدة الإنجاز / الوقت المستغرق</th>
+                                    <th>تحكم</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {candidates.map(c => (
-                                    <tr key={c.id} className={selectedIds.includes(c.id) ? 'selected-row' : ''}>
-                                        <td style={{textAlign:'center'}}>
-                                            <input type="checkbox" className="chk-box" checked={selectedIds.includes(c.id)} onChange={() => toggleSelect(c.id)} />
-                                        </td>
-                                        <td style={{fontWeight:'bold'}}>{c.empId}</td>
-                                        <td style={{color:'#1a73e8', fontWeight:'bold'}}>{c.name}</td>
-                                        <td>{c.nationalId}</td>
-                                        <td>{c.dept}</td>
-                                        <td>{c.salary}</td>
+                                    <tr key={c.id}>
+                                        <td><input type="checkbox" checked={selectedIds.includes(c.id)} onChange={() => setSelectedIds(prev => prev.includes(c.id) ? prev.filter(i=>i!==c.id) : [...prev, c.id])} /></td>
+                                        <td>{c.empId}</td>
+                                        <td style={{fontWeight:'bold', color:'#1a73e8'}}>{c.name}</td>
+                                        <td style={{fontSize:'11px'}}>{new Date(c.createdAt).toLocaleString('ar-SA')}</td>
+                                        <td><span className={`contract-badge ${c.contractType === 'عقد قوى' ? 'qiwa' : 'trainee'}`}>{c.contractType}</span></td>
                                         <td>{c.project}</td>
-                                        <td>{c.startDay}</td>
-                                        <td><span className="timer">⏳ {getTimeElapsed(c.createdAt)}</span></td>
                                         <td><span className="step-pill">{steps[c.step]}</span></td>
                                         <td>
-                                            <button style={{cursor:'pointer', padding:'5px 10px'}} onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step < 5 ? {...x, step: x.step+1} : x))}>
-                                                التالي ➔
-                                            </button>
+                                            <span className={c.step === 5 ? "timer-done" : "timer-active"}>
+                                                {c.step === 5 ? "✅ تم في: " : "⏳ مستغرق: "}
+                                                {calculateDuration(c.createdAt, c.completedAt)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button className="nav-btn btn-prev" onClick={() => updateStep(c.id, 'prev')}>↩️</button>
+                                            <button className="nav-btn btn-next" onClick={() => updateStep(c.id, 'next')}>➔</button>
                                         </td>
                                     </tr>
                                 ))}
-                                {candidates.length === 0 && <tr><td colSpan="11" style={{textAlign:'center', padding:'30px', color:'#777'}}>لا توجد بيانات، ابدأ بإضافة موظف أو ارفع ملف إكسل.</td></tr>}
                             </tbody>
                         </table>
                     </div>
                 </div>
             );
         }
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
