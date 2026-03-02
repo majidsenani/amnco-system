@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - النسخة الشاملة 🛡️</title>
+    <title>نظام أمنكو - الإصدار المصحح 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -20,16 +20,13 @@
         .btn { padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 13px; display: flex; align-items: center; gap: 5px; }
         .btn-upload { background: #6c5ce7; color: white; }
         .btn-download { background: #27ae60; color: white; }
-        .btn-delete { background: #e74c3c; color: white; }
         .btn-add { background: #1a73e8; color: white; width: 100%; margin-top: 15px; padding: 12px; font-size: 15px; border-radius: 8px; cursor: pointer; border:none; font-weight: bold; }
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 1900px; text-align: right; }
-        th { background-color: #1a73e8; color: white; padding: 12px; font-size: 13px; white-space: nowrap; border: 1px solid #1565c0; }
-        td { padding: 10px 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; border-left: 1px solid #f9f9f9; }
-        .chk-box { width: 20px; height: 20px; cursor: pointer; }
+        th { background-color: #1a73e8; color: white; padding: 12px; font-size: 13px; border: 1px solid #1565c0; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
         .step-pill { padding: 4px 10px; border-radius: 15px; font-size: 11px; background: #e9ecef; font-weight: bold; }
         .timer-active { color: #d63031; font-weight: bold; font-size: 11px; }
-        .timer-done { color: #27ae60; font-weight: bold; font-size: 11px; }
         .nav-btn { cursor: pointer; padding: 5px 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px; }
     </style>
 </head>
@@ -41,7 +38,7 @@
 
         function App() {
             const [candidates, setCandidates] = useState(() => {
-                const saved = localStorage.getItem('amnco_v70_final');
+                const saved = localStorage.getItem('amnco_v80_final');
                 return saved ? JSON.parse(saved) : [];
             });
             const [selectedIds, setSelectedIds] = useState([]);
@@ -51,9 +48,20 @@
                 startDay: '', contractType: 'عقد قوى' 
             });
 
-            useEffect(() => { localStorage.setItem('amnco_v70_final', JSON.stringify(candidates)); }, [candidates]);
+            useEffect(() => { localStorage.setItem('amnco_v80_final', JSON.stringify(candidates)); }, [candidates]);
 
             const steps = ["", "قرار التعيين", "إكمال الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
+
+            // دالة تصحيح تاريخ إكسل (تتعامل مع الرقم 46071 بشكل صحيح)
+            const formatExcelDate = (serial) => {
+                if (!serial || isNaN(serial)) return serial;
+                // إكسل يحسب من 1/1/1900، ونحتاج لتصحيح إزاحة اليوم (leap year bug in 1900)
+                const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+                const y = date.getUTCFullYear();
+                const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const d = String(date.getUTCDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            };
 
             const calculateDuration = (start, end) => {
                 const diff = (end ? new Date(end) : new Date()) - new Date(start);
@@ -68,19 +76,14 @@
                     "الرقم الوظيفي": c.empId,
                     "الاسم": c.name,
                     "رقم الهوية": c.nationalId,
-                    "المسمى الوظيفي": c.jobTitle,
-                    "الراتب": c.salary,
-                    "المشروع": c.project,
-                    "تاريخ المباشرة": c.startDay,
-                    "نوع العقد": c.contractType,
+                    "المباشرة": c.startDay,
                     "تاريخ رفع الطلب": new Date(c.createdAt).toLocaleString('en-GB'),
-                    "الحالة": steps[c.step],
                     "مدة الإنجاز": calculateDuration(c.createdAt, c.completedAt)
                 }));
                 const ws = XLSX.utils.json_to_sheet(reportData);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "تقرير أمنكو");
-                XLSX.writeFile(wb, `تقرير_أمنكو_${new Date().toLocaleDateString()}.xlsx`);
+                XLSX.utils.book_append_sheet(wb, ws, "تقرير");
+                XLSX.writeFile(wb, "Amnco_Report.xlsx");
             };
 
             const handleFileUpload = (e) => {
@@ -100,44 +103,36 @@
                         dept: row["الإدارة"] || 'الحلول الأمنية',
                         project: row["المشروع"] || '',
                         salary: row["الراتب"] || '',
-                        startDay: row["المباشرة"] || '',
+                        // تطبيق التصحيح هنا
+                        startDay: typeof row["المباشرة"] === 'number' ? formatExcelDate(row["المباشرة"]) : (row["المباشرة"] || ''),
                         contractType: row["نوع العقد"] || 'عقد قوى',
                         step: 1, createdAt: now, completedAt: null
                     }));
                     setCandidates(prev => [...newItems, ...prev]);
-                    alert(`تم رفع ${newItems.length} موظف بنجاح.`);
                 };
                 reader.readAsBinaryString(file);
             };
 
             return (
                 <div className="container">
-                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - تتبع العقود والتقارير 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - تصحيح التواريخ والتقارير 🛡️</h2>
                     
                     <div className="action-bar">
                         <div className="btn-group">
-                            <label className="btn btn-upload">📁 رفع Excel <input type="file" style={{display:'none'}} onChange={handleFileUpload} accept=".xlsx, .xls" /></label>
-                            <button className="btn btn-download" onClick={exportToExcel}>📥 سحب تقرير إكسل</button>
+                            <label className="btn btn-upload">📁 رفع ملف <input type="file" style={{display:'none'}} onChange={handleFileUpload} accept=".xlsx, .xls" /></label>
+                            <button className="btn btn-download" onClick={exportToExcel}>📥 سحب تقرير Excel</button>
                         </div>
-                        {selectedIds.length > 0 && <button className="btn btn-delete" onClick={() => {setCandidates(candidates.filter(c => !selectedIds.includes(c.id))); setSelectedIds([]);}}>🗑️ حذف المحدد ({selectedIds.length})</button>}
+                        {selectedIds.length > 0 && <button onClick={() => setCandidates(candidates.filter(c => !selectedIds.includes(c.id)))} className="btn" style={{background:'#e74c3c', color:'white'}}>🗑️ حذف المحدد</button>}
                     </div>
 
                     <div className="header-section">
                         <div className="grid">
                             <input placeholder="الرقم الوظيفي" value={form.empId} onChange={e => setForm({...form, empId: e.target.value})} />
                             <input placeholder="الاسم" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                            <input placeholder="الهوية" value={form.nationalId} onChange={e => setForm({...form, nationalId: e.target.value})} />
-                            <input placeholder="المسمى" value={form.jobTitle} onChange={e => setForm({...form, jobTitle: e.target.value})} />
                             <input placeholder="المشروع" value={form.project} onChange={e => setForm({...form, project: e.target.value})} />
-                            <input placeholder="الراتب" value={form.salary} onChange={e => setForm({...form, salary: e.target.value})} />
                             <input type="date" value={form.startDay} onChange={e => setForm({...form, startDay: e.target.value})} />
-                            <select value={form.contractType} onChange={e => setForm({...form, contractType: e.target.value})}>
-                                <option value="عقد قوى">عقد قوى</option>
-                                <option value="عقد تدريب">عقد تدريب</option>
-                            </select>
                         </div>
                         <button className="btn-add" onClick={() => {
-                            if (!form.empId || !form.name) return alert("أكمل البيانات!");
                             setCandidates([{ ...form, id: Date.now(), step: 1, createdAt: new Date().toISOString(), completedAt: null }, ...candidates]);
                             setForm({ empId: '', name: '', nationalId: '', jobTitle: '', project: '', salary: '', startDay: '', contractType: 'عقد قوى' });
                         }}>+ إضافة الطلب</button>
@@ -148,26 +143,23 @@
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" onChange={(e) => setSelectedIds(e.target.checked ? candidates.map(c=>c.id) : [])} /></th>
-                                    <th>ID</th><th>الاسم</th><th>الهوية</th><th>المسمى</th><th>تاريخ رفع الطلب</th><th>المباشرة</th><th>الراتب</th><th>المشروع</th><th>الحالة</th><th>مدة الإنجاز</th><th>تحكم</th>
+                                    <th>الرقم الوظيفي</th><th>الاسم</th><th>رفع الطلب</th><th>المباشرة</th><th>المشروع</th><th>الحالة</th><th>مدة الإنجاز</th><th>تحكم</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {candidates.map(c => (
                                     <tr key={c.id}>
-                                        <td><input type="checkbox" className="chk-box" checked={selectedIds.includes(c.id)} onChange={() => setSelectedIds(prev => prev.includes(c.id) ? prev.filter(i=>i!==c.id) : [...prev, c.id])} /></td>
+                                        <td><input type="checkbox" checked={selectedIds.includes(c.id)} onChange={() => setSelectedIds(prev => prev.includes(c.id) ? prev.filter(i=>i!==c.id) : [...prev, c.id])} /></td>
                                         <td>{c.empId}</td>
                                         <td style={{fontWeight:'bold', color:'#1a73e8'}}>{c.name}</td>
-                                        <td>{c.nationalId}</td>
-                                        <td>{c.jobTitle}</td>
                                         <td style={{fontSize:'11px'}}>{new Date(c.createdAt).toLocaleString('en-GB')}</td>
-                                        <td>{c.startDay}</td>
-                                        <td>{c.salary}</td>
+                                        <td style={{fontWeight:'bold', color:'#2c3e50'}}>{c.startDay}</td>
                                         <td>{c.project}</td>
                                         <td><span className="step-pill">{steps[c.step]}</span></td>
-                                        <td className={c.step === 5 ? "timer-done" : "timer-active"}>{calculateDuration(c.createdAt, c.completedAt)}</td>
+                                        <td className="timer-active">{calculateDuration(c.createdAt, c.completedAt)}</td>
                                         <td>
-                                            <button className="nav-btn" onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step > 1 ? {...x, step: x.step-1, completedAt: null} : x))}>↩️</button>
-                                            <button className="nav-btn" style={{backgroundColor:'#1a73e8', color:'white', border:'none'}} onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step < 5 ? {...x, step: x.step+1, completedAt: x.step+1 === 5 ? new Date().toISOString() : null} : x))}>➔</button>
+                                            <button className="nav-btn" onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step > 1 ? {...x, step: x.step-1} : x))}>↩️</button>
+                                            <button className="nav-btn" style={{backgroundColor:'#1a73e8', color:'white'}} onClick={() => setCandidates(candidates.map(x => x.id === c.id && x.step < 5 ? {...x, step: x.step+1, completedAt: x.step+1 === 5 ? new Date().toISOString() : null} : x))}>➔</button>
                                         </td>
                                     </tr>
                                 ))}
