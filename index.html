@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - الإصدار الاحترافي 🛡️</title>
+    <title>نظام أمنكو - إدارة المجموعات 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -19,16 +19,16 @@
         .btn { padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 5px; font-size: 12px; transition: 0.3s; font-family: 'Tajawal'; }
         .btn-sync { background: #1a73e8; color: white; }
         .btn-upload { background: #6c5ce7; color: white; }
-        .btn-report { background: #27ae60; color: white; }
+        .btn-delete-multi { background: #e74c3c; color: white; }
         .header-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; font-family: 'Tajawal'; height: 40px; box-sizing: border-box; }
+        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; font-family: 'Tajawal'; height: 40px; }
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        table { width: 100%; border-collapse: collapse; min-width: 2500px; text-align: right; }
+        table { width: 100%; border-collapse: collapse; min-width: 2600px; text-align: right; }
         th { background: #f8f9fa; padding: 12px; border: 1px solid #eee; position: sticky; top: 0; font-size: 12px; color: #1a73e8; }
         td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
         label { font-size: 11px; color: #1a73e8; display: block; margin-bottom: 2px; font-weight: bold; }
-        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; color: #1a73e8; }
+        .checkbox-cell { width: 40px; text-align: center; }
     </style>
 </head>
 <body>
@@ -36,11 +36,11 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-        // ضع رابط السكريبت الخاص بك هنا
         const API_URL = "https://script.google.com/macros/s/AKfycbxmVnAx0KTNNkgxFUpFYZV-RhQ5QCU9q4uLrRebehP0p2sFvL1nFFMo_2PtLIOAVeZRxw/exec";
 
         function App() {
             const [candidates, setCandidates] = useState([]);
+            const [selectedIds, setSelectedIds] = useState([]);
             const [loading, setLoading] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
             const [editId, setEditId] = useState(null);
@@ -58,7 +58,7 @@
                     const data = await response.json();
                     if (data && data.length > 1) {
                         const formatted = data.slice(1).map((row, i) => ({
-                            id: Date.now() + i,
+                            id: Date.now() + i + Math.random(),
                             empId: row[0], name: row[1], phone: row[2], nationalId: row[3],
                             adminUnit: row[4], project: row[5], startDay: row[6], createdAt: row[7],
                             salary: row[8], contractType: row[9], step: parseInt(row[10]) || 1
@@ -69,52 +69,24 @@
                 setLoading(false);
             };
 
+            const toggleSelect = (id) => {
+                setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+            };
+
+            const deleteSelected = () => {
+                if(confirm(`هل أنت متأكد من حذف ${selectedIds.length} موظفين؟`)) {
+                    setCandidates(prev => prev.filter(c => !selectedIds.includes(c.id)));
+                    setSelectedIds([]);
+                }
+            };
+
             const syncData = async () => {
                 setLoading(true);
                 try {
                     await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(candidates) });
-                    alert("تم حفظ البيانات سحابياً بنجاح ✅");
-                } catch (e) { alert("فشلت المزامنة"); }
+                    alert("تم الحفظ بنجاح ☁️");
+                } catch (e) { alert("خطأ في المزامنة"); }
                 setLoading(false);
-            };
-
-            const handleFileUpload = (e) => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    const wb = XLSX.read(evt.target.result, { type: 'binary', cellDates: true });
-                    const ws = wb.Sheets[wb.SheetNames[0]];
-                    const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: "" });
-                    
-                    const newItems = data.map((row, i) => ({
-                        id: Date.now() + i,
-                        empId: row["الرقم الوظيفي"] || '',
-                        name: row["الاسم"] || '',
-                        phone: row["رقم الجوال"] || '',
-                        nationalId: row["رقم الهوية"] || '',
-                        adminUnit: row["الإدارة"] || '',
-                        project: row["المشروع"] || '',
-                        startDay: row["تاريخ المباشرة"] || '',
-                        createdAt: row["تاريخ الطلب"] || '',
-                        salary: row["الراتب"] || '',
-                        contractType: row["نوع العقد"] || 'عقد قوى',
-                        step: 1
-                    }));
-                    setCandidates([...newItems, ...candidates]);
-                };
-                reader.readAsBinaryString(file);
-            };
-
-            const downloadReport = () => {
-                const ws = XLSX.utils.json_to_sheet(candidates.map(c => ({
-                    "الرقم الوظيفي": c.empId, "الاسم": c.name, "رقم الجوال": c.phone,
-                    "رقم الهوية": c.nationalId, "الإدارة": c.adminUnit, "المشروع": c.project,
-                    "تاريخ المباشرة": c.startDay, "تاريخ الطلب": c.createdAt, "الراتب": c.salary,
-                    "نوع العقد": c.contractType, "الحالة": steps[c.step]
-                })));
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Amnco");
-                XLSX.writeFile(wb, "Amnco_Report.xlsx");
             };
 
             const filtered = candidates.filter(c => 
@@ -123,18 +95,16 @@
 
             return (
                 <div className="container">
-                    {loading && <div className="loading-overlay">⏳ جاري المعالجة...</div>}
-                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - الإصدار النهائي المطور 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - نسخة الحذف المتعدد 🛡️</h2>
 
                     <div className="action-bar">
                         <div className="search-box">
                             <span className="search-icon">🔍</span>
-                            <input className="search-input" placeholder="بحث بالاسم أو الرقم الوظيفي..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
+                            <input className="search-input" placeholder="بحث بالاسم أو الرقم..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
                         </div>
-                        <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
+                        <div style={{display:'flex', gap:'8px'}}>
+                            {selectedIds.length > 0 && <button className="btn btn-delete-multi" onClick={deleteSelected}>🗑️ حذف ({selectedIds.length})</button>}
                             <button className="btn btn-sync" onClick={syncData}>☁️ حفظ للسحاب</button>
-                            <label className="btn btn-upload">📁 رفع ملف Excel <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
-                            <button className="btn btn-report" onClick={downloadReport}>📊 سحب إكسل</button>
                             <button className="btn" style={{background:'#555', color:'white'}} onClick={fetchData}>🔄 تحديث</button>
                         </div>
                     </div>
@@ -159,21 +129,26 @@
                         <button className="btn" style={{width:'100%', marginTop:'15px', background:'#1a73e8', color:'white', justifyContent:'center'}} 
                             onClick={()=>{
                                 if(!form.name) return alert("الاسم مطلوب!");
-                                setCandidates([{...form, id:Date.now(), step:1}, ...candidates]);
+                                setCandidates([{...form, id:Date.now()+Math.random(), step:1}, ...candidates]);
                                 setForm({empId:'', name:'', phone:'', nationalId:'', adminUnit:'', project:'', startDay:'', createdAt:'', salary:'', contractType:'عقد قوى'});
-                            }}>+ إضافة موظف جديد</button>
+                            }}>+ إضافة الموظف الجديد</button>
                     </div>
 
                     <div className="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>الجوال</th><th>الهوية</th><th>الإدارة</th><th>المشروع</th><th>المباشرة</th><th>الطلب</th><th>الراتب</th><th>النوع</th><th>الحالة</th><th>تعديل</th><th>تحكم</th>
+                                    <th className="checkbox-cell"><input type="checkbox" onChange={(e)=>{
+                                        if(e.target.checked) setSelectedIds(filtered.map(c=>c.id));
+                                        else setSelectedIds([]);
+                                    }} /></th>
+                                    <th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>الجوال</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>تاريخ الطلب</th><th>الراتب</th><th>النوع</th><th>الحالة</th><th>تعديل</th><th>تحكم</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtered.map((c, i) => (
-                                    <tr key={c.id}>
+                                    <tr key={c.id} style={{background: selectedIds.includes(c.id) ? '#fff4f4' : 'transparent'}}>
+                                        <td className="checkbox-cell"><input type="checkbox" checked={selectedIds.includes(c.id)} onChange={()=>toggleSelect(c.id)} /></td>
                                         <td>{i+1}</td>
                                         {editId === c.id ? (
                                             <>
@@ -186,11 +161,7 @@
                                                 <td><input type="date" value={editForm.startDay} onChange={e=>setEditForm({...editForm, startDay:e.target.value})} /></td>
                                                 <td><input type="date" value={editForm.createdAt} onChange={e=>setEditForm({...editForm, createdAt:e.target.value})} /></td>
                                                 <td><input value={editForm.salary} onChange={e=>setEditForm({...editForm, salary:e.target.value})} /></td>
-                                                <td>
-                                                    <select value={editForm.contractType} onChange={e=>setEditForm({...editForm, contractType:e.target.value})}>
-                                                        <option value="عقد قوى">عقد قوى</option><option value="عقد تدريب">عقد تدريب</option>
-                                                    </select>
-                                                </td>
+                                                <td><select value={editForm.contractType} onChange={e=>setEditForm({...editForm, contractType:e.target.value})}><option value="عقد قوى">عقد قوى</option><option value="عقد تدريب">عقد تدريب</option></select></td>
                                             </>
                                         ) : (
                                             <>
