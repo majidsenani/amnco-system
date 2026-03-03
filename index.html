@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - النسخة الشاملة 🛡️</title>
+    <title>نظام أمنكو - الإصدار الاحترافي 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -25,7 +25,7 @@
         input, select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; font-family: 'Tajawal'; height: 40px; box-sizing: border-box; }
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         table { width: 100%; border-collapse: collapse; min-width: 2500px; text-align: right; }
-        th { background: #f8f9fa; padding: 12px; border: 1px solid #eee; position: sticky; top: 0; font-size: 12px; }
+        th { background: #f8f9fa; padding: 12px; border: 1px solid #eee; position: sticky; top: 0; font-size: 12px; color: #1a73e8; }
         td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
         label { font-size: 11px; color: #1a73e8; display: block; margin-bottom: 2px; font-weight: bold; }
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; color: #1a73e8; }
@@ -36,7 +36,8 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const API_URL = "رابط_جوجل_سكربت_الخاص_بك_هنا";
+        // ضع رابط السكريبت الخاص بك هنا
+        const API_URL = "https://script.google.com/macros/s/AKfycbxmVnAx0KTNNkgxFUpFYZV-RhQ5QCU9q4uLrRebehP0p2sFvL1nFFMo_2PtLIOAVeZRxw/exec";
 
         function App() {
             const [candidates, setCandidates] = useState([]);
@@ -72,7 +73,7 @@
                 setLoading(true);
                 try {
                     await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(candidates) });
-                    alert("تم الحفظ في السحابة بنجاح ☁️");
+                    alert("تم حفظ البيانات سحابياً بنجاح ✅");
                 } catch (e) { alert("فشلت المزامنة"); }
                 setLoading(false);
             };
@@ -81,16 +82,22 @@
                 const file = e.target.files[0];
                 const reader = new FileReader();
                 reader.onload = (evt) => {
-                    const wb = XLSX.read(evt.target.result, { type: 'binary' });
+                    const wb = XLSX.read(evt.target.result, { type: 'binary', cellDates: true });
                     const ws = wb.Sheets[wb.SheetNames[0]];
-                    const data = XLSX.utils.sheet_to_json(ws);
+                    const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: "" });
+                    
                     const newItems = data.map((row, i) => ({
                         id: Date.now() + i,
-                        empId: row["الرقم الوظيفي"] || '', name: row["الاسم"] || '',
-                        phone: row["رقم الجوال"] || '', nationalId: row["رقم الهوية"] || '',
-                        adminUnit: row["الإدارة"] || '', project: row["المشروع"] || '',
-                        startDay: row["تاريخ المباشرة"] || '', createdAt: row["تاريخ الطلب"] || '',
-                        salary: row["الراتب"] || '', contractType: row["نوع العقد"] || 'عقد قوى',
+                        empId: row["الرقم الوظيفي"] || '',
+                        name: row["الاسم"] || '',
+                        phone: row["رقم الجوال"] || '',
+                        nationalId: row["رقم الهوية"] || '',
+                        adminUnit: row["الإدارة"] || '',
+                        project: row["المشروع"] || '',
+                        startDay: row["تاريخ المباشرة"] || '',
+                        createdAt: row["تاريخ الطلب"] || '',
+                        salary: row["الراتب"] || '',
+                        contractType: row["نوع العقد"] || 'عقد قوى',
                         step: 1
                     }));
                     setCandidates([...newItems, ...candidates]);
@@ -106,7 +113,7 @@
                     "نوع العقد": c.contractType, "الحالة": steps[c.step]
                 })));
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "تقرير أمنكو");
+                XLSX.utils.book_append_sheet(wb, ws, "Amnco");
                 XLSX.writeFile(wb, "Amnco_Report.xlsx");
             };
 
@@ -117,17 +124,17 @@
             return (
                 <div className="container">
                     {loading && <div className="loading-overlay">⏳ جاري المعالجة...</div>}
-                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - الإدارة المتكاملة 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - الإصدار النهائي المطور 🛡️</h2>
 
                     <div className="action-bar">
                         <div className="search-box">
                             <span className="search-icon">🔍</span>
-                            <input className="search-input" placeholder="بحث بالاسم أو الرقم..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
+                            <input className="search-input" placeholder="بحث بالاسم أو الرقم الوظيفي..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
                         </div>
                         <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
-                            <button className="btn btn-sync" onClick={syncData}>☁️ حفظ للسحابة</button>
-                            <label className="btn btn-upload">📁 الرفع من الجهاز <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
-                            <button className="btn btn-report" onClick={downloadReport}>📊 سحب تقرير إكسل</button>
+                            <button className="btn btn-sync" onClick={syncData}>☁️ حفظ للسحاب</button>
+                            <label className="btn btn-upload">📁 رفع ملف Excel <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
+                            <button className="btn btn-report" onClick={downloadReport}>📊 سحب إكسل</button>
                             <button className="btn" style={{background:'#555', color:'white'}} onClick={fetchData}>🔄 تحديث</button>
                         </div>
                     </div>
@@ -154,7 +161,7 @@
                                 if(!form.name) return alert("الاسم مطلوب!");
                                 setCandidates([{...form, id:Date.now(), step:1}, ...candidates]);
                                 setForm({empId:'', name:'', phone:'', nationalId:'', adminUnit:'', project:'', startDay:'', createdAt:'', salary:'', contractType:'عقد قوى'});
-                            }}>+ إضافة الموظف الجديد</button>
+                            }}>+ إضافة موظف جديد</button>
                     </div>
 
                     <div className="table-wrapper">
