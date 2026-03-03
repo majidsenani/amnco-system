@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام أمنكو - النسخة المعتمدة 🛡️</title>
+    <title>نظام أمنكو - النسخة المحلية 🛡️</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -17,7 +17,7 @@
         .search-input { padding: 12px 40px 12px 15px; border: 2px solid #1a73e8; border-radius: 25px; width: 100%; outline: none; font-family: 'Tajawal'; }
         .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #1a73e8; }
         .btn { padding: 10px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; font-size: 13px; font-family: 'Tajawal'; transition: 0.3s; }
-        .btn-sync { background: #1a73e8; color: white; }
+        .btn-report { background: #27ae60; color: white; }
         .btn-upload { background: #6c5ce7; color: white; }
         .btn-delete { background: #e74c3c; color: white; }
         .header-section { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -34,9 +34,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-        // الرابط اللي ضبط معك يا ماجد
-        const API_URL = "https://script.google.com/macros/s/AKfycbwb0L7cXY81DGkCAXlGLVCfDt4l4QYtAvN0s5OfbMa4hrpMUogzXdnd66E29mL45BbBHw/exec";
+        const { useState } = React;
 
         function App() {
             const [candidates, setCandidates] = useState([]);
@@ -44,39 +42,9 @@
             const [searchTerm, setSearchTerm] = useState("");
             const [editId, setEditId] = useState(null);
             const [editForm, setEditForm] = useState({});
-            const [loading, setLoading] = useState(false);
             const [form, setForm] = useState({ empId:'', name:'', phone:'', nationalId:'', adminUnit:'', project:'', startDay:'', createdAt:'', salary:'', contractType:'عقد قوى' });
 
             const steps = ["", "قرار التعيين", "إكمال الملف", "الادخال بالنظام", "رفع عقد قوى", "مكتمل ✅"];
-
-            useEffect(() => { fetchData(); }, []);
-
-            const fetchData = async () => {
-                setLoading(true);
-                try {
-                    const response = await fetch(API_URL);
-                    const data = await response.json();
-                    if (data && data.length > 1) {
-                        const mapped = data.slice(1).map((row, i) => ({
-                            id: Date.now() + i + Math.random(),
-                            empId: row[0], name: row[1], phone: row[2], nationalId: row[3],
-                            adminUnit: row[4], project: row[5], startDay: row[6], createdAt: row[7],
-                            salary: row[8], contractType: row[9], step: parseInt(row[10]) || 1
-                        }));
-                        setCandidates(mapped);
-                    }
-                } catch (e) { console.error("خطأ في التحميل"); }
-                setLoading(false);
-            };
-
-            const syncData = async () => {
-                setLoading(true);
-                try {
-                    await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(candidates) });
-                    alert("تم حفظ البيانات في ملف الإكسل بنجاح ✅");
-                } catch (e) { alert("فشلت المزامنة"); }
-                setLoading(false);
-            };
 
             const handleFileUpload = (e) => {
                 const file = e.target.files[0];
@@ -104,11 +72,23 @@
                 reader.readAsBinaryString(file);
             };
 
+            const downloadExcel = () => {
+                const ws = XLSX.utils.json_to_sheet(candidates.map(c => ({
+                    "الرقم الوظيفي": c.empId, "الاسم": c.name, "رقم الجوال": c.phone,
+                    "رقم الهوية": c.nationalId, "الإدارة": c.adminUnit, "المشروع": c.project,
+                    "تاريخ المباشرة": c.startDay, "تاريخ الطلب": c.createdAt, "الراتب": c.salary,
+                    "نوع العقد": c.contractType, "الحالة": steps[c.step]
+                })));
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Data");
+                XLSX.writeFile(wb, "Amnco_Data.xlsx");
+            };
+
             const filtered = candidates.filter(c => (c.name||"").includes(searchTerm) || (c.empId||"").toString().includes(searchTerm));
 
             return (
                 <div className="container">
-                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - الربط المباشر 🛡️</h2>
+                    <h2 style={{textAlign:'center', color:'#1a73e8'}}>نظام أمنكو - الإصدار المحلي السريع 🛡️</h2>
 
                     <div className="action-bar">
                         <div className="search-box">
@@ -116,9 +96,9 @@
                             <input className="search-input" placeholder="بحث بالاسم أو الرقم الوظيفي..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
                         </div>
                         <div style={{display:'flex', gap:'8px'}}>
-                            {selectedIds.length > 0 && <button className="btn btn-delete" onClick={()=>{setCandidates(prev=>prev.filter(c=>!selectedIds.includes(c.id))); setSelectedIds([]);}}>🗑️ حذف المحدد ({selectedIds.length})</button>}
-                            <label className="btn btn-upload">📁 رفع Excel <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
-                            <button className="btn btn-sync" onClick={syncData}>{loading ? "جاري الحفظ..." : "☁️ حفظ للسحاب"}</button>
+                            {selectedIds.length > 0 && <button className="btn btn-delete" onClick={()=>{setCandidates(prev=>prev.filter(c=>!selectedIds.includes(c.id))); setSelectedIds([]);}}>🗑️ حذف المحدد</button>}
+                            <label className="btn btn-upload">📁 رفع ملف <input type="file" style={{display:'none'}} onChange={handleFileUpload} /></label>
+                            <button className="btn btn-report" onClick={downloadExcel}>📊 سحب إكسل</button>
                         </div>
                     </div>
 
@@ -139,11 +119,11 @@
                                 </select>
                             </div>
                         </div>
-                        <button className="btn btn-sync" style={{width:'100%', marginTop:'15px', justifyContent:'center'}} onClick={()=>{
+                        <button className="btn" style={{width:'100%', marginTop:'15px', background:'#1a73e8', color:'white', justifyContent:'center'}} onClick={()=>{
                             if(!form.name) return alert("الاسم مطلوب");
                             setCandidates([{...form, id:Date.now()+Math.random(), step:1}, ...candidates]);
                             setForm({empId:'', name:'', phone:'', nationalId:'', adminUnit:'', project:'', startDay:'', createdAt:'', salary:'', contractType:'عقد قوى'});
-                        }}>+ إضافة موظف جديد</button>
+                        }}>+ إضافة موظف</button>
                     </div>
 
                     <div className="table-wrapper">
@@ -151,7 +131,7 @@
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" onChange={e=>setSelectedIds(e.target.checked?filtered.map(c=>c.id):[])} /></th>
-                                    <th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>الجوال</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>تاريخ الطلب</th><th>الراتب</th><th>النوع</th><th>الحالة</th><th>إجراء</th>
+                                    <th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الجوال</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>تاريخ الطلب</th><th>الراتب</th><th>النوع</th><th>الحالة</th><th>إجراء</th>
                                 </tr>
                             </thead>
                             <tbody>
