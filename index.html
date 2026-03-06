@@ -288,7 +288,7 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
 <div class="toast" id="toast"></div>
 
 <script>
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbz3EFq-4Zbnxp3waJkp-n_TIkuDExe1gg4yxKJ77jZSMQnf_01RwwZYH8odw6ExLBCo/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzQBX5Q-dcQyS-81idtunW-AAzFBzVfr9-lQxjMox-_lvIXP94HM4Ee9Keap9p5_oA/exec';
 
 let employees = [];
 let nextId = 1;
@@ -324,13 +324,13 @@ async function loadFromSheet(){
     }
     employees = data.map((e,i) => ({
       id:      i+1,
-      empId:   String(e.empId   || ''),
-      name:    String(e.name    || ''),
-      idNum:   String(e.idNum   || ''),
-      dept:    String(e.dept    || ''),
-      project: String(e.project || ''),
-      date:    String(e.date    || ''),
-      status:  String(e.status  || 'active'),
+      empId:   String(e.empId   || e[0] || ''),
+      name:    String(e.name    || e[1] || ''),
+      idNum:   String(e.idNum   || e[2] || ''),
+      dept:    String(e.dept    || e[3] || ''),
+      project: String(e.project || e[4] || ''),
+      date:    String(e.date    || e[5] || ''),
+      status:  String(e.status  || e[6] || 'active'),
     }));
     nextId   = employees.length + 1;
     filtered = [...employees];
