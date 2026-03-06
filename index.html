@@ -288,179 +288,161 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── Data ───
-let employees = [
-  {id:1,empId:'EMP-001',name:'محمد عبدالله الزهراني',idNum:'1023456789',dept:'تقنية المعلومات',project:'نظام ERP',date:'2022-03-15',status:'active'},
-  {id:2,empId:'EMP-002',name:'فهد سعد القحطاني',idNum:'1034567891',dept:'المالية',project:'ميزانية Q4',date:'2021-08-01',status:'active'},
-  {id:3,empId:'EMP-003',name:'عبدالرحمن خالد العتيبي',idNum:'1045678912',dept:'الموارد البشرية',project:'التوظيف 2024',date:'2023-01-10',status:'pending'},
-  {id:4,empId:'EMP-004',name:'سلطان ناصر الدوسري',idNum:'1056789123',dept:'الهندسة',project:'مشروع الجسر',date:'2020-06-20',status:'active'},
-  {id:5,empId:'EMP-005',name:'راشد يوسف الشمري',idNum:'1067891234',dept:'العمليات',project:'اللوجستيات',date:'2019-11-05',status:'resigned'},
-  {id:6,empId:'EMP-006',name:'أحمد علي المطيري',idNum:'1078912345',dept:'المبيعات',project:'توسعة السوق',date:'2023-05-22',status:'active'},
-  {id:7,empId:'EMP-007',name:'تركي عبدالعزيز الرشيدي',idNum:'1089123456',dept:'الجودة',project:'ISO 9001',date:'2022-09-14',status:'leave'},
-  {id:8,empId:'EMP-008',name:'عمر حمد البلوي',idNum:'1090234567',dept:'المشتريات',project:'عقود الموردين',date:'2021-03-30',status:'transfer'},
-];
-let nextId = 9;
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbylkZ5wm1SCx_PW3TMF09rNcazgOpw48XAJQ9gvrOn3vbzLwm5VWuDDyeGxeDMYlUy_/exec';
+
+let employees = [];
+let nextId = 1;
 let editingId = null;
 let selectMode = false;
 let selected = new Set();
-let filtered = [...employees];
+let filtered = [];
 let currentPage = 1;
 const PER_PAGE = 8;
 
-// ─── Status ───
 const statusMap = {
-  active:   {label:'✅ نشط',        cls:'s-active'},
-  pending:  {label:'⏳ قيد الإجراءات',cls:'s-pending'},
-  resigned: {label:'🔴 مستقيل',     cls:'s-resigned'},
-  transfer: {label:'🔵 محول',       cls:'s-transfer'},
-  leave:    {label:'🟣 إجازة',       cls:'s-leave'},
+  active:   {label:'نشط',           cls:'s-active'},
+  pending:  {label:'قيد الإجراءات', cls:'s-pending'},
+  resigned: {label:'مستقيل',        cls:'s-resigned'},
+  transfer: {label:'محول',          cls:'s-transfer'},
+  leave:    {label:'إجازة',          cls:'s-leave'},
 };
 
 function statusBadge(s){
-  const m=statusMap[s]||{label:s,cls:''};
-  return `<span class="status ${m.cls}"><span class="status-dot"></span>${m.label}</span>`;
+  const m = statusMap[s] || {label:s, cls:''};
+  return '<span class="status ' + m.cls + '"><span class="status-dot"></span>' + m.label + '</span>';
 }
 
-// ─── Render ───
+async function loadFromSheet(){
+  showLoading(true);
+  try {
+    const res  = await fetch(SHEET_URL + '?t=' + Date.now());
+    const data = await res.json();
+    if(!data || !data.length){ employees=[]; filtered=[]; render(); showLoading(false); return; }
+    employees = data.map((e,i) => ({
+      id:      i+1,
+      empId:   String(e.empId   || ''),
+      name:    String(e.name    || ''),
+      idNum:   String(e.idNum   || ''),
+      dept:    String(e.dept    || ''),
+      project: String(e.project || ''),
+      date:    String(e.date    || ''),
+      status:  String(e.status  || 'active'),
+    }));
+    nextId  = employees.length + 1;
+    filtered = [...employees];
+  } catch(err) {
+    showToast('تعذر الاتصال بـ Google Sheets');
+    employees=[]; filtered=[];
+  }
+  render(); showLoading(false);
+}
+
+async function saveToSheet(){
+  showLoading(true);
+  try {
+    const rows = employees.map(e => [e.empId, e.name, e.idNum, e.dept, e.project, e.date, e.status]);
+    await fetch(SHEET_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'save', employees: rows})
+    });
+    showToast('تم الحفظ في Google Sheets');
+  } catch(err) { showToast('فشل الحفظ'); }
+  showLoading(false);
+}
+
+function showLoading(show){
+  document.getElementById('loadingBar').style.display = show ? 'block' : 'none';
+}
+
 function render(){
   updateStats();
   const start=(currentPage-1)*PER_PAGE, end=start+PER_PAGE;
   const page=filtered.slice(start,end);
   const tbody=document.getElementById('tableBody');
-
   if(!filtered.length){
-    tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🔍</div><div>لا توجد نتائج</div></div></td></tr>`;
+    tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-icon">&#128269;</div><div>لا توجد نتائج</div></div></td></tr>';
   } else {
     tbody.innerHTML=page.map((e,i)=>{
-      const rowNum=start+i+1;
-      const sel=selected.has(e.id);
-      return `<tr class="${sel?'selected':''}" onclick="rowClick(event,${e.id})">
-        <td><input type="checkbox" class="cb row-cb" ${sel?'checked':''} onchange="toggleSelect(${e.id},this)" onclick="event.stopPropagation()"/></td>
-        <td class="num">${rowNum}</td>
-        <td class="emp-id">${e.empId}</td>
-        <td class="name">${e.name}</td>
-        <td class="id-num">${e.idNum}</td>
-        <td>${e.dept||'-'}</td>
-        <td>${e.project||'-'}</td>
-        <td>${e.date?e.date.split('-').reverse().join('/'):'—'}</td>
-        <td>${statusBadge(e.status)}</td>
-        <td><div class="actions">
-          <button class="icon-btn edit" onclick="event.stopPropagation();openEdit(${e.id})" title="تعديل">✏️</button>
-          <button class="icon-btn delete" onclick="event.stopPropagation();deleteOne(${e.id})" title="حذف">🗑️</button>
-        </div></td>
-      </tr>`;
+      const rowNum=start+i+1, sel=selected.has(e.id);
+      return '<tr class="'+(sel?'selected':'')+'" onclick="rowClick(event,'+e.id+')">'
+        +'<td><input type="checkbox" class="cb row-cb" '+(sel?'checked':'')
+        +' onchange="toggleSelect('+e.id+',this)" onclick="event.stopPropagation()"/></td>'
+        +'<td class="num">'+rowNum+'</td>'
+        +'<td class="emp-id">'+e.empId+'</td>'
+        +'<td class="name">'+e.name+'</td>'
+        +'<td class="id-num">'+e.idNum+'</td>'
+        +'<td>'+(e.dept||'-')+'</td>'
+        +'<td>'+(e.project||'-')+'</td>'
+        +'<td>'+(e.date?e.date.split('-').reverse().join('/'):'—')+'</td>'
+        +'<td>'+statusBadge(e.status)+'</td>'
+        +'<td><div class="actions">'
+        +'<button class="icon-btn edit" onclick="event.stopPropagation();openEdit('+e.id+')" title="تعديل">&#9998;</button>'
+        +'<button class="icon-btn delete" onclick="event.stopPropagation();deleteOne('+e.id+')" title="حذف">&#128465;</button>'
+        +'</div></td></tr>';
     }).join('');
   }
-
-  // Pagination
-  const total=filtered.length;
-  const pages=Math.ceil(total/PER_PAGE)||1;
-  document.getElementById('pageInfo').textContent=`عرض ${Math.min(end,total)} من ${total} موظف`;
-  const pb=document.getElementById('pageBtns');
-  pb.innerHTML='';
+  const total=filtered.length, pages=Math.ceil(total/PER_PAGE)||1;
+  document.getElementById('pageInfo').textContent='عرض '+Math.min(end,total)+' من '+total+' موظف';
+  const pb=document.getElementById('pageBtns'); pb.innerHTML='';
   for(let p=1;p<=pages;p++){
     const b=document.createElement('button');
     b.className='page-btn'+(p===currentPage?' active':'');
-    b.textContent=p;
-    b.onclick=()=>{currentPage=p;render();};
+    b.textContent=p; b.onclick=()=>{currentPage=p;render();};
     pb.appendChild(b);
   }
 }
 
 function updateStats(){
-  const all=employees;
-  document.getElementById('st-total').textContent=all.length;
-  document.getElementById('st-active').textContent=all.filter(e=>e.status==='active').length;
-  document.getElementById('st-pending').textContent=all.filter(e=>e.status==='pending'||e.status==='leave').length;
-  document.getElementById('st-resigned').textContent=all.filter(e=>e.status==='resigned'||e.status==='transfer').length;
+  document.getElementById('st-total').textContent   =employees.length;
+  document.getElementById('st-active').textContent  =employees.filter(e=>e.status==='active').length;
+  document.getElementById('st-pending').textContent =employees.filter(e=>e.status==='pending'||e.status==='leave').length;
+  document.getElementById('st-resigned').textContent=employees.filter(e=>e.status==='resigned'||e.status==='transfer').length;
 }
 
-// ─── Search ───
 function filterTable(){
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
   filtered=employees.filter(e=>
-    e.name.toLowerCase().includes(q)||
-    e.empId.toLowerCase().includes(q)||
-    e.idNum.includes(q)||
-    (e.dept&&e.dept.includes(q))||
-    (e.project&&e.project.toLowerCase().includes(q))
+    e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q)||
+    e.idNum.includes(q)||(e.dept&&e.dept.includes(q))||(e.project&&e.project.toLowerCase().includes(q))
   );
-  currentPage=1;
-  render();
+  currentPage=1; render();
 }
 
-// ─── Select Mode ───
 function toggleSelectMode(){
-  selectMode=!selectMode;
-  clearSelection();
-  document.getElementById('selectBtn').textContent=selectMode?'✕ إلغاء التحديد':'☑️ تحديد';
-  document.querySelectorAll('.row-cb,.cb').forEach(c=>c.style.visibility=selectMode?'visible':'visible');
+  selectMode=!selectMode; clearSelection();
+  document.getElementById('selectBtn').textContent=selectMode?'ايقاف التحديد':'تحديد';
 }
-
-function toggleSelect(id,cb){
-  if(cb.checked) selected.add(id); else selected.delete(id);
-  updateSelectBar();
-  render();
-}
-
-function toggleAll(cb){
-  if(cb.checked) filtered.forEach(e=>selected.add(e.id));
-  else selected.clear();
-  updateSelectBar();
-  render();
-}
-
-function rowClick(e,id){
-  if(!selectMode) return;
-  if(selected.has(id)) selected.delete(id); else selected.add(id);
-  updateSelectBar();
-  render();
-}
-
+function toggleSelect(id,cb){ if(cb.checked) selected.add(id); else selected.delete(id); updateSelectBar(); render(); }
+function toggleAll(cb){ if(cb.checked) filtered.forEach(e=>selected.add(e.id)); else selected.clear(); updateSelectBar(); render(); }
+function rowClick(e,id){ if(!selectMode) return; if(selected.has(id)) selected.delete(id); else selected.add(id); updateSelectBar(); render(); }
 function updateSelectBar(){
-  const bar=document.getElementById('selectBar');
-  const n=selected.size;
-  if(n>0){ bar.classList.add('show'); document.getElementById('selectCount').textContent=n+' محدد'; }
+  const bar=document.getElementById('selectBar'), n=selected.size;
+  if(n>0){bar.classList.add('show');document.getElementById('selectCount').textContent=n+' محدد';}
   else bar.classList.remove('show');
 }
-
 function clearSelection(){ selected.clear(); updateSelectBar(); render(); }
 
-function deleteSelected(){
+async function deleteSelected(){
   if(!selected.size) return;
-  if(!confirm(`هل تريد حذف ${selected.size} موظف؟`)) return;
+  if(!confirm('هل تريد حذف '+selected.size+' موظف؟')) return;
   employees=employees.filter(e=>!selected.has(e.id));
-  selected.clear();
-  filtered=filterBySearch();
-  currentPage=1;
-  updateSelectBar();
-  render();
-  showToast('✅ تم حذف الموظفين المحددين');
+  selected.clear(); filtered=[...employees]; filterTable(); updateSelectBar(); render();
+  await saveToSheet();
 }
 
-function filterBySearch(){
-  const q=document.getElementById('searchInput').value.toLowerCase().trim();
-  return employees.filter(e=>
-    e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q)||e.idNum.includes(q)
-  );
-}
-
-// ─── Delete One ───
-function deleteOne(id){
+async function deleteOne(id){
   const e=employees.find(x=>x.id===id);
-  if(!confirm(`هل تريد حذف "${e.name}"؟`)) return;
+  if(!confirm('هل تريد حذف "'+e.name+'"؟')) return;
   employees=employees.filter(x=>x.id!==id);
-  filtered=filterBySearch();
+  filtered=[...employees]; filterTable();
   if((currentPage-1)*PER_PAGE>=filtered.length&&currentPage>1) currentPage--;
-  render();
-  showToast('🗑️ تم الحذف');
+  render(); await saveToSheet();
 }
 
-// ─── Modal ───
-function openModal(){ editingId=null; clearForm(); document.getElementById('modalTitle').textContent='➕ إضافة موظف جديد'; document.getElementById('modalBg').classList.add('show'); }
+function openModal(){ editingId=null; clearForm(); document.getElementById('modalTitle').textContent='إضافة موظف جديد'; document.getElementById('modalBg').classList.add('show'); }
 function openEdit(id){
-  const e=employees.find(x=>x.id===id);
-  editingId=id;
+  const e=employees.find(x=>x.id===id); editingId=id;
   document.getElementById('f-empid').value=e.empId;
   document.getElementById('f-name').value=e.name;
   document.getElementById('f-idnum').value=e.idNum;
@@ -468,48 +450,32 @@ function openEdit(id){
   document.getElementById('f-project').value=e.project||'';
   document.getElementById('f-date').value=e.date||'';
   document.getElementById('f-status').value=e.status;
-  document.getElementById('modalTitle').textContent='✏️ تعديل بيانات الموظف';
+  document.getElementById('modalTitle').textContent='تعديل بيانات الموظف';
   document.getElementById('modalBg').classList.add('show');
 }
 function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
-function clearForm(){ ['f-empid','f-name','f-idnum','f-dept','f-project','f-date'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';}); document.getElementById('f-status').value='active'; }
+function clearForm(){
+  ['f-empid','f-name','f-idnum','f-project','f-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('f-dept').value=''; document.getElementById('f-status').value='active';
+}
 
-function saveEmployee(){
+async function saveEmployee(){
   const empId=document.getElementById('f-empid').value.trim();
   const name=document.getElementById('f-name').value.trim();
   const idNum=document.getElementById('f-idnum').value.trim();
-  if(!empId||!name||!idNum){ showToast('⚠️ يرجى تعبئة الحقول المطلوبة'); return; }
-
-  // التحقق من تكرار الرقم الوظيفي
-  const dupEmpId = employees.find(e => e.empId === empId && e.id !== editingId);
-  if(dupEmpId){ showToast('❌ الرقم الوظيفي مكرر! يوجد موظف بنفس الرقم'); return; }
-
-  // التحقق من تكرار رقم الهوية
-  const dupIdNum = employees.find(e => e.idNum === idNum && e.id !== editingId);
-  if(dupIdNum){ showToast('❌ رقم الهوية مكرر! يوجد موظف بنفس الهوية'); return; }
-
+  if(!empId||!name||!idNum){showToast('يرجى تعبئة الحقول المطلوبة');return;}
+  if(employees.find(e=>e.empId===empId&&e.id!==editingId)){showToast('الرقم الوظيفي مكرر!');return;}
+  if(employees.find(e=>e.idNum===idNum&&e.id!==editingId)){showToast('رقم الهوية مكرر!');return;}
   const data={empId,name,idNum,dept:document.getElementById('f-dept').value,project:document.getElementById('f-project').value.trim(),date:document.getElementById('f-date').value,status:document.getElementById('f-status').value};
   if(editingId){
     const idx=employees.findIndex(e=>e.id===editingId);
-    employees[idx]={...employees[idx],...data};
-    showToast('✅ تم تعديل البيانات');
-  } else {
-    employees.push({id:nextId++,...data});
-    showToast('✅ تم إضافة الموظف');
-  }
-  filtered=[...employees];
-  filterTable();
-  closeModal();
+    employees[idx]={...employees[idx],...data}; showToast('تم تعديل البيانات');
+  } else { employees.push({id:nextId++,...data}); showToast('تم إضافة الموظف'); }
+  filtered=[...employees]; filterTable(); closeModal(); await saveToSheet();
 }
 
-// ─── Export Excel ───
 function exportExcel(){
-  const rows=employees.map((e,i)=>({
-    'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,
-    'الإدارة':e.dept||'','المشروع':e.project||'',
-    'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
-    'الحالة':statusMap[e.status]?.label.replace(/[✅⏳🔴🔵🟣]\s*/,'')||e.status
-  }));
+  const rows=employees.map((e,i)=>({'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,'الإدارة':e.dept||'','المشروع':e.project||'','تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'','الحالة':statusMap[e.status]?statusMap[e.status].label:e.status}));
   const ws=XLSX.utils.json_to_sheet(rows);
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:18}];
   const wb=XLSX.utils.book_new();
@@ -518,54 +484,32 @@ function exportExcel(){
   const blob=new Blob([wbout],{type:'application/octet-stream'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;
-  a.download='متابعة_التوظيف.xlsx';
-  document.body.appendChild(a);
-  a.click();
+  a.href=url; a.download='متابعة_التوظيف.xlsx';
+  document.body.appendChild(a); a.click();
   setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
-  showToast('📥 تم تصدير ملف Excel');
+  showToast('تم تصدير ملف Excel');
 }
 
-// ─── Import Excel ───
 function importExcel(e){
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader();
-  reader.onload=ev=>{
+  reader.onload=async ev=>{
     try{
       const wb=XLSX.read(ev.target.result,{type:'binary'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws);
-      const statusRev={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned'};
-      rows.forEach(r=>{
-        employees.push({
-          id:nextId++,
-          empId:r['الرقم الوظيفي']||'',
-          name:r['الاسم']||'',
-          idNum:String(r['رقم الهوية']||''),
-          dept:r['الإدارة']||'',
-          project:r['المشروع']||'',
-          date:r['تاريخ المباشرة']||'',
-          status:statusRev[r['الحالة']]||'active'
-        });
-      });
-      filtered=[...employees];
-      render();
-      showToast(`📤 تم استيراد ${rows.length} موظف`);
-    }catch(err){ showToast('❌ خطأ في قراءة الملف'); }
+      const sr={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned'};
+      rows.forEach(r=>{employees.push({id:nextId++,empId:r['الرقم الوظيفي']||'',name:r['الاسم']||'',idNum:String(r['رقم الهوية']||''),dept:r['الإدارة']||'',project:r['المشروع']||'',date:r['تاريخ المباشرة']||'',status:sr[r['الحالة']]||'active'});});
+      filtered=[...employees]; render(); showToast('تم استيراد '+rows.length+' موظف');
+      await saveToSheet();
+    }catch(err){showToast('خطأ في قراءة الملف');}
   };
-  reader.readAsBinaryString(file);
-  e.target.value='';
+  reader.readAsBinaryString(file); e.target.value='';
 }
 
-// ─── Toast ───
-function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
-
-// ─── Close modal on bg click ───
-document.getElementById('modalBg').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-
-// ─── Init ───
-filtered=[...employees];
-render();
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+document.getElementById('modalBg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+loadFromSheet();
 </script>
 </body>
 </html>
