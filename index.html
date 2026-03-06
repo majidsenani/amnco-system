@@ -140,6 +140,8 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
 .empty .empty-icon{font-size:48px;margin-bottom:10px;}
 
 /* Toast */
+.loading-bar{display:none;position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent),var(--primary));background-size:200%;animation:shimmer 1.2s infinite;z-index:9999;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
@@ -154,6 +156,598 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
 <body>
 
 <!-- Header -->
+<div id="loadingBar" class="loading-bar"></div>
+<div class="header">
+  <div class="header-title">
+    <div class="icon-badge">👔</div>
+    <div>
+      <h1>متابعة التوظيف</h1>
+      <div class="subtitle">إدارة بيانات الموظفين ومتابعة حالاتهم</div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat blue"><div class="stat-num" id="st-total">0</div><div class="stat-lbl">إجمالي الموظفين</div></div>
+  <div class="stat green"><div class="stat-num" id="st-active">0</div><div class="stat-lbl">موظف نشط</div></div>
+  <div class="stat orange"><div class="stat-num" id="st-pending">0</div><div class="stat-lbl">قيد الإجراءات</div></div>
+  <div class="stat red"><div class="stat-num" id="st-resigned">0</div><div class="stat-lbl">مستقيل / محول</div></div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="ابحث بالاسم أو الرقم الوظيفي أو الهوية..." oninput="filterTable()"/>
+  </div>
+  <button class="btn btn-outline" onclick="toggleSelectMode()" id="selectBtn">☑️ تحديد</button>
+  <label class="btn btn-success" title="رفع ملف Excel">
+    📤 رفع Excel
+    <input type="file" accept=".xlsx,.xls" id="uploadExcel" style="display:none" onchange="importExcel(event)"/>
+  </label>
+  <button class="btn btn-outline" onclick="exportExcel()">📥 سحب Excel</button>
+  <button class="btn btn-primary" onclick="openModal()">➕ إضافة موظف</button>
+</div>
+
+<!-- Select bar -->
+<div class="select-bar" id="selectBar">
+  <span class="select-count" id="selectCount">0 محدد</span>
+  <button class="btn btn-danger btn-sm" onclick="deleteSelected()">🗑️ حذف المحددين</button>
+  <button class="btn btn-outline btn-sm" onclick="clearSelection()">✕ إلغاء</button>
+</div>
+
+<!-- Table -->
+<div class="table-wrapper">
+  <div class="table-scroll">
+    <table id="empTable">
+      <thead>
+        <tr>
+          <th style="width:40px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th>
+          <th>م</th>
+          <th>الرقم الوظيفي</th>
+          <th>الاسم</th>
+          <th>رقم الهوية</th>
+          <th>الإدارة</th>
+          <th>المشروع</th>
+          <th>تاريخ المباشرة</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <span id="pageInfo">عرض 0 من 0 موظف</span>
+    <div class="page-btns" id="pageBtns"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">➕ إضافة موظف جديد</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>الرقم الوظيفي *</label>
+        <input id="f-empid" placeholder="EMP-001" />
+      </div>
+      <div class="form-group">
+        <label>رقم الهوية *</label>
+        <input id="f-idnum" placeholder="1xxxxxxxxx" maxlength="10"/>
+      </div>
+      <div class="form-group full">
+        <label>الاسم الكامل *</label>
+        <input id="f-name" placeholder="اسم الموظف رباعياً"/>
+      </div>
+      <div class="form-group">
+        <label>الإدارة</label>
+        <select id="f-dept">
+          <option value="">-- اختر --</option>
+          <option>الموارد البشرية</option>
+          <option>المالية</option>
+          <option>تقنية المعلومات</option>
+          <option>العمليات</option>
+          <option>المشتريات</option>
+          <option>الجودة</option>
+          <option>الهندسة</option>
+          <option>المبيعات</option>
+          <option>الإدارة العليا</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>المشروع</label>
+        <input id="f-project" placeholder="اسم المشروع"/>
+      </div>
+      <div class="form-group">
+        <label>تاريخ المباشرة</label>
+        <input type="date" id="f-date"/>
+      </div>
+      <div class="form-group">
+        <label>الحالة</label>
+        <select id="f-status">
+          <option value="active">✅ نشط</option>
+          <option value="pending">⏳ قيد الإجراءات</option>
+          <option value="leave">🟣 إجازة</option>
+          <option value="transfer">🔵 محول</option>
+          <option value="resigned">🔴 مستقيل</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbylkZ5wm1SCx_PW3TMF09rNcazgOpw48XAJQ9gvrOn3vbzLwm5VWuDDyeGxeDMYlUy_/exec';
+
+// ─── Data ───
+let employees = [];
+let nextId = 1;
+let editingId = null;
+let selectMode = false;
+let selected = new Set();
+let filtered = [];
+let currentPage = 1;
+const PER_PAGE = 8;
+
+// ─── Status ───
+const statusMap = {
+  active:   {label:'✅ نشط',        cls:'s-active'},
+  pending:  {label:'⏳ قيد الإجراءات',cls:'s-pending'},
+  resigned: {label:'🔴 مستقيل',     cls:'s-resigned'},
+  transfer: {label:'🔵 محول',       cls:'s-transfer'},
+  leave:    {label:'🟣 إجازة',       cls:'s-leave'},
+};
+
+function statusBadge(s){
+  const m=statusMap[s]||{label:s,cls:''};
+  return `<span class="status ${m.cls}"><span class="status-dot"></span>${m.label}</span>`;
+}
+
+// ─── Google Sheets API ───
+async function loadFromSheet(){
+  showLoading(true);
+  try {
+    const res = await fetch(SHEET_URL);
+    const rows = await res.json();
+    if(!rows || rows.length < 2){ employees=[]; filtered=[]; render(); showLoading(false); return; }
+    const headers = rows[0];
+    employees = rows.slice(1).map((r,i) => ({
+      id: i+1,
+      empId: r[0]||'',
+      name:  r[1]||'',
+      idNum: String(r[2]||''),
+      dept:  r[3]||'',
+      project: r[4]||'',
+      date:  r[5]||'',
+      status: r[6]||'active'
+    }));
+    nextId = employees.length + 1;
+    filtered = [...employees];
+  } catch(err) {
+    showToast('❌ تعذر الاتصال بـ Google Sheets');
+    employees=[]; filtered=[];
+  }
+  render();
+  showLoading(false);
+}
+
+async function saveToSheet(){
+  showLoading(true);
+  try {
+    const rows = employees.map(e => [e.empId, e.name, e.idNum, e.dept, e.project, e.date, e.status]);
+    await fetch(SHEET_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'save', employees: rows})
+    });
+    showToast('☁️ تم الحفظ في Google Sheets');
+  } catch(err) {
+    showToast('❌ فشل الحفظ في Google Sheets');
+  }
+  showLoading(false);
+}
+
+function showLoading(show){
+  document.getElementById('loadingBar').style.display = show ? 'block' : 'none';
+}
+
+// ─── Render ───
+function render(){
+  updateStats();
+  const start=(currentPage-1)*PER_PAGE, end=start+PER_PAGE;
+  const page=filtered.slice(start,end);
+  const tbody=document.getElementById('tableBody');
+
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🔍</div><div>لا توجد نتائج</div></div></td></tr>`;
+  } else {
+    tbody.innerHTML=page.map((e,i)=>{
+      const rowNum=start+i+1;
+      const sel=selected.has(e.id);
+      return `<tr class="${sel?'selected':''}" onclick="rowClick(event,${e.id})">
+        <td><input type="checkbox" class="cb row-cb" ${sel?'checked':''} onchange="toggleSelect(${e.id},this)" onclick="event.stopPropagation()"/></td>
+        <td class="num">${rowNum}</td>
+        <td class="emp-id">${e.empId}</td>
+        <td class="name">${e.name}</td>
+        <td class="id-num">${e.idNum}</td>
+        <td>${e.dept||'-'}</td>
+        <td>${e.project||'-'}</td>
+        <td>${e.date?e.date.split('-').reverse().join('/'):'—'}</td>
+        <td>${statusBadge(e.status)}</td>
+        <td><div class="actions">
+          <button class="icon-btn edit" onclick="event.stopPropagation();openEdit(${e.id})" title="تعديل">✏️</button>
+          <button class="icon-btn delete" onclick="event.stopPropagation();deleteOne(${e.id})" title="حذف">🗑️</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const total=filtered.length;
+  const pages=Math.ceil(total/PER_PAGE)||1;
+  document.getElementById('pageInfo').textContent=`عرض ${Math.min(end,total)} من ${total} موظف`;
+  const pb=document.getElementById('pageBtns');
+  pb.innerHTML='';
+  for(let p=1;p<=pages;p++){
+    const b=document.createElement('button');
+    b.className='page-btn'+(p===currentPage?' active':'');
+    b.textContent=p;
+    b.onclick=()=>{currentPage=p;render();};
+    pb.appendChild(b);
+  }
+}
+
+function updateStats(){
+  const all=employees;
+  document.getElementById('st-total').textContent=all.length;
+  document.getElementById('st-active').textContent=all.filter(e=>e.status==='active').length;
+  document.getElementById('st-pending').textContent=all.filter(e=>e.status==='pending'||e.status==='leave').length;
+  document.getElementById('st-resigned').textContent=all.filter(e=>e.status==='resigned'||e.status==='transfer').length;
+}
+
+// ─── Search ───
+function filterTable(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  filtered=employees.filter(e=>
+    e.name.toLowerCase().includes(q)||
+    e.empId.toLowerCase().includes(q)||
+    e.idNum.includes(q)||
+    (e.dept&&e.dept.includes(q))||
+    (e.project&&e.project.toLowerCase().includes(q))
+  );
+  currentPage=1;
+  render();
+}
+
+// ─── Select Mode ───
+function toggleSelectMode(){
+  selectMode=!selectMode;
+  clearSelection();
+  document.getElementById('selectBtn').textContent=selectMode?'✕ إلغاء التحديد':'☑️ تحديد';
+}
+
+function toggleSelect(id,cb){
+  if(cb.checked) selected.add(id); else selected.delete(id);
+  updateSelectBar();
+  render();
+}
+
+function toggleAll(cb){
+  if(cb.checked) filtered.forEach(e=>selected.add(e.id));
+  else selected.clear();
+  updateSelectBar();
+  render();
+}
+
+function rowClick(e,id){
+  if(!selectMode) return;
+  if(selected.has(id)) selected.delete(id); else selected.add(id);
+  updateSelectBar();
+  render();
+}
+
+function updateSelectBar(){
+  const bar=document.getElementById('selectBar');
+  const n=selected.size;
+  if(n>0){ bar.classList.add('show'); document.getElementById('selectCount').textContent=n+' محدد'; }
+  else bar.classList.remove('show');
+}
+
+function clearSelection(){ selected.clear(); updateSelectBar(); render(); }
+
+async function deleteSelected(){
+  if(!selected.size) return;
+  if(!confirm(`هل تريد حذف ${selected.size} موظف؟`)) return;
+  employees=employees.filter(e=>!selected.has(e.id));
+  selected.clear();
+  filtered=[...employees];
+  filterTable();
+  updateSelectBar();
+  render();
+  await saveToSheet();
+}
+
+function filterBySearch(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  return employees.filter(e=>e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q)||e.idNum.includes(q));
+}
+
+// ─── Delete One ───
+async function deleteOne(id){
+  const e=employees.find(x=>x.id===id);
+  if(!confirm(`هل تريد حذف "${e.name}"؟`)) return;
+  employees=employees.filter(x=>x.id!==id);
+  filtered=[...employees];
+  filterTable();
+  if((currentPage-1)*PER_PAGE>=filtered.length&&currentPage>1) currentPage--;
+  render();
+  await saveToSheet();
+}
+
+// ─── Modal ───
+function openModal(){ editingId=null; clearForm(); document.getElementById('modalTitle').textContent='➕ إضافة موظف جديد'; document.getElementById('modalBg').classList.add('show'); }
+function openEdit(id){
+  const e=employees.find(x=>x.id===id);
+  editingId=id;
+  document.getElementById('f-empid').value=e.empId;
+  document.getElementById('f-name').value=e.name;
+  document.getElementById('f-idnum').value=e.idNum;
+  document.getElementById('f-dept').value=e.dept||'';
+  document.getElementById('f-project').value=e.project||'';
+  document.getElementById('f-date').value=e.date||'';
+  document.getElementById('f-status').value=e.status;
+  document.getElementById('modalTitle').textContent='✏️ تعديل بيانات الموظف';
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+function clearForm(){ ['f-empid','f-name','f-idnum','f-dept','f-project','f-date'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';}); document.getElementById('f-status').value='active'; }
+
+async function saveEmployee(){
+  const empId=document.getElementById('f-empid').value.trim();
+  const name=document.getElementById('f-name').value.trim();
+  const idNum=document.getElementById('f-idnum').value.trim();
+  if(!empId||!name||!idNum){ showToast('⚠️ يرجى تعبئة الحقول المطلوبة'); return; }
+
+  const dupEmpId = employees.find(e => e.empId === empId && e.id !== editingId);
+  if(dupEmpId){ showToast('❌ الرقم الوظيفي مكرر!'); return; }
+  const dupIdNum = employees.find(e => e.idNum === idNum && e.id !== editingId);
+  if(dupIdNum){ showToast('❌ رقم الهوية مكرر!'); return; }
+
+  const data={empId,name,idNum,dept:document.getElementById('f-dept').value,project:document.getElementById('f-project').value.trim(),date:document.getElementById('f-date').value,status:document.getElementById('f-status').value};
+  if(editingId){
+    const idx=employees.findIndex(e=>e.id===editingId);
+    employees[idx]={...employees[idx],...data};
+    showToast('✅ تم تعديل البيانات');
+  } else {
+    employees.push({id:nextId++,...data});
+    showToast('✅ تم إضافة الموظف');
+  }
+  filtered=[...employees];
+  filterTable();
+  closeModal();
+  await saveToSheet();
+}
+
+// ─── Export Excel ───
+function exportExcel(){
+  const rows=employees.map((e,i)=>({'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,'الإدارة':e.dept||'','المشروع':e.project||'','تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'','الحالة':statusMap[e.status]?.label.replace(/[✅⏳🔴🔵🟣]\s*/,'')||e.status}));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:18}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
+  const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([wbout],{type:'application/octet-stream'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='متابعة_التوظيف.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  showToast('📥 تم تصدير ملف Excel');
+}
+
+// ─── Import Excel ───
+function importExcel(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws);
+      const statusRev={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned'};
+      rows.forEach(r=>{
+        employees.push({
+          id:nextId++,
+          empId:r['الرقم الوظيفي']||'',
+          name:r['الاسم']||'',
+          idNum:String(r['رقم الهوية']||''),
+          dept:r['الإدارة']||'',
+          project:r['المشروع']||'',
+          date:r['تاريخ المباشرة']||'',
+          status:statusRev[r['الحالة']]||'active'
+        });
+      });
+      filtered=[...employees];
+      render();
+      showToast(`📤 تم استيراد ${rows.length} موظف`);
+      await saveToSheet();
+    }catch(err){ showToast('❌ خطأ في قراءة الملف'); }
+  };
+  reader.readAsBinaryString(file);
+  e.target.value='';
+}
+
+// ─── Toast ───
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+
+// ─── Close modal on bg click ───
+document.getElementById('modalBg').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+// ─── Init ───
+loadFromSheet();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4ff;
+  --surface:#ffffff;
+  --border:#e2e8f8;
+  --primary:#2563eb;
+  --primary-light:#dbeafe;
+  --accent:#7c3aed;
+  --success:#059669;
+  --success-light:#d1fae5;
+  --warning:#d97706;
+  --warning-light:#fef3c7;
+  --danger:#dc2626;
+  --danger-light:#fee2e2;
+  --info:#0891b2;
+  --info-light:#cffafe;
+  --text:#1e293b;
+  --sub:#64748b;
+  --shadow:0 2px 16px rgba(37,99,235,0.08);
+  --shadow-lg:0 8px 32px rgba(37,99,235,0.14);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:28px 20px;}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:14px;}
+.header-title{display:flex;align-items:center;gap:12px;}
+.header-title h1{font-size:24px;font-weight:900;color:var(--text);}
+.header-title .icon-badge{width:44px;height:44px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow-lg);}
+.subtitle{font-size:13px;color:var(--sub);margin-top:2px;}
+
+/* Stats row */
+.stats{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 22px;flex:1;min-width:130px;box-shadow:var(--shadow);transition:transform .2s;}
+.stat:hover{transform:translateY(-2px);}
+.stat-num{font-size:28px;font-weight:900;line-height:1;}
+.stat-lbl{font-size:12px;color:var(--sub);margin-top:4px;}
+.stat.blue .stat-num{color:var(--primary);}
+.stat.green .stat-num{color:var(--success);}
+.stat.orange .stat-num{color:var(--warning);}
+.stat.red .stat-num{color:var(--danger);}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:9px 16px;flex:1;min-width:200px;max-width:340px;transition:border-color .2s;box-shadow:var(--shadow);}
+.search-box:focus-within{border-color:var(--primary);}
+.search-box input{border:none;outline:none;font-family:'Tajawal',sans-serif;font-size:14px;color:var(--text);width:100%;background:transparent;}
+.search-box input::placeholder{color:#b0bec5;}
+.search-icon{color:var(--sub);font-size:17px;flex-shrink:0;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:11px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.3);}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(37,99,235,0.4);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);box-shadow:var(--shadow);}
+.btn-outline:hover{background:var(--primary-light);}
+.btn-danger{background:var(--danger-light);color:var(--danger);border:1.5px solid #fca5a5;}
+.btn-danger:hover{background:#fecaca;}
+.btn-success{background:var(--success-light);color:var(--success);border:1.5px solid #6ee7b7;}
+.btn-success:hover{background:#a7f3d0;}
+.btn-sm{padding:6px 12px;font-size:13px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+
+/* Select checkbox area */
+.select-bar{display:none;align-items:center;gap:10px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:12px;padding:10px 16px;margin-bottom:14px;animation:fadeIn .2s;}
+.select-bar.show{display:flex;}
+.select-count{font-weight:700;color:var(--primary);font-size:14px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Table */
+.table-wrapper{background:var(--surface);border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border);}
+.table-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:900px;}
+thead tr{background:linear-gradient(135deg,#f8faff,#eef2ff);}
+th{padding:14px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--sub);border-bottom:2px solid var(--border);white-space:nowrap;user-select:none;}
+th.sortable{cursor:pointer;}
+th.sortable:hover{color:var(--primary);}
+td{padding:13px 16px;font-size:14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .15s;}
+tbody tr:hover{background:#f8faff;}
+tbody tr.selected{background:var(--primary-light)!important;}
+
+td.num{font-weight:700;color:var(--sub);font-size:13px;}
+td.emp-id{font-family:monospace;font-weight:700;color:var(--primary);font-size:13px;}
+td.name{font-weight:700;}
+td.id-num{font-family:monospace;font-size:13px;color:#374151;}
+
+/* Status badge */
+.status{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
+.status-dot{width:7px;height:7px;border-radius:50%;}
+.s-active{background:var(--success-light);color:var(--success);}
+.s-active .status-dot{background:var(--success);}
+.s-pending{background:var(--warning-light);color:var(--warning);}
+.s-pending .status-dot{background:var(--warning);}
+.s-resigned{background:var(--danger-light);color:var(--danger);}
+.s-resigned .status-dot{background:var(--danger);}
+.s-transfer{background:var(--info-light);color:var(--info);}
+.s-transfer .status-dot{background:var(--info);}
+.s-leave{background:#f3e8ff;color:#7c3aed;}
+.s-leave .status-dot{background:#7c3aed;}
+
+/* Actions */
+.actions{display:flex;align-items:center;gap:6px;}
+.icon-btn{width:32px;height:32px;border-radius:9px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s;}
+.icon-btn.edit{background:#eff6ff;color:var(--primary);}
+.icon-btn.edit:hover{background:var(--primary);color:#fff;}
+.icon-btn.delete{background:#fff1f1;color:var(--danger);}
+.icon-btn.delete:hover{background:var(--danger);color:#fff;}
+
+/* Checkbox */
+.cb{width:17px;height:17px;cursor:pointer;accent-color:var(--primary);}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:999;align-items:center;justify-content:center;animation:fadeIn .2s;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--surface);border-radius:22px;padding:30px;width:100%;max-width:540px;box-shadow:0 24px 60px rgba(0,0,0,0.18);animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.modal-title{font-size:18px;font-weight:900;}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--sub);line-height:1;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+.form-group label{font-size:13px;font-weight:700;color:var(--sub);}
+.form-group input,.form-group select{padding:10px 14px;border:1.5px solid var(--border);border-radius:11px;font-family:'Tajawal',sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--primary);background:#fff;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+
+/* Empty state */
+.empty{text-align:center;padding:50px 20px;color:var(--sub);}
+.empty .empty-icon{font-size:48px;margin-bottom:10px;}
+
+/* Toast */
+.loading-bar{display:none;position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent),var(--primary));background-size:200%;animation:shimmer 1.2s infinite;z-index:9999;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--sub);}
+.page-btns{display:flex;gap:6px;}
+.page-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.page-btn:hover{border-color:var(--primary);color:var(--primary);}
+.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="loadingBar" class="loading-bar"></div>
 <div class="header">
   <div class="header-title">
     <div class="icon-badge">👔</div>
