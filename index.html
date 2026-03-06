@@ -476,6 +476,15 @@ function saveEmployee(){
   const name=document.getElementById('f-name').value.trim();
   const idNum=document.getElementById('f-idnum').value.trim();
   if(!empId||!name||!idNum){ showToast('⚠️ يرجى تعبئة الحقول المطلوبة'); return; }
+
+  // التحقق من تكرار الرقم الوظيفي
+  const dupEmpId = employees.find(e => e.empId === empId && e.id !== editingId);
+  if(dupEmpId){ showToast('❌ الرقم الوظيفي مكرر! يوجد موظف بنفس الرقم'); return; }
+
+  // التحقق من تكرار رقم الهوية
+  const dupIdNum = employees.find(e => e.idNum === idNum && e.id !== editingId);
+  if(dupIdNum){ showToast('❌ رقم الهوية مكرر! يوجد موظف بنفس الهوية'); return; }
+
   const data={empId,name,idNum,dept:document.getElementById('f-dept').value,project:document.getElementById('f-project').value.trim(),date:document.getElementById('f-date').value,status:document.getElementById('f-status').value};
   if(editingId){
     const idx=employees.findIndex(e=>e.id===editingId);
@@ -502,7 +511,15 @@ function exportExcel(){
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:18}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
-  XLSX.writeFile(wb,'متابعة_التوظيف.xlsx');
+  const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([wbout],{type:'application/octet-stream'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='متابعة_التوظيف.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
   showToast('📥 تم تصدير ملف Excel');
 }
 
