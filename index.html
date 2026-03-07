@@ -288,7 +288,15 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
 <div class="toast" id="toast"></div>
 
 <script>
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzQBX5Q-dcQyS-81idtunW-AAzFBzVfr9-lQxjMox-_lvIXP94HM4Ee9Keap9p5_oA/exec';
+const SUPABASE_URL = 'https://dyhhjkotxvjqmgudhzlg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_1fSMsi24Sc7Cpbt9_7tz2A_j_nYC68R';
+const API = SUPABASE_URL + '/rest/v1/employees';
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Prefer': 'return=representation'
+};
 
 let employees = [];
 let nextId = 1;
@@ -312,51 +320,74 @@ function statusBadge(s){
   return '<span class="status ' + m.cls + '"><span class="status-dot"></span>' + m.label + '</span>';
 }
 
-async function loadFromSheet(){
+// ── Supabase API ──
+async function loadFromDB(){
   showLoading(true);
   try {
-    const res  = await fetch(SHEET_URL + '?t=' + Date.now());
-    const text = await res.text();
-    let data = [];
-    try { data = JSON.parse(text); } catch(e){ data = []; }
-    if(!data || !Array.isArray(data) || !data.length){
-      employees=[]; filtered=[]; render(); showLoading(false); return;
-    }
+    const res  = await fetch(API + '?order=emp_id', {headers: HEADERS});
+    const data = await res.json();
+    if(!Array.isArray(data)){ employees=[]; filtered=[]; render(); showLoading(false); return; }
     employees = data.map((e,i) => ({
       id:      i+1,
-      empId:   String(e.empId   || e[0] || ''),
-      name:    String(e.name    || e[1] || ''),
-      idNum:   String(e.idNum   || e[2] || ''),
-      dept:    String(e.dept    || e[3] || ''),
-      project: String(e.project || e[4] || ''),
-      date:    String(e.date    || e[5] || ''),
-      status:  String(e.status  || e[6] || 'active'),
+      empId:   e.emp_id   || '',
+      name:    e.name     || '',
+      idNum:   e.id_num   || '',
+      dept:    e.dept     || '',
+      project: e.project  || '',
+      date:    e.date     || '',
+      status:  e.status   || 'active',
     }));
     nextId   = employees.length + 1;
     filtered = [...employees];
   } catch(err) {
-    showToast('تعذر الاتصال بـ Google Sheets');
+    showToast('تعذر الاتصال بقاعدة البيانات');
     employees=[]; filtered=[];
   }
   render(); showLoading(false);
 }
 
-async function saveToSheet(){
-  try {
-    const rows = employees.map(e => [e.empId, e.name, e.idNum, e.dept, e.project, e.date, e.status]);
-    fetch(SHEET_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'save', employees: rows})
+async function insertEmployee(data){
+  const res = await fetch(API, {
+    method: 'POST', headers: HEADERS,
+    body: JSON.stringify({
+      emp_id: data.empId, name: data.name, id_num: data.idNum,
+      dept: data.dept, project: data.project, date: data.date, status: data.status
+    })
+  });
+  return res.ok;
+}
+
+async function updateEmployee(empId, data){
+  const res = await fetch(API + '?emp_id=eq.' + encodeURIComponent(empId), {
+    method: 'PATCH', headers: HEADERS,
+    body: JSON.stringify({
+      name: data.name, id_num: data.idNum, dept: data.dept,
+      project: data.project, date: data.date, status: data.status
+    })
+  });
+  return res.ok;
+}
+
+async function deleteEmployee(empId){
+  const res = await fetch(API + '?emp_id=eq.' + encodeURIComponent(empId), {
+    method: 'DELETE', headers: HEADERS
+  });
+  return res.ok;
+}
+
+async function deleteEmployees(empIds){
+  for(const id of empIds){
+    await fetch(API + '?emp_id=eq.' + encodeURIComponent(id), {
+      method: 'DELETE', headers: HEADERS
     });
-    // لا نعيد التحميل من الشيت — البيانات موجودة في الذاكرة
-  } catch(err) { console.log('save error', err); }
+  }
 }
 
 function showLoading(show){
   document.getElementById('loadingBar').style.display = show ? 'block' : 'none';
 }
 
+// ── Render ──
 function render(){
   updateStats();
   const start=(currentPage-1)*PER_PAGE, end=start+PER_PAGE;
@@ -428,18 +459,20 @@ function clearSelection(){ selected.clear(); updateSelectBar(); render(); }
 async function deleteSelected(){
   if(!selected.size) return;
   if(!confirm('هل تريد حذف '+selected.size+' موظف؟')) return;
-  employees=employees.filter(e=>!selected.has(e.id));
-  selected.clear(); filtered=[...employees]; filterTable(); updateSelectBar(); render();
-  await saveToSheet();
+  const ids = employees.filter(e=>selected.has(e.id)).map(e=>e.empId);
+  showLoading(true);
+  await deleteEmployees(ids);
+  selected.clear();
+  await loadFromDB();
 }
 
 async function deleteOne(id){
   const e=employees.find(x=>x.id===id);
   if(!confirm('هل تريد حذف "'+e.name+'"؟')) return;
-  employees=employees.filter(x=>x.id!==id);
-  filtered=[...employees]; filterTable();
-  if((currentPage-1)*PER_PAGE>=filtered.length&&currentPage>1) currentPage--;
-  render(); await saveToSheet();
+  showLoading(true);
+  await deleteEmployee(e.empId);
+  await loadFromDB();
+  showToast('تم الحذف');
 }
 
 function openModal(){ editingId=null; clearForm(); document.getElementById('modalTitle').textContent='إضافة موظف جديد'; document.getElementById('modalBg').classList.add('show'); }
@@ -469,11 +502,17 @@ async function saveEmployee(){
   if(employees.find(e=>e.empId===empId&&e.id!==editingId)){showToast('الرقم الوظيفي مكرر!');return;}
   if(employees.find(e=>e.idNum===idNum&&e.id!==editingId)){showToast('رقم الهوية مكرر!');return;}
   const data={empId,name,idNum,dept:document.getElementById('f-dept').value,project:document.getElementById('f-project').value.trim(),date:document.getElementById('f-date').value,status:document.getElementById('f-status').value};
+  showLoading(true);
   if(editingId){
-    const idx=employees.findIndex(e=>e.id===editingId);
-    employees[idx]={...employees[idx],...data}; showToast('تم تعديل البيانات');
-  } else { employees.push({id:nextId++,...data}); showToast('تم إضافة الموظف'); }
-  filtered=[...employees]; filterTable(); closeModal(); await saveToSheet();
+    const e=employees.find(x=>x.id===editingId);
+    await updateEmployee(e.empId, data);
+    showToast('تم تعديل البيانات');
+  } else {
+    await insertEmployee(data);
+    showToast('تم إضافة الموظف');
+  }
+  closeModal();
+  await loadFromDB();
 }
 
 function exportExcel(){
@@ -501,17 +540,25 @@ function importExcel(e){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws);
       const sr={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned'};
-      rows.forEach(r=>{employees.push({id:nextId++,empId:r['الرقم الوظيفي']||'',name:r['الاسم']||'',idNum:String(r['رقم الهوية']||''),dept:r['الإدارة']||'',project:r['المشروع']||'',date:r['تاريخ المباشرة']||'',status:sr[r['الحالة']]||'active'});});
-      filtered=[...employees]; render(); showToast('تم استيراد '+rows.length+' موظف');
-      await saveToSheet();
-    }catch(err){showToast('خطأ في قراءة الملف');}
+      showLoading(true);
+      for(const r of rows){
+        await insertEmployee({
+          empId:r['الرقم الوظيفي']||'', name:r['الاسم']||'',
+          idNum:String(r['رقم الهوية']||''), dept:r['الإدارة']||'',
+          project:r['المشروع']||'', date:r['تاريخ المباشرة']||'',
+          status:sr[r['الحالة']]||'active'
+        });
+      }
+      await loadFromDB();
+      showToast('تم استيراد '+rows.length+' موظف');
+    }catch(err){showToast('خطأ في قراءة الملف'); showLoading(false);}
   };
   reader.readAsBinaryString(file); e.target.value='';
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 document.getElementById('modalBg').addEventListener('click',function(e){if(e.target===this)closeModal();});
-loadFromSheet();
+loadFromDB();
 </script>
 </body>
 </html>
