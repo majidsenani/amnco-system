@@ -194,6 +194,30 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
   <button class="btn btn-primary" onclick="openModal()">➕ إضافة موظف</button>
 </div>
 
+<!-- Date filter -->
+<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+  <span style="font-size:13px;font-weight:700;color:var(--sub);">📅 فلتر بتاريخ المباشرة:</span>
+  <select id="filterMonth" onchange="applyFilters()" style="padding:7px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;color:var(--text);outline:none;">
+    <option value="">كل الشهور</option>
+    <option value="01">يناير</option>
+    <option value="02">فبراير</option>
+    <option value="03">مارس</option>
+    <option value="04">أبريل</option>
+    <option value="05">مايو</option>
+    <option value="06">يونيو</option>
+    <option value="07">يوليو</option>
+    <option value="08">أغسطس</option>
+    <option value="09">سبتمبر</option>
+    <option value="10">أكتوبر</option>
+    <option value="11">نوفمبر</option>
+    <option value="12">ديسمبر</option>
+  </select>
+  <select id="filterYear" onchange="applyFilters()" style="padding:7px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;color:var(--text);outline:none;">
+    <option value="">كل السنوات</option>
+  </select>
+  <button onclick="clearDateFilter()" class="btn btn-sm btn-outline">✕ مسح الفلتر</button>
+</div>
+
 <!-- Filter buttons -->
 <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
   <button class="btn btn-sm" id="filter-all" onclick="filterByStatus('all')" style="background:#e0e7ff;color:#2563eb;border:1.5px solid #2563eb;">📋 الكل</button>
@@ -345,6 +369,7 @@ async function loadFromDB(){
     }));
     nextId   = employees.length + 1;
     filtered = [...employees];
+    populateYears();
   } catch(err) {
     showToast('تعذر الاتصال بقاعدة البيانات');
     employees=[]; filtered=[];
@@ -442,9 +467,23 @@ function updateStats(){
 
 let activeStatusFilter = 'all';
 
+function populateYears(){
+  const years = [...new Set(employees.map(e=>e.date?e.date.split('-')[0]:'').filter(y=>y))].sort().reverse();
+  const sel = document.getElementById('filterYear');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">كل السنوات</option>';
+  years.forEach(y=>{ const o=document.createElement('option'); o.value=y; o.textContent=y; sel.appendChild(o); });
+  sel.value = cur;
+}
+
+function clearDateFilter(){
+  document.getElementById('filterMonth').value='';
+  document.getElementById('filterYear').value='';
+  applyFilters();
+}
+
 function filterByStatus(status){
   activeStatusFilter = status;
-  // Update button styles
   document.querySelectorAll('[id^="filter-"]').forEach(b => b.style.opacity = '0.5');
   document.getElementById('filter-'+status).style.opacity = '1';
   currentPage = 1;
@@ -458,12 +497,17 @@ function filterTable(){
 
 function applyFilters(){
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const month = document.getElementById('filterMonth').value;
+  const year = document.getElementById('filterYear').value;
   filtered = employees.filter(e => {
     const matchSearch = !q || e.name.toLowerCase().includes(q) || e.empId.toLowerCase().includes(q) ||
       e.idNum.includes(q) || (e.dept && e.dept.includes(q)) || (e.project && e.project.toLowerCase().includes(q));
     const matchStatus = activeStatusFilter === 'all' || e.status === activeStatusFilter;
-    return matchSearch && matchStatus;
+    const matchMonth = !month || (e.date && e.date.split('-')[1] === month);
+    const matchYear  = !year  || (e.date && e.date.split('-')[0] === year);
+    return matchSearch && matchStatus && matchMonth && matchYear;
   });
+  currentPage = 1;
   render();
 }
 
