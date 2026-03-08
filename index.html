@@ -194,6 +194,17 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
   <button class="btn btn-primary" onclick="openModal()">➕ إضافة موظف</button>
 </div>
 
+<!-- Filter buttons -->
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+  <button class="btn btn-sm" id="filter-all" onclick="filterByStatus('all')" style="background:#e0e7ff;color:#2563eb;border:1.5px solid #2563eb;">📋 الكل</button>
+  <button class="btn btn-sm" id="filter-active" onclick="filterByStatus('active')" style="background:var(--success-light);color:var(--success);border:1.5px solid #6ee7b7;">✅ نشط</button>
+  <button class="btn btn-sm" id="filter-pending" onclick="filterByStatus('pending')" style="background:var(--warning-light);color:var(--warning);border:1.5px solid #fcd34d;">⏳ قيد الإجراءات</button>
+  <button class="btn btn-sm" id="filter-leave" onclick="filterByStatus('leave')" style="background:#f3e8ff;color:#7c3aed;border:1.5px solid #c4b5fd;">🟣 إجازة</button>
+  <button class="btn btn-sm" id="filter-transfer" onclick="filterByStatus('transfer')" style="background:var(--info-light);color:var(--info);border:1.5px solid #67e8f9;">🔵 محول</button>
+  <button class="btn btn-sm" id="filter-resigned" onclick="filterByStatus('resigned')" style="background:var(--danger-light);color:var(--danger);border:1.5px solid #fca5a5;">🔴 مستقيل</button>
+  <button class="btn btn-sm" id="filter-complete" onclick="filterByStatus('complete')" style="background:#d1fae5;color:#065f46;border:1.5px solid #6ee7b7;">✔️ مكتمل</button>
+</div>
+
 <!-- Select bar -->
 <div class="select-bar" id="selectBar">
   <span class="select-count" id="selectCount">0 محدد</span>
@@ -429,14 +440,34 @@ function updateStats(){
   document.getElementById('st-resigned').textContent=employees.filter(e=>e.status==='resigned'||e.status==='transfer').length;
 }
 
-function filterTable(){
-  const q=document.getElementById('searchInput').value.toLowerCase().trim();
-  filtered=employees.filter(e=>
-    e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q)||
-    e.idNum.includes(q)||(e.dept&&e.dept.includes(q))||(e.project&&e.project.toLowerCase().includes(q))
-  );
-  currentPage=1; render();
+let activeStatusFilter = 'all';
+
+function filterByStatus(status){
+  activeStatusFilter = status;
+  // Update button styles
+  document.querySelectorAll('[id^="filter-"]').forEach(b => b.style.opacity = '0.5');
+  document.getElementById('filter-'+status).style.opacity = '1';
+  currentPage = 1;
+  applyFilters();
 }
+
+function filterTable(){
+  currentPage = 1;
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  filtered = employees.filter(e => {
+    const matchSearch = !q || e.name.toLowerCase().includes(q) || e.empId.toLowerCase().includes(q) ||
+      e.idNum.includes(q) || (e.dept && e.dept.includes(q)) || (e.project && e.project.toLowerCase().includes(q));
+    const matchStatus = activeStatusFilter === 'all' || e.status === activeStatusFilter;
+    return matchSearch && matchStatus;
+  });
+  render();
+}
+
+
 
 function toggleSelectMode(){
   selectMode=!selectMode; clearSelection();
