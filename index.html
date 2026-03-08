@@ -107,6 +107,10 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
 .s-transfer .status-dot{background:var(--info);}
 .s-leave{background:#f3e8ff;color:#7c3aed;}
 .s-leave .status-dot{background:#7c3aed;}
+.s-complete{background:#d1fae5;color:#065f46;}
+.s-complete .status-dot{background:#059669;}
+.icon-btn.complete{background:#d1fae5;color:#059669;}
+.icon-btn.complete:hover{background:#059669;color:#fff;}
 
 /* Actions */
 .actions{display:flex;align-items:center;gap:6px;}
@@ -275,6 +279,7 @@ td.id-num{font-family:monospace;font-size:13px;color:#374151;}
           <option value="leave">🟣 إجازة</option>
           <option value="transfer">🔵 محول</option>
           <option value="resigned">🔴 مستقيل</option>
+          <option value="complete">✅ مكتمل</option>
         </select>
       </div>
     </div>
@@ -313,6 +318,7 @@ const statusMap = {
   resigned: {label:'مستقيل',        cls:'s-resigned'},
   transfer: {label:'محول',          cls:'s-transfer'},
   leave:    {label:'إجازة',          cls:'s-leave'},
+  complete: {label:'مكتمل',         cls:'s-complete'},
 };
 
 function statusBadge(s){
@@ -412,6 +418,7 @@ function render(){
         +'<td><div class="actions">'
         +'<button class="icon-btn edit" onclick="event.stopPropagation();openEdit('+e.id+')" title="تعديل">&#9998;</button>'
         +'<button class="icon-btn delete" onclick="event.stopPropagation();deleteOne('+e.id+')" title="حذف">&#128465;</button>'
+        +'<button class="icon-btn complete" onclick="event.stopPropagation();markComplete('+e.id+')" title="مكتمل">&#10003;</button>'
         +'</div></td></tr>';
     }).join('');
   }
@@ -545,7 +552,20 @@ function importExcel(e){
         await insertEmployee({
           empId:r['الرقم الوظيفي']||'', name:r['الاسم']||'',
           idNum:String(r['رقم الهوية']||''), dept:r['الإدارة']||'',
-          project:r['المشروع']||'', date:r['تاريخ المباشرة']||'',
+          project:r['المشروع']||'', date:(()=>{
+            const d=r['تاريخ المباشرة'];
+            if(!d) return '';
+            if(typeof d==='number'){
+              // Excel serial date to JS date
+              const jsDate=new Date((d-25569)*86400*1000);
+              return jsDate.toISOString().split('T')[0];
+            }
+            if(typeof d==='string'&&d.includes('/')){
+              const parts=d.split('/');
+              if(parts.length===3) return parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');
+            }
+            return d;
+          })(),
           status:sr[r['الحالة']]||'active'
         });
       }
@@ -554,6 +574,19 @@ function importExcel(e){
     }catch(err){showToast('خطأ في قراءة الملف'); showLoading(false);}
   };
   reader.readAsBinaryString(file); e.target.value='';
+}
+
+async function markComplete(id){
+  const e=employees.find(x=>x.id===id);
+  if(!e) return;
+  if(e.status==='complete'){showToast('الموظف مكتمل بالفعل');return;}
+  showLoading(true);
+  await fetch(API + '?emp_id=eq.' + encodeURIComponent(e.empId), {
+    method: 'PATCH', headers: HEADERS,
+    body: JSON.stringify({status:'complete'})
+  });
+  await loadFromDB();
+  showToast('✅ تم تغيير حالة '+e.name+' إلى مكتمل');
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
