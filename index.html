@@ -203,6 +203,10 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="login-sub">أدخل اسم المستخدم وكلمة السر</div>
     <div class="fg"><label>اسم المستخدم</label><input id="loginUser" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <div class="fg"><label>كلمة السر</label><input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <input type="checkbox" id="rememberMe" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary);"/>
+      <label for="rememberMe" style="font-size:13px;color:var(--sub);cursor:pointer;">تذكرني</label>
+    </div>
     <button class="btn-login" onclick="doLogin()">🔐 دخول</button>
     <div class="err-msg" id="errMsg">❌ اسم المستخدم أو كلمة السر غير صحيحة</div>
   </div>
@@ -278,12 +282,12 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="fbtn" id="filter-all" onclick="filterByStatus('all')" style="background:#e0e7ff;color:#2563eb;border-color:#2563eb;">📋 الكل</button>
       <button class="fbtn" id="filter-active" onclick="filterByStatus('active')" style="background:var(--success-light);color:var(--success);border-color:#6ee7b7;">✅ نشط</button>
       <button class="fbtn" id="filter-pending" onclick="filterByStatus('pending')" style="background:var(--warning-light);color:var(--warning);border-color:#fcd34d;">⏳ قيد</button>
-      <button class="fbtn" id="filter-leave" onclick="filterByStatus('leave')" style="background:#f3e8ff;color:#7c3aed;border-color:#c4b5fd;">🟣 إجازة</button>
-      <button class="fbtn" id="filter-transfer" onclick="filterByStatus('transfer')" style="background:var(--info-light);color:var(--info);border-color:#67e8f9;">🔵 محول</button>
       <button class="fbtn" id="filter-resigned" onclick="filterByStatus('resigned')" style="background:var(--danger-light);color:var(--danger);border-color:#fca5a5;">🔴 مستقيل</button>
       <button class="fbtn" id="filter-complete" onclick="filterByStatus('complete')" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7;">✔️ مكتمل</button>
       <button class="fbtn" id="filter-appointed" onclick="filterByStatus('appointed')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📋 قرار تعيين</button>
       <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ تم الإدخال</button>
+      <button class="fbtn" id="filter-contract-qowa" onclick="filterByContract('qowa')" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;">🔵 عقد قوى <span id="cnt-qowa">0</span></button>
+      <button class="fbtn" id="filter-contract-train" onclick="filterByContract('train')" style="background:#f3e8ff;color:#7c3aed;border-color:#c4b5fd;">🟣 عقد تدريب <span id="cnt-train">0</span></button>
     </div>
 
     <div class="table-wrapper">
@@ -352,12 +356,11 @@ td.id-num{font-family:monospace;font-size:12px;}
           <option value="train">عقد تدريب</option>
         </select>
       </div>
+      <div class="fg2"><label>الراتب</label><input id="f-salary" placeholder="مثال: 5000"/></div>
       <div class="fg2"><label>الحالة</label>
         <select id="f-status">
           <option value="active">✅ نشط</option>
           <option value="pending">⏳ قيد الإجراءات</option>
-          <option value="leave">🟣 إجازة</option>
-          <option value="transfer">🔵 محول</option>
           <option value="resigned">🔴 مستقيل</option>
           <option value="complete">✔️ مكتمل</option>
         </select>
@@ -466,6 +469,11 @@ async function doLogin(){
   if(!d||!d.length){showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة');return;}
   currentUser=d[0];
   document.getElementById('errMsg').classList.remove('show');
+  if(document.getElementById('rememberMe').checked){
+    localStorage.setItem('savedUser', JSON.stringify({username:document.getElementById('loginUser').value.trim(), password:document.getElementById('loginPass').value}));
+  } else {
+    localStorage.removeItem('savedUser');
+  }
   enterApp();
 }
 function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.classList.add('show');}
@@ -484,8 +492,8 @@ function enterApp(){
   // Table head
   const head=document.getElementById('empTableHead');
   head.innerHTML=isAdm
-    ?'<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الحالة</th><th>إجراءات</th>'
-    :'<th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الحالة</th><th>إجراءات</th>';
+    ?'<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th>'
+    :'<th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th>';
   loadEmployees();
 }
 
@@ -495,6 +503,7 @@ function logout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
+  document.getElementById('rememberMe').checked=false;
   document.querySelectorAll('.main-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['tabEmployees','tabUsers','tabLogs'].forEach((t,i)=>document.getElementById(t).style.display=i===0?'block':'none');
 }
@@ -534,6 +543,7 @@ async function loadEmployees(){
     id:i+1,empId:e.emp_id||'',name:e.name||'',idNum:e.id_num||'',
     dept:e.dept||'',project:e.project||'',date:e.date||'',
     status:e.status||'active',contract:e.contract_type||'',
+    salary:e.salary||'',
     appointStatus:e.appointment_status||''
   })):[];
   filtered=[...employees];populateYears();render();showLoading(false);
@@ -559,12 +569,17 @@ function render(){
     // Action buttons based on appointment_status
     let workflowBtns='';
     const as=e.appointStatus;
+    const isAdmUser=currentUser&&currentUser.role==='admin';
     if(!as||as===''){
       workflowBtns=`<button class="icon-btn appoint" onclick="event.stopPropagation();doAppoint(${e.id})" title="قرار تعيين">📋</button>`;
     } else if(as==='appointed'){
       workflowBtns=`<button class="icon-btn enter" onclick="event.stopPropagation();doEnter(${e.id})" title="تم إدخاله بالنظام">🖥️</button>`;
+      if(isAdmUser) workflowBtns+=`<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow(${e.id})" title="إلغاء قرار التعيين">↩️</button>`;
     } else if(as==='entered'){
       workflowBtns=`<button class="icon-btn complete" onclick="event.stopPropagation();doComplete(${e.id})" title="ملف مكتمل">✔</button>`;
+      if(isAdmUser) workflowBtns+=`<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow(${e.id},'appointed')" title="إرجاع لقرار التعيين">↩️</button>`;
+    } else if(as==='complete'){
+      if(isAdmUser) workflowBtns=`<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow(${e.id},'entered')" title="إرجاع لتم الإدخال">↩️</button>`;
     }
 
     return `<tr class="${sel?'selected':''}" onclick="rowClick(event,${e.id})">
@@ -577,6 +592,7 @@ function render(){
       <td>${e.project||'-'}</td>
       <td>${e.date?e.date.split('-').reverse().join('/'):'—'}</td>
       <td>${contractBadge(e.contract)}</td>
+      <td>${e.salary?'<span style="font-family:monospace;font-weight:700;color:var(--success);">'+Number(e.salary).toLocaleString('ar')+' ريال</span>':'<span style="color:var(--sub);font-size:11px;">—</span>'}</td>
       <td>${statusBadge(e.status)}</td>
       <td><div class="actions">
         <button class="icon-btn edit" onclick="event.stopPropagation();openEmpEdit(${e.id})" title="تعديل">✏️</button>
@@ -596,6 +612,17 @@ function updateStats(){
   document.getElementById('st-active').textContent=employees.filter(e=>e.status==='active').length;
   document.getElementById('st-pending').textContent=employees.filter(e=>e.status==='pending'||e.status==='leave').length;
   document.getElementById('st-resigned').textContent=employees.filter(e=>e.status==='resigned'||e.status==='transfer').length;
+  document.getElementById('cnt-qowa').textContent=employees.filter(e=>e.contract==='qowa').length;
+  document.getElementById('cnt-train').textContent=employees.filter(e=>e.contract==='train').length;
+}
+
+let activeContractFilter='';
+function filterByContract(contract){
+  activeContractFilter = activeContractFilter===contract ? '' : contract;
+  document.querySelectorAll('[id^="filter-contract-"]').forEach(b=>b.style.opacity='0.5');
+  if(activeContractFilter) document.getElementById('filter-contract-'+contract).style.opacity='1';
+  else document.querySelectorAll('[id^="filter-contract-"]').forEach(b=>b.style.opacity='1');
+  currentPage=1; applyFilters();
 }
 
 // ── Workflow ──
@@ -659,6 +686,19 @@ function openOutlookEmail(e){
   window.location.href='mailto:'+to+'?cc='+cc+'&subject='+subject+'&body='+body;
 }
 
+async function resetWorkflow(id, toStatus=''){
+  const e=employees.find(x=>x.id===id);
+  if(!confirm('إرجاع حالة "'+e.name+'" للخلف؟')) return;
+  showLoading(true);
+  const newStatus = toStatus || 'active';
+  const newAppoint = toStatus || '';
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,
+    body:JSON.stringify({appointment_status:newAppoint, status: newStatus==='appointed'?'appointed': newStatus==='entered'?'entered':'active'})
+  });
+  await logAction('إرجاع حالة','إرجاع حالة '+e.name+' إلى '+(newStatus||'الأولى'));
+  await loadEmployees();showToast('✅ تم إرجاع الحالة');
+}
+
 async function doComplete(id){
   const e=employees.find(x=>x.id===id);
   if(!confirm('تأكيد اكتمال ملف "'+e.name+'"؟'))return;
@@ -692,7 +732,8 @@ function applyFilters(){
     const mst=activeStatusFilter==='all'||e.status===activeStatusFilter;
     const mm=!month||(e.date&&e.date.split('-')[1]===month);
     const my=!year||(e.date&&e.date.split('-')[0]===year);
-    return ms&&mst&&mm&&my;
+    const mc=!activeContractFilter||(e.contract===activeContractFilter);
+    return ms&&mst&&mm&&my&&mc;
   });
   currentPage=1;render();
 }
@@ -735,6 +776,7 @@ function openEmpEdit(id){
   document.getElementById('f-project').value=e.project||'';
   document.getElementById('f-date').value=e.date||'';
   document.getElementById('f-contract').value=e.contract||'';
+  document.getElementById('f-salary').value=e.salary||'';
   document.getElementById('f-status').value=e.status;
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
@@ -744,6 +786,7 @@ function clearEmpForm(){
   ['f-empid','f-name','f-idnum','f-project','f-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('f-dept').value='';
   document.getElementById('f-contract').value='';
+  document.getElementById('f-salary').value='';
   document.getElementById('f-status').value='active';
 }
 
@@ -760,13 +803,24 @@ async function saveEmployee(){
     project:document.getElementById('f-project').value.trim(),
     date:document.getElementById('f-date').value,
     contract_type:document.getElementById('f-contract').value,
+    salary:document.getElementById('f-salary').value.trim(),
     status:document.getElementById('f-status').value
   };
   showLoading(true);
   if(editingEmpId){
     const e=employees.find(x=>x.id===editingEmpId);
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,body:JSON.stringify({name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,status:data.status})});
-    await logAction('تعديل','تعديل بيانات: '+name);showToast('✅ تم التعديل');
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,body:JSON.stringify({name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status})});
+    await logAction('تعديل','تعديل بيانات: '+name);
+    // تحديث الصف في الذاكرة بدون تحميل الصفحة
+    const idx=employees.findIndex(x=>x.id===editingEmpId);
+    if(idx>=0){
+      employees[idx]={...employees[idx],name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status};
+    }
+    const fidx=filtered.findIndex(x=>x.id===editingEmpId);
+    if(fidx>=0){
+      filtered[fidx]={...filtered[fidx],name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status};
+    }
+    closeEmpModal();render();showLoading(false);showToast('✅ تم التعديل');return;
   } else {
     await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify(data)});
     await logAction('إضافة','إضافة موظف: '+name);showToast('✅ تم إضافة الموظف');
@@ -852,7 +906,8 @@ async function clearLogs(){
 
 // ── Excel ──
 function exportExcel(){
-  const rows=employees.map((e,i)=>({'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,'الإدارة':e.dept||'','المشروع':e.project||'','تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'','نوع العقد':contractMap[e.contract]||'','الحالة':statusMap[e.status]?statusMap[e.status].label:e.status}));
+  const source = filtered.length && filtered.length < employees.length ? filtered : employees;
+  const rows=source.map((e,i)=>({'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,'الإدارة':e.dept||'','المشروع':e.project||'','تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'','نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'','الحالة':statusMap[e.status]?statusMap[e.status].label:e.status}));
   const ws=XLSX.utils.json_to_sheet(rows);
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:18}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
@@ -893,9 +948,25 @@ function importExcel(e){
 function showLoading(s){document.getElementById('loadingBar').style.display=s?'block':'none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 document.getElementById('empModalBg').addEventListener('click',function(e){if(e.target===this)closeEmpModal();});
+
+// تحقق من تذكرني عند فتح الصفحة
+(async function checkRemember(){
+  const saved = localStorage.getItem('savedUser');
+  if(saved){
+    try{
+      const {username, password} = JSON.parse(saved);
+      const r = await fetch(USR_API+'?username=eq.'+encodeURIComponent(username)+'&password=eq.'+encodeURIComponent(password),{headers:H});
+      const d = await r.json();
+      if(d&&d.length){
+        currentUser=d[0];
+        document.getElementById('rememberMe').checked=true;
+        enterApp();
+      }
+    }catch(e){ localStorage.removeItem('savedUser'); }
+  }
+})();
 document.getElementById('userModalBg').addEventListener('click',function(e){if(e.target===this)closeUserModal();});
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 </script>
 </body>
 </html>
-
