@@ -21,86 +21,37 @@
 }
 body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* ── Choose Screen ── */
-.choose-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-.choose-logo{font-size:56px;margin-bottom:12px;}
-.choose-title{font-size:26px;font-weight:900;margin-bottom:6px;}
-.choose-sub{font-size:14px;color:var(--sub);margin-bottom:36px;}
-.choose-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
-.choose-card{background:var(--surface);border:2px solid var(--border);border-radius:22px;padding:32px 36px;width:200px;text-align:center;cursor:pointer;transition:all .25s;box-shadow:var(--shadow);}
-.choose-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
-.choose-card.emp:hover{border-color:var(--primary);}
-.choose-card.admin:hover{border-color:var(--danger);}
-.choose-card-icon{font-size:48px;margin-bottom:14px;}
-.choose-card-title{font-size:18px;font-weight:900;margin-bottom:6px;}
-.choose-card-sub{font-size:12px;color:var(--sub);}
-
-/* ── Login ── */
+/* Login */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-.login-card{background:var(--surface);border-radius:24px;padding:36px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
-.login-back{display:flex;align-items:center;gap:6px;color:var(--sub);font-size:13px;cursor:pointer;margin-bottom:20px;width:fit-content;}
-.login-back:hover{color:var(--primary);}
-.login-logo{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;box-shadow:var(--shadow-lg);}
-.login-logo.emp{background:linear-gradient(135deg,var(--primary),var(--accent));}
-.login-logo.adm{background:linear-gradient(135deg,var(--danger),var(--accent));}
-.login-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px;}
-.login-sub{font-size:13px;color:var(--sub);text-align:center;margin-bottom:24px;}
+.login-card{background:var(--surface);border-radius:24px;padding:38px 34px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.login-logo{width:58px;height:58px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;box-shadow:var(--shadow-lg);}
+.login-title{font-size:22px;font-weight:900;text-align:center;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--sub);text-align:center;margin-bottom:26px;}
 .fg{margin-bottom:14px;}
 .fg label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:5px;}
 .fg input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:11px;font-family:'Tajawal',sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;}
 .fg input:focus{border-color:var(--primary);background:#fff;}
-.btn-login{width:100%;padding:12px;border:none;border-radius:12px;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:all .2s;}
-.btn-login.emp{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.3);}
-.btn-login.adm{background:linear-gradient(135deg,var(--danger),var(--accent));color:#fff;box-shadow:0 4px 14px rgba(220,38,38,0.3);}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border:none;border-radius:12px;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.3);margin-top:6px;}
 .err-msg{background:var(--danger-light);color:var(--danger);border:1px solid #fca5a5;border-radius:10px;padding:9px 14px;font-size:13px;text-align:center;display:none;margin-top:10px;}
 .err-msg.show{display:block;}
 
-/* Setup password */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:999;align-items:center;justify-content:center;}
-.modal-bg.show{display:flex;}
-.modal{background:var(--surface);border-radius:22px;padding:28px;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(0,0,0,0.18);animation:slideUp .25s ease;}
-@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-.modal-title{font-size:17px;font-weight:900;}
-.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub);}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.fg2{display:flex;flex-direction:column;gap:5px;}
-.fg2.full{grid-column:1/-1;}
-.fg2 label{font-size:13px;font-weight:700;color:var(--sub);}
-.fg2 input,.fg2 select{padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;}
-.fg2 input:focus,.fg2 select:focus{border-color:var(--primary);background:#fff;}
-.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
-
-/* Setup first password */
-.setup-modal{background:var(--surface);border-radius:22px;padding:32px;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,0.18);text-align:center;}
-.setup-modal h2{font-size:19px;font-weight:900;margin-bottom:6px;}
-.setup-modal p{font-size:13px;color:var(--sub);margin-bottom:22px;}
-.setup-inp{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:11px;font-family:'Tajawal',sans-serif;font-size:14px;outline:none;margin-bottom:10px;}
-.setup-inp:focus{border-color:var(--primary);}
-
-/* Pass modal */
-.pass-modal{background:var(--surface);border-radius:22px;padding:28px;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(0,0,0,0.18);text-align:center;}
-.pass-show{font-size:28px;font-weight:900;color:#7c3aed;background:#f3e8ff;border-radius:12px;padding:14px;margin:12px 0;letter-spacing:3px;}
-
-/* ── App ── */
+/* App */
 .app{display:none;padding:20px;}
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
 .header-left{display:flex;align-items:center;gap:12px;}
-.icon-badge{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:var(--shadow-lg);}
-.icon-badge.emp{background:linear-gradient(135deg,var(--primary),var(--accent));}
-.icon-badge.adm{background:linear-gradient(135deg,var(--danger),var(--accent));}
+.icon-badge{width:42px;height:42px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:var(--shadow-lg);}
 .header h1{font-size:20px;font-weight:900;}
 .subtitle{font-size:12px;color:var(--sub);}
 .header-right{display:flex;align-items:center;gap:8px;}
 .user-chip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:700;box-shadow:var(--shadow);}
 .role-chip{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
-.role-emp{background:var(--primary-light);color:var(--primary);}
 .role-adm{background:var(--danger-light);color:var(--danger);}
+.role-emp{background:var(--primary-light);color:var(--primary);}
 .btn-logout{padding:6px 14px;background:var(--danger-light);color:var(--danger);border:1px solid #fca5a5;border-radius:9px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 
-/* Admin tabs */
+/* Tabs */
 .main-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--border);}
-.main-tab{padding:9px 18px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-2px;}
+.main-tab{padding:9px 16px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-2px;}
 .main-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
 
 /* Stats */
@@ -114,17 +65,17 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .stat.red .stat-num{color:var(--danger);}
 
 /* Toolbar */
-.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
 .search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:8px 14px;flex:1;min-width:180px;max-width:320px;box-shadow:var(--shadow);}
 .search-box:focus-within{border-color:var(--primary);}
 .search-box input{border:none;outline:none;font-family:'Tajawal',sans-serif;font-size:14px;color:var(--text);width:100%;background:transparent;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;}
 .btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 4px 12px rgba(37,99,235,0.25);}
-.btn-primary:hover{transform:translateY(-1px);}
 .btn-outline{background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);}
 .btn-danger{background:var(--danger-light);color:var(--danger);border:1.5px solid #fca5a5;}
 .btn-success{background:var(--success-light);color:var(--success);border:1.5px solid #6ee7b7;}
-.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-warning{background:var(--warning-light);color:var(--warning);border:1.5px solid #fcd34d;}
+.btn-sm{padding:6px 11px;font-size:12px;}
 
 /* Select bar */
 .select-bar{display:none;align-items:center;gap:10px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:11px;padding:9px 14px;margin-bottom:12px;}
@@ -141,9 +92,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 /* Table */
 .table-wrapper{background:var(--surface);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border);}
 .table-scroll{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;min-width:850px;}
+table{width:100%;border-collapse:collapse;min-width:820px;}
 thead tr{background:linear-gradient(135deg,#f8faff,#eef2ff);}
-th{padding:13px 14px;text-align:right;font-size:12px;font-weight:700;color:var(--sub);border-bottom:2px solid var(--border);white-space:nowrap;}
+th{padding:12px 14px;text-align:right;font-size:12px;font-weight:700;color:var(--sub);border-bottom:2px solid var(--border);white-space:nowrap;}
 td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tbody tr:hover{background:#f8faff;}
@@ -173,26 +124,41 @@ td.id-num{font-family:monospace;font-size:12px;}
 .icon-btn.delete:hover{background:var(--danger);color:#fff;}
 .icon-btn.complete{background:#d1fae5;color:#065f46;}
 .icon-btn.complete:hover{background:#059669;color:#fff;}
-.icon-btn.key{background:#fef3c7;color:#d97706;}
-.icon-btn.key:hover{background:#d97706;color:#fff;}
 .actions{display:flex;gap:5px;}
 .cb{width:16px;height:16px;cursor:pointer;accent-color:var(--primary);}
-.pagination{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--sub);}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--sub);}
 .page-btns{display:flex;gap:5px;}
 .page-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;}
 .page-btn:hover{border-color:var(--primary);color:var(--primary);}
 .page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
 .empty{text-align:center;padding:36px;color:var(--sub);}
 
-/* Passwords */
-.pass-badge{font-family:monospace;background:#f3e8ff;color:#7c3aed;padding:3px 10px;border-radius:7px;font-size:12px;font-weight:700;}
-.no-pass{color:var(--sub);font-size:11px;font-style:italic;}
+/* Users table */
+.user-role-badge{padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+.ur-admin{background:var(--danger-light);color:var(--danger);}
+.ur-employee{background:var(--primary-light);color:var(--primary);}
 
 /* Logs */
 .log-action{padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;}
 .la-add{background:var(--success-light);color:var(--success);}
 .la-edit{background:var(--primary-light);color:var(--primary);}
 .la-status{background:var(--warning-light);color:var(--warning);}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:999;align-items:center;justify-content:center;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--surface);border-radius:22px;padding:26px;width:100%;max-width:500px;box-shadow:0 24px 60px rgba(0,0,0,0.18);animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title{font-size:17px;font-weight:900;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg2{display:flex;flex-direction:column;gap:5px;}
+.fg2.full{grid-column:1/-1;}
+.fg2 label{font-size:12px;font-weight:700;color:var(--sub);}
+.fg2 input,.fg2 select{padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;}
+.fg2 input:focus,.fg2 select:focus{border-color:var(--primary);background:#fff;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
 
 .loading-bar{display:none;position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent),var(--primary));background-size:200%;animation:shimmer 1.2s infinite;z-index:9999;}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -203,117 +169,41 @@ td.id-num{font-family:monospace;font-size:12px;}
 <body>
 <div id="loadingBar" class="loading-bar"></div>
 
-<!-- ── شاشة الاختيار ── -->
-<div class="choose-wrap" id="chooseScreen">
-  <div class="choose-logo">👔</div>
-  <div class="choose-title">متابعة التوظيف</div>
-  <div class="choose-sub">اختر نوع دخولك</div>
-  <div class="choose-cards">
-    <div class="choose-card emp" onclick="showLogin('emp')">
-      <div class="choose-card-icon">👤</div>
-      <div class="choose-card-title">موظف</div>
-      <div class="choose-card-sub">دخول برقمك الوظيفي وكلمة السر</div>
-    </div>
-    <div class="choose-card admin" onclick="showLogin('adm')">
-      <div class="choose-card-icon">🛡️</div>
-      <div class="choose-card-title">مسؤول</div>
-      <div class="choose-card-sub">لوحة تحكم كاملة</div>
-    </div>
-  </div>
-</div>
-
-<!-- ── شاشة تسجيل الدخول ── -->
-<div class="login-wrap" id="loginScreen" style="display:none;">
+<!-- Login -->
+<div class="login-wrap" id="loginScreen">
   <div class="login-card">
-    <div class="login-back" onclick="backToChoose()">← رجوع</div>
-    <div class="login-logo emp" id="loginLogo">👤</div>
-    <div class="login-title" id="loginTitle">دخول الموظف</div>
-    <div class="login-sub" id="loginSub">أدخل رقمك الوظيفي وكلمة السر</div>
-    <div id="empFields">
-      <div class="fg"><label>الرقم الوظيفي</label><input id="loginEmpId" placeholder="أدخل رقمك الوظيفي" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    </div>
-    <div class="fg"><label id="passLabel">كلمة السر</label><input type="password" id="loginPass" placeholder="أدخل كلمة السر" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <button class="btn-login emp" id="loginBtn" onclick="doLogin()">🔐 دخول</button>
-    <div class="err-msg" id="errMsg">❌ بيانات غير صحيحة</div>
+    <div class="login-logo">👔</div>
+    <div class="login-title">متابعة التوظيف</div>
+    <div class="login-sub">أدخل اسم المستخدم وكلمة السر</div>
+    <div class="fg"><label>اسم المستخدم</label><input id="loginUser" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="fg"><label>كلمة السر</label><input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn-login" onclick="doLogin()">🔐 دخول</button>
+    <div class="err-msg" id="errMsg">❌ اسم المستخدم أو كلمة السر غير صحيحة</div>
   </div>
 </div>
 
-<!-- Setup Password Modal -->
-<div class="modal-bg" id="setupBg">
-  <div class="setup-modal">
-    <div style="font-size:44px;margin-bottom:10px;">🔑</div>
-    <h2>أول مرة تسجل دخول</h2>
-    <p>اختر كلمة سر لحسابك</p>
-    <input type="password" class="setup-inp" id="newPass1" placeholder="كلمة سر جديدة..."/>
-    <input type="password" class="setup-inp" id="newPass2" placeholder="أعد كتابة كلمة السر..."/>
-    <button class="btn-login emp" onclick="saveNewPassword()" style="margin-top:6px;">💾 حفظ</button>
-  </div>
-</div>
-
-<!-- Pass View/Edit Modal (admin) -->
-<div class="modal-bg" id="passBg">
-  <div class="pass-modal">
-    <div style="font-size:36px;margin-bottom:8px;">🔑</div>
-    <div style="font-size:15px;font-weight:900;margin-bottom:4px;" id="passEmpName">—</div>
-    <div style="font-size:12px;color:var(--sub);">كلمة السر الحالية</div>
-    <div class="pass-show" id="passDisplay">—</div>
-    <input type="text" id="newPassAdmin" placeholder="كلمة سر جديدة..." style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;outline:none;margin-bottom:10px;"/>
-    <button class="btn btn-primary" style="width:100%;" onclick="saveAdminPass()">💾 تغيير</button>
-    <button onclick="document.getElementById('passBg').classList.remove('show')" style="margin-top:10px;padding:7px 18px;background:none;border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:12px;">إغلاق</button>
-  </div>
-</div>
-
-<!-- Edit Modal -->
-<div class="modal-bg" id="modalBg">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modalTitle">إضافة موظف</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="form-grid">
-      <div class="fg2"><label>الرقم الوظيفي *</label><input id="f-empid" placeholder="EMP-001"/></div>
-      <div class="fg2"><label>رقم الهوية *</label><input id="f-idnum" placeholder="1xxxxxxxxx" maxlength="10"/></div>
-      <div class="fg2 full"><label>الاسم الكامل *</label><input id="f-name" placeholder="اسم الموظف رباعياً"/></div>
-      <div class="fg2"><label>الإدارة</label><input id="f-dept" placeholder="اسم الإدارة"/></div>
-      <div class="fg2"><label>المشروع</label><input id="f-project" placeholder="اسم المشروع"/></div>
-      <div class="fg2"><label>تاريخ المباشرة</label><input type="date" id="f-date"/></div>
-      <div class="fg2"><label>الحالة</label>
-        <select id="f-status">
-          <option value="active">✅ نشط</option><option value="pending">⏳ قيد الإجراءات</option>
-          <option value="leave">🟣 إجازة</option><option value="transfer">🔵 محول</option>
-          <option value="resigned">🔴 مستقيل</option><option value="complete">✔️ مكتمل</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
-      <button class="btn btn-primary" onclick="saveEmployee()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── App ── -->
+<!-- App -->
 <div class="app" id="appScreen">
   <div class="header">
     <div class="header-left">
-      <div class="icon-badge emp" id="appIcon">👔</div>
+      <div class="icon-badge">👔</div>
       <div>
         <h1>متابعة التوظيف</h1>
-        <div class="subtitle" id="appSubtitle">إدارة بيانات الموظفين</div>
+        <div class="subtitle">إدارة بيانات الموظفين</div>
       </div>
     </div>
     <div class="header-right">
       <span class="user-chip" id="appUserName">—</span>
-      <span class="role-chip role-emp" id="appRoleChip">موظف</span>
+      <span class="role-chip" id="appRoleChip">—</span>
       <button class="btn-logout" onclick="logout()">خروج</button>
     </div>
   </div>
 
-  <!-- Admin Tabs -->
-  <div class="main-tabs" id="adminTabs" style="display:none;">
+  <!-- Tabs -->
+  <div class="main-tabs" id="mainTabs">
     <button class="main-tab active" onclick="switchTab('employees',this)">👥 الموظفون</button>
-    <button class="main-tab" onclick="switchTab('passwords',this)">🔑 كلمات السر</button>
-    <button class="main-tab" onclick="switchTab('logs',this)">📋 سجل التعديلات</button>
+    <button class="main-tab" id="tabUsersBtn" style="display:none;" onclick="switchTab('users',this)">👤 المستخدمون</button>
+    <button class="main-tab" id="tabLogsBtn" style="display:none;" onclick="switchTab('logs',this)">📋 سجل التعديلات</button>
   </div>
 
   <!-- Employees Tab -->
@@ -325,18 +215,17 @@ td.id-num{font-family:monospace;font-size:12px;}
       <div class="stat red"><div class="stat-num" id="st-resigned">0</div><div class="stat-lbl">مستقيل/محول</div></div>
     </div>
 
-    <div class="toolbar" id="toolbar">
+    <div class="toolbar">
       <div class="search-box">
         <span style="color:var(--sub)">🔍</span>
         <input type="text" id="searchInput" placeholder="ابحث..." oninput="applyFilters()"/>
       </div>
-      <!-- Admin only buttons injected by JS -->
-      <div id="adminToolbar" style="display:none;gap:8px;flex-wrap:wrap;display:none;">
+      <div id="adminToolbar" style="display:none;contents:'';">
         <button class="btn btn-outline btn-sm" onclick="toggleSelectMode()" id="selectBtn">☑️ تحديد</button>
         <label class="btn btn-success btn-sm">📤 رفع Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/></label>
       </div>
       <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 سحب Excel</button>
-      <button class="btn btn-primary btn-sm" onclick="openModal()">➕ إضافة</button>
+      <button class="btn btn-primary btn-sm" onclick="openEmpModal()">➕ إضافة</button>
     </div>
 
     <div class="select-bar" id="selectBar">
@@ -371,8 +260,8 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="table-wrapper">
       <div class="table-scroll">
         <table>
-          <thead><tr id="tableHead"></tr></thead>
-          <tbody id="tableBody"></tbody>
+          <thead><tr id="empTableHead"></tr></thead>
+          <tbody id="empTableBody"></tbody>
         </table>
       </div>
       <div class="pagination">
@@ -382,25 +271,24 @@ td.id-num{font-family:monospace;font-size:12px;}
     </div>
   </div>
 
-  <!-- Passwords Tab (admin) -->
-  <div id="tabPasswords" style="display:none;">
+  <!-- Users Tab (admin only) -->
+  <div id="tabUsers" style="display:none;">
     <div class="toolbar">
-      <div class="search-box">
-        <span style="color:var(--sub)">🔍</span>
-        <input type="text" id="passSearch" placeholder="ابحث..." oninput="renderPasswords()"/>
-      </div>
+      <button class="btn btn-primary btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
     </div>
     <div class="table-wrapper">
       <div class="table-scroll">
         <table>
-          <thead><tr><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>كلمة السر</th><th>إجراءات</th></tr></thead>
-          <tbody id="passBody"></tbody>
+          <thead><tr>
+            <th>م</th><th>اسم المستخدم</th><th>الاسم الكامل</th><th>الصلاحية</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="usersBody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- Logs Tab (admin) -->
+  <!-- Logs Tab (admin only) -->
   <div id="tabLogs" style="display:none;">
     <div class="toolbar">
       <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑️ مسح السجل</button>
@@ -408,10 +296,64 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="table-wrapper">
       <div class="table-scroll">
         <table>
-          <thead><tr><th>م</th><th>الموظف</th><th>الرقم</th><th>الإجراء</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
+          <thead><tr><th>م</th><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
           <tbody id="logsBody"></tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Modal -->
+<div class="modal-bg" id="empModalBg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="empModalTitle">إضافة موظف</div>
+      <button class="modal-close" onclick="closeEmpModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg2"><label>الرقم الوظيفي *</label><input id="f-empid" placeholder="EMP-001"/></div>
+      <div class="fg2"><label>رقم الهوية *</label><input id="f-idnum" placeholder="1xxxxxxxxx" maxlength="10"/></div>
+      <div class="fg2 full"><label>الاسم الكامل *</label><input id="f-name" placeholder="اسم الموظف رباعياً"/></div>
+      <div class="fg2"><label>الإدارة</label><input id="f-dept" placeholder="اسم الإدارة"/></div>
+      <div class="fg2"><label>المشروع</label><input id="f-project" placeholder="اسم المشروع"/></div>
+      <div class="fg2"><label>تاريخ المباشرة</label><input type="date" id="f-date"/></div>
+      <div class="fg2"><label>الحالة</label>
+        <select id="f-status">
+          <option value="active">✅ نشط</option><option value="pending">⏳ قيد الإجراءات</option>
+          <option value="leave">🟣 إجازة</option><option value="transfer">🔵 محول</option>
+          <option value="resigned">🔴 مستقيل</option><option value="complete">✔️ مكتمل</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeEmpModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-bg" id="userModalBg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="userModalTitle">إضافة مستخدم</div>
+      <button class="modal-close" onclick="closeUserModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg2"><label>اسم المستخدم *</label><input id="u-username" placeholder="username"/></div>
+      <div class="fg2"><label>كلمة السر *</label><input id="u-password" placeholder="••••••"/></div>
+      <div class="fg2 full"><label>الاسم الكامل *</label><input id="u-fullname" placeholder="الاسم الكامل"/></div>
+      <div class="fg2"><label>الصلاحية</label>
+        <select id="u-role">
+          <option value="employee">موظف</option>
+          <option value="admin">مسؤول</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeUserModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 حفظ</button>
     </div>
   </div>
 </div>
@@ -421,16 +363,16 @@ td.id-num{font-family:monospace;font-size:12px;}
 <script>
 const SUPA_URL='https://dyhhjkotxvjqmgudhzlg.supabase.co';
 const SUPA_KEY='sb_publishable_1fSMsi24Sc7Cpbt9_7tz2A_j_nYC68R';
-const API=SUPA_URL+'/rest/v1/employees';
+const EMP_API=SUPA_URL+'/rest/v1/employees';
+const USR_API=SUPA_URL+'/rest/v1/users';
 const LOG_API=SUPA_URL+'/rest/v1/activity_log';
 const H={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation'};
-const ADMIN_PASS='admin123'; // غيّر كلمة سر المسؤول هنا
 
-let employees=[],filtered=[],currentPage=1;
-const PER_PAGE=50;
-let activeStatusFilter='all',editingId=null;
+let employees=[],filtered=[],users=[];
+let currentPage=1;const PER_PAGE=50;
+let activeStatusFilter='all',editingEmpId=null,editingUserId=null;
 let selectMode=false,selected=new Set();
-let currentRole=null,currentUser=null,editingPassEmpId=null;
+let currentUser=null;
 
 const statusMap={
   active:{label:'نشط',cls:'s-active'},pending:{label:'قيد الإجراءات',cls:'s-pending'},
@@ -439,144 +381,93 @@ const statusMap={
 };
 function statusBadge(s){const m=statusMap[s]||{label:s,cls:''};return '<span class="status '+m.cls+'"><span class="status-dot"></span>'+m.label+'</span>';}
 
-// ── Choose ──
-function showLogin(role){
-  currentRole=role;
-  document.getElementById('chooseScreen').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-  if(role==='emp'){
-    document.getElementById('loginLogo').className='login-logo emp';
-    document.getElementById('loginLogo').textContent='👤';
-    document.getElementById('loginTitle').textContent='دخول الموظف';
-    document.getElementById('loginSub').textContent='أدخل رقمك الوظيفي وكلمة السر';
-    document.getElementById('empFields').style.display='block';
-    document.getElementById('loginBtn').className='btn-login emp';
-    document.getElementById('passLabel').textContent='كلمة السر';
-  } else {
-    document.getElementById('loginLogo').className='login-logo adm';
-    document.getElementById('loginLogo').textContent='🛡️';
-    document.getElementById('loginTitle').textContent='دخول المسؤول';
-    document.getElementById('loginSub').textContent='أدخل كلمة سر المسؤول';
-    document.getElementById('empFields').style.display='none';
-    document.getElementById('loginBtn').className='btn-login adm';
-    document.getElementById('passLabel').textContent='كلمة سر المسؤول';
-  }
-  document.getElementById('errMsg').classList.remove('show');
-  document.getElementById('loginPass').value='';
-}
-
-function backToChoose(){
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('chooseScreen').style.display='flex';
-}
-
+// ── Login ──
 async function doLogin(){
+  const username=document.getElementById('loginUser').value.trim();
   const pass=document.getElementById('loginPass').value;
-  if(currentRole==='adm'){
-    if(pass===ADMIN_PASS){enterApp('adm',{name:'المسؤول',emp_id:'admin'});}
-    else showErr('❌ كلمة السر غير صحيحة');
-    return;
-  }
-  // Employee
-  const empId=document.getElementById('loginEmpId').value.trim();
-  if(!empId||!pass){showErr('يرجى إدخال الرقم الوظيفي وكلمة السر');return;}
+  if(!username||!pass){showErr('يرجى إدخال اسم المستخدم وكلمة السر');return;}
   showLoading(true);
-  const r=await fetch(API+'?emp_id=eq.'+encodeURIComponent(empId),{headers:H});
+  const r=await fetch(USR_API+'?username=eq.'+encodeURIComponent(username)+'&password=eq.'+encodeURIComponent(pass),{headers:H});
   const d=await r.json();showLoading(false);
-  if(!d||!d.length){showErr('❌ الرقم الوظيفي غير موجود');return;}
-  const emp=d[0];
-  if(!emp.password){currentUser=emp;document.getElementById('setupBg').classList.add('show');return;}
-  if(emp.password!==pass){showErr('❌ كلمة السر غير صحيحة');return;}
-  currentUser=emp;
+  if(!d||!d.length){showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة');return;}
+  currentUser=d[0];
   document.getElementById('errMsg').classList.remove('show');
-  enterApp('emp',emp);
-}
-
-async function saveNewPassword(){
-  const p1=document.getElementById('newPass1').value;
-  const p2=document.getElementById('newPass2').value;
-  if(!p1){showToast('اكتب كلمة سر');return;}
-  if(p1!==p2){showToast('كلمتا السر غير متطابقتين');return;}
-  showLoading(true);
-  await fetch(API+'?emp_id=eq.'+encodeURIComponent(currentUser.emp_id),{method:'PATCH',headers:H,body:JSON.stringify({password:p1})});
-  currentUser.password=p1;showLoading(false);
-  document.getElementById('setupBg').classList.remove('show');
-  showToast('✅ تم حفظ كلمة السر');
-  enterApp('emp',currentUser);
+  enterApp();
 }
 
 function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.classList.add('show');}
 
-function enterApp(role,user){
-  currentRole=role;currentUser=user;
+function enterApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='block';
-  // Header
-  const isAdm=role==='adm';
-  document.getElementById('appIcon').className='icon-badge '+(isAdm?'adm':'emp');
-  document.getElementById('appIcon').textContent=isAdm?'🛡️':'👔';
-  document.getElementById('appUserName').textContent=user.name;
-  document.getElementById('appRoleChip').textContent=isAdm?'مسؤول':'موظف';
+  const isAdm=currentUser.role==='admin';
+  document.getElementById('appUserName').textContent=currentUser.full_name;
+  document.getElementById('appRoleChip').textContent=isAdm?'🛡️ مسؤول':'👤 موظف';
   document.getElementById('appRoleChip').className='role-chip '+(isAdm?'role-adm':'role-emp');
-  document.getElementById('adminTabs').style.display=isAdm?'flex':'none';
-  document.getElementById('adminToolbar').style.display=isAdm?'flex':'none';
+  document.getElementById('tabUsersBtn').style.display=isAdm?'block':'none';
+  document.getElementById('tabLogsBtn').style.display=isAdm?'block':'none';
+  // Admin toolbar
+  const at=document.getElementById('adminToolbar');
+  at.style.display=isAdm?'contents':'none';
   // Table head
-  const head=document.getElementById('tableHead');
+  const head=document.getElementById('empTableHead');
   head.innerHTML=isAdm
-    ?'<th style="width:36px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>الحالة</th><th>إجراءات</th>'
+    ?'<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>الحالة</th><th>إجراءات</th>'
     :'<th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>الحالة</th><th>إجراءات</th>';
-  loadFromDB();
+  loadEmployees();
 }
 
 function logout(){
-  currentRole=null;currentUser=null;
+  currentUser=null;
   document.getElementById('appScreen').style.display='none';
-  document.getElementById('chooseScreen').style.display='flex';
-  document.getElementById('loginEmpId').value='';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
+  // Reset tabs
+  document.querySelectorAll('.main-tab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
+  ['tabEmployees','tabUsers','tabLogs'].forEach((t,i)=>document.getElementById(t).style.display=i===0?'block':'none');
 }
 
-// ── DB ──
-async function loadFromDB(){
+// ── Tabs ──
+function switchTab(tab,btn){
+  document.getElementById('tabEmployees').style.display='none';
+  document.getElementById('tabUsers').style.display='none';
+  document.getElementById('tabLogs').style.display='none';
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='block';
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='users')loadUsers();
+  if(tab==='logs')loadLogs();
+}
+
+// ── Employees ──
+async function loadEmployees(){
   showLoading(true);
-  const r=await fetch(API+'?order=emp_id',{headers:H});
+  const r=await fetch(EMP_API+'?order=emp_id',{headers:H});
   const data=await r.json();
   employees=Array.isArray(data)?data.map((e,i)=>({
     id:i+1,empId:e.emp_id||'',name:e.name||'',idNum:e.id_num||'',
-    dept:e.dept||'',project:e.project||'',date:e.date||'',
-    status:e.status||'active',password:e.password||''
+    dept:e.dept||'',project:e.project||'',date:e.date||'',status:e.status||'active'
   })):[];
-  filtered=[...employees];
-  populateYears();render();showLoading(false);
+  filtered=[...employees];populateYears();render();showLoading(false);
 }
 
 async function logAction(action,details){
   if(!currentUser)return;
-  await fetch(LOG_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:currentUser.emp_id,emp_name:currentUser.name,action,details})});
+  await fetch(LOG_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:currentUser.username,emp_name:currentUser.full_name,action,details})});
 }
 
-// ── Render ──
 function render(){
   updateStats();
-  const isAdm=currentRole==='adm';
+  const isAdm=currentUser&&currentUser.role==='admin';
   const start=(currentPage-1)*PER_PAGE,end=start+PER_PAGE;
   const page=filtered.slice(start,end);
-  const tbody=document.getElementById('tableBody');
+  const tbody=document.getElementById('empTableBody');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty">لا توجد نتائج</div></td></tr>';return;}
   tbody.innerHTML=page.map((e,i)=>{
     const sel=selected.has(e.id);
-    const actions=isAdm
-      ?`<div class="actions">
-          <button class="icon-btn edit" onclick="openEdit(${e.id})" title="تعديل">✏️</button>
-          <button class="icon-btn delete" onclick="deleteOne(${e.id})" title="حذف">🗑️</button>
-          <button class="icon-btn complete" onclick="markComplete(${e.id})" title="مكتمل">✔</button>
-          <button class="icon-btn key" onclick="showPass(${e.id})" title="كلمة السر">🔑</button>
-        </div>`
-      :`<div class="actions">
-          <button class="icon-btn edit" onclick="openEdit(${e.id})" title="تعديل">✏️</button>
-          <button class="icon-btn complete" onclick="markComplete(${e.id})" title="مكتمل">✔</button>
-        </div>`;
     const cbCol=isAdm?`<td><input type="checkbox" class="cb" ${sel?'checked':''} onchange="toggleSelect(${e.id},this)" onclick="event.stopPropagation()"/></td>`:'';
+    const delBtn=isAdm?`<button class="icon-btn delete" onclick="event.stopPropagation();deleteOne(${e.id})" title="حذف">🗑️</button>`:'';
     return `<tr class="${sel?'selected':''}" onclick="rowClick(event,${e.id})">
       ${cbCol}
       <td class="num">${start+i+1}</td>
@@ -587,7 +478,11 @@ function render(){
       <td>${e.project||'-'}</td>
       <td>${e.date?e.date.split('-').reverse().join('/'):'—'}</td>
       <td>${statusBadge(e.status)}</td>
-      <td>${actions}</td>
+      <td><div class="actions">
+        <button class="icon-btn edit" onclick="event.stopPropagation();openEmpEdit(${e.id})" title="تعديل">✏️</button>
+        ${delBtn}
+        <button class="icon-btn complete" onclick="event.stopPropagation();markComplete(${e.id})" title="مكتمل">✔</button>
+      </div></td>
     </tr>`;
   }).join('');
   const total=filtered.length,pages=Math.ceil(total/PER_PAGE)||1;
@@ -601,61 +496,6 @@ function updateStats(){
   document.getElementById('st-active').textContent=employees.filter(e=>e.status==='active').length;
   document.getElementById('st-pending').textContent=employees.filter(e=>e.status==='pending'||e.status==='leave').length;
   document.getElementById('st-resigned').textContent=employees.filter(e=>e.status==='resigned'||e.status==='transfer').length;
-}
-
-// ── Tabs (admin) ──
-function switchTab(tab,btn){
-  ['tabEmployees','tabPasswords','tabLogs'].forEach(t=>document.getElementById(t).style.display='none');
-  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='block';
-  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  if(tab==='passwords')renderPasswords();
-  if(tab==='logs')loadLogs();
-}
-
-// ── Passwords ──
-function renderPasswords(){
-  const q=document.getElementById('passSearch').value.toLowerCase();
-  const list=employees.filter(e=>!q||e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q));
-  document.getElementById('passBody').innerHTML=list.map((e,i)=>`
-    <tr>
-      <td class="num">${i+1}</td><td class="emp-id">${e.empId}</td><td class="name">${e.name}</td>
-      <td>${e.password?'<span class="pass-badge">'+e.password+'</span>':'<span class="no-pass">لم يسجل بعد</span>'}</td>
-      <td><button class="icon-btn key" onclick="showPass(${e.id})">🔑</button></td>
-    </tr>`).join('');
-}
-function showPass(id){
-  const e=employees.find(x=>x.id===id);editingPassEmpId=e.empId;
-  document.getElementById('passEmpName').textContent=e.name;
-  document.getElementById('passDisplay').textContent=e.password||'لم تُضبط بعد';
-  document.getElementById('newPassAdmin').value='';
-  document.getElementById('passBg').classList.add('show');
-}
-async function saveAdminPass(){
-  const p=document.getElementById('newPassAdmin').value.trim();
-  if(!p){showToast('اكتب كلمة السر');return;}
-  showLoading(true);
-  await fetch(API+'?emp_id=eq.'+encodeURIComponent(editingPassEmpId),{method:'PATCH',headers:H,body:JSON.stringify({password:p})});
-  await loadFromDB();document.getElementById('passBg').classList.remove('show');showToast('✅ تم تغيير كلمة السر');
-}
-
-// ── Logs ──
-async function loadLogs(){
-  const r=await fetch(LOG_API+'?order=created_at.desc&limit=100',{headers:H});
-  const logs=await r.json()||[];
-  const tbody=document.getElementById('logsBody');
-  if(!logs.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">لا توجد سجلات</div></td></tr>';return;}
-  tbody.innerHTML=logs.map((l,i)=>{
-    const cls=l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
-    const time=new Date(l.created_at).toLocaleString('ar-SA');
-    return `<tr><td class="num">${i+1}</td><td class="name">${l.emp_name||'—'}</td><td class="emp-id">${l.emp_id||'—'}</td>
-      <td><span class="log-action ${cls}">${l.action}</span></td><td>${l.details||'—'}</td><td style="color:var(--sub);font-size:12px;">${time}</td></tr>`;
-  }).join('');
-}
-async function clearLogs(){
-  if(!confirm('مسح كل السجل؟'))return;
-  await fetch(LOG_API+'?id=gte.0',{method:'DELETE',headers:H});
-  loadLogs();showToast('تم مسح السجل');
 }
 
 // ── Filters ──
@@ -687,73 +527,149 @@ function applyFilters(){
   currentPage=1;render();
 }
 
-// ── Select (admin) ──
+// ── Select ──
 function toggleSelectMode(){selectMode=!selectMode;clearSelection();document.getElementById('selectBtn').textContent=selectMode?'إيقاف التحديد':'تحديد';}
 function toggleSelect(id,cb){if(cb.checked)selected.add(id);else selected.delete(id);updateSelectBar();render();}
 function toggleAll(cb){if(cb.checked)filtered.forEach(e=>selected.add(e.id));else selected.clear();updateSelectBar();render();}
-function rowClick(e,id){if(!selectMode||currentRole!=='adm')return;if(selected.has(id))selected.delete(id);else selected.add(id);updateSelectBar();render();}
+function rowClick(e,id){if(!selectMode||currentUser.role!=='admin')return;if(selected.has(id))selected.delete(id);else selected.add(id);updateSelectBar();render();}
 function updateSelectBar(){const n=selected.size;if(n>0){document.getElementById('selectBar').classList.add('show');document.getElementById('selectCount').textContent=n+' محدد';}else document.getElementById('selectBar').classList.remove('show');}
 function clearSelection(){selected.clear();updateSelectBar();render();}
 
-// ── CRUD ──
+// ── CRUD Employees ──
 async function deleteSelected(){
   if(!selected.size)return;if(!confirm('حذف '+selected.size+' موظف؟'))return;
   showLoading(true);
   const ids=employees.filter(e=>selected.has(e.id)).map(e=>e.empId);
-  for(const id of ids)await fetch(API+'?emp_id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:H});
-  selected.clear();await loadFromDB();showToast('تم الحذف');
+  for(const id of ids)await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:H});
+  selected.clear();await loadEmployees();showToast('تم الحذف');
 }
 async function deleteOne(id){
   const e=employees.find(x=>x.id===id);
   if(!confirm('حذف "'+e.name+'"؟'))return;
   showLoading(true);
-  await fetch(API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'DELETE',headers:H});
-  await loadFromDB();showToast('تم الحذف');
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'DELETE',headers:H});
+  await loadEmployees();showToast('تم الحذف');
 }
-function openModal(){editingId=null;clearForm();document.getElementById('modalTitle').textContent='➕ إضافة موظف';document.getElementById('modalBg').classList.add('show');}
-function openEdit(id){
-  const e=employees.find(x=>x.id===id);editingId=id;
+function openEmpModal(){editingEmpId=null;clearEmpForm();document.getElementById('empModalTitle').textContent='➕ إضافة موظف';document.getElementById('empModalBg').classList.add('show');}
+function openEmpEdit(id){
+  const e=employees.find(x=>x.id===id);editingEmpId=id;
   document.getElementById('f-empid').value=e.empId;document.getElementById('f-name').value=e.name;
   document.getElementById('f-idnum').value=e.idNum;document.getElementById('f-dept').value=e.dept||'';
   document.getElementById('f-project').value=e.project||'';document.getElementById('f-date').value=e.date||'';
   document.getElementById('f-status').value=e.status;
-  document.getElementById('modalTitle').textContent='✏️ تعديل بيانات الموظف';
-  document.getElementById('modalBg').classList.add('show');
+  document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
+  document.getElementById('empModalBg').classList.add('show');
 }
-function closeModal(){document.getElementById('modalBg').classList.remove('show');}
-function clearForm(){['f-empid','f-name','f-idnum','f-project','f-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('f-dept').value='';document.getElementById('f-status').value='active';}
+function closeEmpModal(){document.getElementById('empModalBg').classList.remove('show');}
+function clearEmpForm(){['f-empid','f-name','f-idnum','f-project','f-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('f-dept').value='';document.getElementById('f-status').value='active';}
 
 async function saveEmployee(){
   const empId=document.getElementById('f-empid').value.trim();
   const name=document.getElementById('f-name').value.trim();
   const idNum=document.getElementById('f-idnum').value.trim();
   if(!empId||!name||!idNum){showToast('يرجى تعبئة الحقول المطلوبة');return;}
-  if(employees.find(e=>e.empId===empId&&e.id!==editingId)){showToast('الرقم الوظيفي مكرر!');return;}
-  if(employees.find(e=>e.idNum===idNum&&e.id!==editingId)){showToast('رقم الهوية مكرر!');return;}
-  const data={empId,name,idNum,dept:document.getElementById('f-dept').value,project:document.getElementById('f-project').value.trim(),date:document.getElementById('f-date').value,status:document.getElementById('f-status').value};
+  if(employees.find(e=>e.empId===empId&&e.id!==editingEmpId)){showToast('الرقم الوظيفي مكرر!');return;}
+  if(employees.find(e=>e.idNum===idNum&&e.id!==editingEmpId)){showToast('رقم الهوية مكرر!');return;}
+  const data={emp_id:empId,name,id_num:idNum,dept:document.getElementById('f-dept').value,project:document.getElementById('f-project').value.trim(),date:document.getElementById('f-date').value,status:document.getElementById('f-status').value};
   showLoading(true);
-  if(editingId){
-    const e=employees.find(x=>x.id===editingId);
-    await fetch(API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,body:JSON.stringify({name:data.name,id_num:data.idNum,dept:data.dept,project:data.project,date:data.date,status:data.status})});
-    await logAction('تعديل','تعديل بيانات: '+name);
-    showToast('✅ تم التعديل');
+  if(editingEmpId){
+    const e=employees.find(x=>x.id===editingEmpId);
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,body:JSON.stringify({name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,status:data.status})});
+    await logAction('تعديل','تعديل بيانات: '+name);showToast('✅ تم التعديل');
   } else {
-    await fetch(API,{method:'POST',headers:H,body:JSON.stringify({emp_id:data.empId,name:data.name,id_num:data.idNum,dept:data.dept,project:data.project,date:data.date,status:data.status})});
-    await logAction('إضافة','إضافة موظف: '+name);
-    showToast('✅ تم إضافة الموظف');
+    await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify(data)});
+    await logAction('إضافة','إضافة موظف: '+name);showToast('✅ تم الإضافة');
   }
-  closeModal();await loadFromDB();
+  closeEmpModal();await loadEmployees();
 }
 
 async function markComplete(id){
   const e=employees.find(x=>x.id===id);
   if(!e||e.status==='complete'){showToast('الموظف مكتمل بالفعل');return;}
   showLoading(true);
-  await fetch(API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,body:JSON.stringify({status:'complete'})});
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId),{method:'PATCH',headers:H,body:JSON.stringify({status:'complete'})});
   await logAction('تغيير حالة','تغيير حالة '+e.name+' إلى مكتمل');
-  await loadFromDB();showToast('✅ تم تغيير الحالة');
+  await loadEmployees();showToast('✅ تم تغيير الحالة');
 }
 
+// ── Users ──
+async function loadUsers(){
+  showLoading(true);
+  const r=await fetch(USR_API+'?order=id',{headers:H});
+  users=await r.json()||[];
+  renderUsers();showLoading(false);
+}
+function renderUsers(){
+  document.getElementById('usersBody').innerHTML=users.map((u,i)=>`
+    <tr>
+      <td class="num">${i+1}</td>
+      <td class="emp-id">${u.username}</td>
+      <td class="name">${u.full_name}</td>
+      <td><span class="user-role-badge ${u.role==='admin'?'ur-admin':'ur-employee'}">${u.role==='admin'?'🛡️ مسؤول':'👤 موظف'}</span></td>
+      <td><div class="actions">
+        <button class="icon-btn edit" onclick="openUserEdit(${u.id})" title="تعديل">✏️</button>
+        <button class="icon-btn delete" onclick="deleteUser(${u.id})" title="حذف">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+}
+function openUserModal(){editingUserId=null;clearUserForm();document.getElementById('userModalTitle').textContent='➕ إضافة مستخدم';document.getElementById('userModalBg').classList.add('show');}
+function openUserEdit(id){
+  const u=users.find(x=>x.id===id);editingUserId=id;
+  document.getElementById('u-username').value=u.username;
+  document.getElementById('u-password').value=u.password||'';
+  document.getElementById('u-fullname').value=u.full_name;
+  document.getElementById('u-role').value=u.role;
+  document.getElementById('userModalTitle').textContent='✏️ تعديل مستخدم';
+  document.getElementById('userModalBg').classList.add('show');
+}
+function closeUserModal(){document.getElementById('userModalBg').classList.remove('show');}
+function clearUserForm(){['u-username','u-password','u-fullname'].forEach(id=>document.getElementById(id).value='');document.getElementById('u-role').value='employee';}
+async function saveUser(){
+  const username=document.getElementById('u-username').value.trim();
+  const password=document.getElementById('u-password').value.trim();
+  const fullname=document.getElementById('u-fullname').value.trim();
+  const role=document.getElementById('u-role').value;
+  if(!username||!password||!fullname){showToast('يرجى تعبئة جميع الحقول');return;}
+  showLoading(true);
+  if(editingUserId){
+    await fetch(USR_API+'?id=eq.'+editingUserId,{method:'PATCH',headers:H,body:JSON.stringify({username,password,full_name:fullname,role})});
+    showToast('✅ تم تعديل المستخدم');
+  } else {
+    await fetch(USR_API,{method:'POST',headers:H,body:JSON.stringify({username,password,full_name:fullname,role})});
+    showToast('✅ تم إضافة المستخدم');
+  }
+  closeUserModal();await loadUsers();
+}
+async function deleteUser(id){
+  const u=users.find(x=>x.id===id);
+  if(u.username==='admin'){showToast('لا يمكن حذف المسؤول الرئيسي');return;}
+  if(!confirm('حذف المستخدم "'+u.full_name+'"؟'))return;
+  showLoading(true);
+  await fetch(USR_API+'?id=eq.'+id,{method:'DELETE',headers:H});
+  await loadUsers();showToast('تم الحذف');
+}
+
+// ── Logs ──
+async function loadLogs(){
+  const r=await fetch(LOG_API+'?order=created_at.desc&limit=100',{headers:H});
+  const logs=await r.json()||[];
+  const tbody=document.getElementById('logsBody');
+  if(!logs.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">لا توجد سجلات</div></td></tr>';return;}
+  tbody.innerHTML=logs.map((l,i)=>{
+    const cls=l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
+    const time=new Date(l.created_at).toLocaleString('ar-SA');
+    return `<tr><td class="num">${i+1}</td><td class="name">${l.emp_name||'—'} <span style="color:var(--sub);font-size:11px;">(${l.emp_id||''})</span></td>
+      <td><span class="log-action ${cls}">${l.action}</span></td>
+      <td>${l.details||'—'}</td><td style="color:var(--sub);font-size:11px;">${time}</td></tr>`;
+  }).join('');
+}
+async function clearLogs(){
+  if(!confirm('مسح كل السجل؟'))return;
+  await fetch(LOG_API+'?id=gte.0',{method:'DELETE',headers:H});
+  loadLogs();showToast('تم مسح السجل');
+}
+
+// ── Excel ──
 function exportExcel(){
   const rows=employees.map((e,i)=>({'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,'الإدارة':e.dept||'','المشروع':e.project||'','تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'','الحالة':statusMap[e.status]?statusMap[e.status].label:e.status}));
   const ws=XLSX.utils.json_to_sheet(rows);
@@ -767,7 +683,6 @@ function exportExcel(){
   setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
   showToast('تم التصدير');
 }
-
 function importExcel(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
@@ -779,14 +694,14 @@ function importExcel(e){
       const sr={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned','مكتمل':'complete'};
       showLoading(true);
       for(const r of rows){
-        await fetch(API,{method:'POST',headers:H,body:JSON.stringify({
+        await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify({
           emp_id:r['الرقم الوظيفي']||'',name:r['الاسم']||'',id_num:String(r['رقم الهوية']||''),
           dept:r['الإدارة']||'',project:r['المشروع']||'',
           date:(()=>{const d=r['تاريخ المباشرة'];if(!d)return '';if(typeof d==='number'){const j=new Date((d-25569)*86400*1000);return j.toISOString().split('T')[0];}if(typeof d==='string'&&d.includes('/')){const p=d.split('/');if(p.length===3)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}return d;})(),
           status:sr[r['الحالة']]||'active'
         })});
       }
-      await loadFromDB();showToast('تم استيراد '+rows.length+' موظف');
+      await loadEmployees();showToast('تم استيراد '+rows.length+' موظف');
     }catch(err){showToast('خطأ في قراءة الملف');showLoading(false);}
   };
   reader.readAsBinaryString(file);e.target.value='';
@@ -794,8 +709,8 @@ function importExcel(e){
 
 function showLoading(s){document.getElementById('loadingBar').style.display=s?'block':'none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
-document.getElementById('modalBg').addEventListener('click',function(e){if(e.target===this)closeModal();});
-document.getElementById('passBg').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+document.getElementById('empModalBg').addEventListener('click',function(e){if(e.target===this)closeEmpModal();});
+document.getElementById('userModalBg').addEventListener('click',function(e){if(e.target===this)closeUserModal();});
 </script>
 </body>
 </html>
