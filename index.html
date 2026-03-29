@@ -203,10 +203,6 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="login-sub">أدخل اسم المستخدم وكلمة السر</div>
     <div class="fg"><label>اسم المستخدم</label><input id="loginUser" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <div class="fg"><label>كلمة السر</label><input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <input type="checkbox" id="rememberMe" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary);"/>
-      <label for="rememberMe" style="font-size:13px;color:var(--sub);cursor:pointer;">تذكرني</label>
-    </div>
     <button class="btn-login" onclick="doLogin()">🔐 دخول</button>
     <div class="err-msg" id="errMsg">❌ اسم المستخدم أو كلمة السر غير صحيحة</div>
   </div>
@@ -471,11 +467,7 @@ async function doLogin(){
   if(!d||!d.length){showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة');return;}
   currentUser=d[0];
   document.getElementById('errMsg').classList.remove('show');
-  if(document.getElementById('rememberMe').checked){
-    localStorage.setItem('savedUser', JSON.stringify({username:document.getElementById('loginUser').value.trim(), password:document.getElementById('loginPass').value}));
-  } else {
-    localStorage.removeItem('savedUser');
-  }
+
   enterApp();
 }
 function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.classList.add('show');}
@@ -505,7 +497,7 @@ function logout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
-  document.getElementById('rememberMe').checked=false;
+
   document.querySelectorAll('.main-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['tabEmployees','tabUsers','tabLogs'].forEach((t,i)=>document.getElementById(t).style.display=i===0?'block':'none');
 }
@@ -558,55 +550,59 @@ async function logAction(action,details){
 
 function render(){
   updateStats();
-  const isAdm=currentUser&&currentUser.role==='admin';
-  const start=(currentPage-1)*PER_PAGE,end=start+PER_PAGE;
-  const page=filtered.slice(start,end);
-  const tbody=document.getElementById('empTableBody');
+  var isAdm=currentUser&&currentUser.role==='admin';
+  var start=(currentPage-1)*PER_PAGE,end=start+PER_PAGE;
+  var page=filtered.slice(start,end);
+  var tbody=document.getElementById('empTableBody');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty">لا توجد نتائج</div></td></tr>';return;}
-  tbody.innerHTML=page.map((e,i)=>{
-    const sel=selected.has(e.id);
-    const cbCol=isAdm?`<td><input type="checkbox" class="cb" ${sel?'checked':''} onchange="toggleSelect(${e.id},this)" onclick="event.stopPropagation()"/></td>`:'';
-    const delBtn=isAdm?`<button class="icon-btn delete" onclick="event.stopPropagation();deleteOne(${e.id})" title="حذف">🗑️</button>`:'';
-
-    // Action buttons based on appointment_status
-    let workflowBtns='';
-    const as=e.appointStatus;
-    const isAdmUser=currentUser&&currentUser.role==='admin';
+  var html='';
+  for(var i=0;i<page.length;i++){
+    var e=page[i];
+    var sel=selected.has(e.id);
+    var cbCol=isAdm?'<td><input type="checkbox" class="cb" '+(sel?'checked':'')+' onchange="toggleSelect('+e.id+',this)" onclick="event.stopPropagation()"/></td>':'';
+    var delBtn=isAdm?'<button class="icon-btn delete" onclick="event.stopPropagation();deleteOne('+e.id+')" title="حذف">&#128465;</button>':'';
+    var isAdmUser=currentUser&&currentUser.role==='admin';
+    var as=e.appointStatus;
+    var workflowBtns='';
     if(!as||as===''){
-      workflowBtns=`<button class="icon-btn appoint" onclick="event.stopPropagation();doAppoint(${e.id})" title="قرار تعيين">📋</button>`;
+      workflowBtns='<button class="icon-btn appoint" onclick="event.stopPropagation();doAppoint('+e.id+')" title="قرار تعيين">&#128203;</button>';
     } else if(as==='appointed'){
-      workflowBtns=`<button class="icon-btn enter" onclick="event.stopPropagation();doEnter(${e.id})" title="الإدخال بالنظام">🖥️</button>`;
-      if(isAdmUser) workflowBtns+=`<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow(${e.id})" title="إلغاء قرار التعيين">↩️</button>`;
+      workflowBtns='<button class="icon-btn enter" onclick="event.stopPropagation();doEnter('+e.id+')" title="الإدخال بالنظام">&#128421;</button>';
+      if(isAdmUser) workflowBtns+='<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow('+e.id+')" title="إرجاع">&#8617;</button>';
     } else if(as==='entered'){
-      workflowBtns=`<button class="icon-btn complete" onclick="event.stopPropagation();doComplete(${e.id})" title="ملف مكتمل">✔</button>`;
-      if(isAdmUser) workflowBtns+=`<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow(${e.id},'appointed')" title="إرجاع لقرار التعيين">↩️</button>`;
+      workflowBtns='<button class="icon-btn complete" onclick="event.stopPropagation();doComplete('+e.id+')" title="ملف مكتمل">&#10003;</button>';
+      if(isAdmUser) workflowBtns+='<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow('+e.id+','appointed')" title="إرجاع">&#8617;</button>';
     } else if(as==='complete'){
-      if(isAdmUser) workflowBtns=`<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow(${e.id},'entered')" title="إرجاع لالإدخال بالنظام">↩️</button>`;
+      if(isAdmUser) workflowBtns='<button class="icon-btn" style="background:#fee2e2;color:#dc2626;" onclick="event.stopPropagation();resetWorkflow('+e.id+','entered')" title="إرجاع">&#8617;</button>';
     }
-
-    return `<tr class="${sel?'selected':''}" onclick="rowClick(event,${e.id})">
-      ${cbCol}
-      <td class="num">${start+i+1}</td>
-      <td class="emp-id">${e.empId}</td>
-      <td class="name">${e.name}</td>
-      <td class="id-num">${e.idNum}</td>
-      <td>${e.dept||'-'}</td>
-      <td>${e.project||'-'}</td>
-      <td>${e.date?e.date.split('-').reverse().join('/'):'—'}</td>
-      <td>${contractBadge(e.contract)}</td>
-      <td>${e.salary?'<span style="font-family:monospace;font-weight:700;color:var(--success);">'+Number(e.salary).toLocaleString('ar')+' ريال</span>':'<span style="color:var(--sub);font-size:11px;">—</span>'}</td>
-      <td>${statusBadge(e.status)}</td>
-      <td><div class="actions">
-        <button class="icon-btn edit" onclick="event.stopPropagation();openEmpEdit(${e.id})" title="تعديل">✏️</button>
-        ${delBtn}
-        ${workflowBtns}
-      </div></td>
-    </tr>`;
-  }).join('');
-  const total=filtered.length,pages=Math.ceil(total/PER_PAGE)||1;
+    var salary=e.salary?'<span style="font-family:monospace;font-weight:700;color:var(--success);">'+Number(e.salary).toLocaleString()+' ريال</span>':'<span style="color:var(--sub);font-size:11px;"></span>';
+    var dateStr=e.date?e.date.split('-').reverse().join('/'):'';
+    html+='<tr class="'+(sel?'selected':'')+'" onclick="rowClick(event,'+e.id+')">';
+    html+=cbCol;
+    html+='<td class="num">'+(start+i+1)+'</td>';
+    html+='<td class="emp-id">'+e.empId+'</td>';
+    html+='<td class="name">'+e.name+'</td>';
+    html+='<td class="id-num">'+e.idNum+'</td>';
+    html+='<td>'+(e.dept||'-')+'</td>';
+    html+='<td>'+(e.project||'-')+'</td>';
+    html+='<td>'+dateStr+'</td>';
+    html+='<td>'+contractBadge(e.contract)+'</td>';
+    html+='<td>'+salary+'</td>';
+    html+='<td>'+statusBadge(e.status)+'</td>';
+    html+='<td><div class="actions"><button class="icon-btn edit" onclick="event.stopPropagation();openEmpEdit('+e.id+')" title="تعديل">&#9998;</button>'+delBtn+workflowBtns+'</div></td>';
+    html+='</tr>';
+  }
+  tbody.innerHTML=html;
+  var total=filtered.length,pages=Math.ceil(total/PER_PAGE)||1;
   document.getElementById('pageInfo').textContent='عرض '+Math.min(end,total)+' من '+total+' موظف';
-  const pb=document.getElementById('pageBtns');pb.innerHTML='';
-  for(let p=1;p<=pages;p++){const b=document.createElement('button');b.className='page-btn'+(p===currentPage?' active':'');b.textContent=p;b.onclick=()=>{currentPage=p;render();};pb.appendChild(b);}
+  var pb=document.getElementById('pageBtns');pb.innerHTML='';
+  for(var p=1;p<=pages;p++){
+    var b=document.createElement('button');
+    b.className='page-btn'+(p===currentPage?' active':'');
+    b.textContent=p;
+    (function(pg){b.onclick=function(){currentPage=pg;render();};})(p);
+    pb.appendChild(b);
+  }
 }
 
 function updateStats(){
@@ -651,16 +647,16 @@ async function doEnter(id){
 function showSuccessPopup(e){
   const popup=document.createElement('div');
   popup.className='success-popup';
-  popup.innerHTML=`
+  popup.innerHTML='
     <div class="success-box">
-      <div class="success-icon">🖥️</div>
+      <div class="success-icon"></div>
       <div class="success-title">الإدخال بالنظام</div>
-      <div class="success-sub">تم إدخال الموظف <strong>${e.name}</strong> بالنظام بنجاح</div>
+      <div class="success-sub">تم إدخال الموظف <strong>'+(e.name)+'</strong> بالنظام بنجاح</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-        ${e.contract==='qowa'?`<button class="btn btn-primary" onclick="openOutlookEmail(${JSON.stringify(e).replace(/"/g,'&quot;')});this.closest('.success-popup').remove()">📧 فتح الإيميل</button>`:''}
+        '+(e.contract==='qowa'?'<button class="btn btn-primary" onclick="openOutlookEmail(${JSON.stringify(e).replace(/"/g,'&quot;'))+');this.closest('.success-popup').remove()">📧 فتح الإيميل</button>':''}
         <button class="btn btn-outline" onclick="this.closest('.success-popup').remove()">إغلاق</button>
       </div>
-    </div>`;
+    </div>';
   document.body.appendChild(popup);
 }
 
@@ -668,8 +664,8 @@ function openOutlookEmail(e){
   const to='a.almuqbil@amnco.com.sa';
   const cc='y.alqaysi@amnco.com.sa;bashar@amnco.com.sa';
   const subject=encodeURIComponent('إدخال موظف جديد - '+e.name+' - '+e.empId);
-  const date=e.date?e.date.split('-').reverse().join('/'):'—';
-  const contract=contractMap[e.contract]||'—';
+  const date=e.date?e.date.split('-').reverse().join('/'):'';
+  const contract=contractMap[e.contract]||'';
   const body=encodeURIComponent(
     'السلام عليكم ورحمة الله وبركاته،\n\n' +
     'تم إدخال الموظف التالي بالنظام، أمل رفع له عقد قوى:\n\n' +
@@ -677,8 +673,8 @@ function openOutlookEmail(e){
     'الاسم:              ' + e.name + '\n' +
     'الرقم الوظيفي:      ' + e.empId + '\n' +
     'رقم الهوية:         ' + e.idNum + '\n' +
-    'الإدارة:            ' + (e.dept||'—') + '\n' +
-    'المشروع:            ' + (e.project||'—') + '\n' +
+    'الإدارة:            ' + (e.dept||'') + '\n' +
+    'المشروع:            ' + (e.project||'') + '\n' +
     'تاريخ المباشرة:     ' + date + '\n' +
     'نوع العقد:          ' + contract + '\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
@@ -907,17 +903,17 @@ async function loadUsers(){
   users=await r.json()||[];renderUsers();showLoading(false);
 }
 function renderUsers(){
-  document.getElementById('usersBody').innerHTML=users.map((u,i)=>`
+  document.getElementById('usersBody').innerHTML=users.map((u,i)=>'
     <tr>
-      <td class="num">${i+1}</td>
-      <td class="emp-id">${u.username}</td>
-      <td class="name">${u.full_name}</td>
-      <td><span class="user-role-badge ${u.role==='admin'?'ur-admin':'ur-employee'}">${u.role==='admin'?'🛡️ مسؤول':'👤 موظف'}</span></td>
+      <td class="num">'+(i+1)+'</td>
+      <td class="emp-id">'+(u.username)+'</td>
+      <td class="name">'+(u.full_name)+'</td>
+      <td><span class="user-role-badge '+(u.role==='admin'?'ur-admin':'ur-employee')+'">'+(u.role==='admin'?' مسؤول':' موظف')+'</span></td>
       <td><div class="actions">
-        <button class="icon-btn edit" onclick="openUserEdit(${u.id})">✏️</button>
-        <button class="icon-btn delete" onclick="deleteUser(${u.id})">🗑️</button>
+        <button class="icon-btn edit" onclick="openUserEdit('+(u.id)+')"></button>
+        <button class="icon-btn delete" onclick="deleteUser('+(u.id)+')"></button>
       </div></td>
-    </tr>`).join('');
+    </tr>').join('');
 }
 function openUserModal(){editingUserId=null;clearUserForm();document.getElementById('userModalTitle').textContent='➕ إضافة مستخدم';document.getElementById('userModalBg').classList.add('show');}
 function openUserEdit(id){
@@ -965,9 +961,9 @@ async function loadLogs(){
   tbody.innerHTML=logs.map((l,i)=>{
     const cls=l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
     const time=new Date(l.created_at).toLocaleString('ar-SA');
-    return `<tr><td class="num">${i+1}</td><td class="name">${l.emp_name||'—'} <span style="color:var(--sub);font-size:11px;">(${l.emp_id||''})</span></td>
+    return '<tr><td class="num">${i+1}</td><td class="name">${l.emp_name||''} <span style="color:var(--sub);font-size:11px;">(${l.emp_id||''})</span></td>
       <td><span class="log-action ${cls}">${l.action}</span></td>
-      <td>${l.details||'—'}</td><td style="color:var(--sub);font-size:11px;">${time}</td></tr>`;
+      <td>${l.details||''}</td><td style="color:var(--sub);font-size:11px;">${time}</td></tr>`;
   }).join('');
 }
 async function clearLogs(){
@@ -1021,26 +1017,7 @@ function showLoading(s){document.getElementById('loadingBar').style.display=s?'b
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 document.getElementById('empModalBg').addEventListener('click',function(e){if(e.target===this)closeEmpModal();});
 
-// تحقق من تذكرني عند فتح الصفحة
-window.addEventListener('load', async function(){
-  try{
-    const saved = localStorage.getItem('savedUser');
-    if(saved){
-      const {username, password} = JSON.parse(saved);
-      const r = await fetch(USR_API+'?username=eq.'+encodeURIComponent(username)+'&password=eq.'+encodeURIComponent(password),{headers:H});
-      const d = await r.json();
-      if(d&&d.length){
-        currentUser=d[0];
-        document.getElementById('rememberMe').checked=true;
-        enterApp();
-      } else {
-        localStorage.removeItem('savedUser');
-      }
-    }
-  }catch(e){
-    localStorage.removeItem('savedUser');
-  }
-});
+
 document.getElementById('userModalBg').addEventListener('click',function(e){if(e.target===this)closeUserModal();});
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 </script>
