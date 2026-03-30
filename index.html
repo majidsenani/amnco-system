@@ -133,7 +133,7 @@ td.id-num{font-family:monospace;font-size:12px;}
 .user-role-badge{padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;}
 .ur-admin{background:var(--danger-light);color:var(--danger);}
 .ur-employee{background:var(--primary-light);color:var(--primary);}
-.ur-viewer{background:#f0fdf4;color:#166534;}
+.ur-viewer{background:#f0fdf4;color:#166534;border:1px solid #86efac;}
 .log-action{padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;}
 .la-add{background:var(--success-light);color:var(--success);}
 .la-edit{background:var(--primary-light);color:var(--primary);}
@@ -216,6 +216,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       </div>
       <div id="adminToolbar" style="display:none;gap:8px;flex-wrap:wrap;">
         <label class="btn btn-success btn-sm">📤 رفع Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/></label>
+        <button class="btn btn-outline btn-sm" onclick="downloadTemplate()">📄 قالب Excel</button>
       </div>
       <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 سحب Excel</button>
       <button class="btn btn-primary btn-sm" id="addEmpBtn" onclick="openEmpModal()">➕ إضافة موظف</button>
@@ -434,16 +435,15 @@ function contractBadge(c) {
   return '<span class="contract-badge ' + (c==='qowa'?'c-qowa':'c-train') + '">' + (contractMap[c]||c) + '</span>';
 }
 
-// ── Login ──
 async function doLogin() {
   var username = document.getElementById('loginUser').value.trim();
   var pass = document.getElementById('loginPass').value;
-  if (!username || !pass) { showErr('يرجى إدخال اسم المستخدم وكلمة السر'); return; }
+  if (!username||!pass) { showErr('يرجى إدخال اسم المستخدم وكلمة السر'); return; }
   showLoading(true);
   var r = await fetch(USR_API + '?username=eq.' + encodeURIComponent(username) + '&password=eq.' + encodeURIComponent(pass), {headers:H});
   var d = await r.json();
   showLoading(false);
-  if (!d || !d.length) { showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة'); return; }
+  if (!d||!d.length) { showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة'); return; }
   currentUser = d[0];
   document.getElementById('errMsg').classList.remove('show');
   enterApp();
@@ -475,8 +475,8 @@ function logout() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
-  document.querySelectorAll('.main-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
-  ['tabEmployees','tabUsers','tabLogs'].forEach(function(t,i){ document.getElementById(t).style.display = i===0?'block':'none'; });
+  document.querySelectorAll('.main-tab').forEach(function(t,i){ t.classList.toggle('active',i===0); });
+  ['tabEmployees','tabUsers','tabLogs'].forEach(function(t,i){ document.getElementById(t).style.display=i===0?'block':'none'; });
 }
 
 function openChangePass() { document.getElementById('changePassBg').classList.add('show'); }
@@ -492,14 +492,14 @@ async function saveChangePass() {
   if (old !== currentUser.password) { showToast('❌ كلمة السر الحالية غير صحيحة'); return; }
   if (n1 !== n2) { showToast('❌ كلمتا السر الجديدة غير متطابقتين'); return; }
   showLoading(true);
-  await fetch(USR_API + '?id=eq.' + currentUser.id, {method:'PATCH', headers:H, body:JSON.stringify({password:n1})});
+  await fetch(USR_API + '?id=eq.' + currentUser.id, {method:'PATCH',headers:H,body:JSON.stringify({password:n1})});
   currentUser.password = n1;
   showLoading(false); closeChangePass(); showToast('✅ تم تغيير كلمة السر');
 }
 
 function switchTab(tab, btn) {
   ['tabEmployees','tabUsers','tabLogs'].forEach(function(t){ document.getElementById(t).style.display='none'; });
-  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display = 'block';
   document.querySelectorAll('.main-tab').forEach(function(t){ t.classList.remove('active'); });
   btn.classList.add('active');
   if (tab==='users') loadUsers();
@@ -526,7 +526,7 @@ async function loadEmployees() {
 
 async function logAction(action, details) {
   if (!currentUser) return;
-  await fetch(LOG_API, {method:'POST', headers:H, body:JSON.stringify({emp_id:currentUser.username, emp_name:currentUser.full_name, action:action, details:details})});
+  await fetch(LOG_API, {method:'POST',headers:H,body:JSON.stringify({emp_id:currentUser.username,emp_name:currentUser.full_name,action:action,details:details})});
 }
 
 function render() {
@@ -551,7 +551,7 @@ function render() {
     var workflowBtns = '';
     if (!isViewer) {
       var as = e.appointStatus;
-      if (!as || as==='') {
+      if (!as||as==='') {
         workflowBtns = '<button class="icon-btn appoint" data-id="' + e.id + '" title="قرار تعيين">&#128203;</button>';
       } else if (as==='appointed') {
         workflowBtns = '<button class="icon-btn enter" data-id="' + e.id + '" title="الإدخال بالنظام">&#128421;</button>';
@@ -567,19 +567,13 @@ function render() {
     var dateStr = e.date ? e.date.split('-').reverse().join('/') : '';
     var editBtn = !isViewer ? '<button class="icon-btn edit" data-id="' + e.id + '" title="تعديل">&#9998;</button>' : '';
     html += '<tr class="' + (sel?'selected':'') + '" data-id="' + e.id + '">';
-    html += cbCol;
-    html += '<td class="num">' + (start+i+1) + '</td>';
-    html += '<td class="emp-id">' + e.empId + '</td>';
-    html += '<td class="name">' + e.name + '</td>';
-    html += '<td class="id-num">' + e.idNum + '</td>';
-    html += '<td>' + (e.dept||'-') + '</td>';
-    html += '<td>' + (e.project||'-') + '</td>';
-    html += '<td>' + dateStr + '</td>';
-    html += '<td>' + contractBadge(e.contract) + '</td>';
-    html += '<td>' + salary + '</td>';
+    html += cbCol + '<td class="num">' + (start+i+1) + '</td>';
+    html += '<td class="emp-id">' + e.empId + '</td><td class="name">' + e.name + '</td>';
+    html += '<td class="id-num">' + e.idNum + '</td><td>' + (e.dept||'-') + '</td>';
+    html += '<td>' + (e.project||'-') + '</td><td>' + dateStr + '</td>';
+    html += '<td>' + contractBadge(e.contract) + '</td><td>' + salary + '</td>';
     html += '<td>' + statusBadge(e.status) + '</td>';
-    html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td>';
-    html += '</tr>';
+    html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
   }
   tbody.innerHTML = html;
 
@@ -632,7 +626,7 @@ async function doAppoint(id) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!confirm('تأكيد قرار التعيين للموظف "' + e.name + '"؟')) return;
   showLoading(true);
-  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH', headers:H, body:JSON.stringify({appointment_status:'appointed', status:'appointed'})});
+  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'appointed',status:'appointed'})});
   await logAction('قرار تعيين', 'تم إصدار قرار تعيين: ' + e.name);
   updateEmpInMemory(e.id, {status:'appointed', appointStatus:'appointed'});
   showLoading(false); showToast('✅ تم إصدار قرار التعيين');
@@ -641,13 +635,14 @@ async function doAppoint(id) {
 async function doEnter(id) {
   var e = employees.find(function(x){ return x.id===id; });
   showLoading(true);
-  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH', headers:H, body:JSON.stringify({appointment_status:'entered', status:'entered'})});
+  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered'})});
   await logAction('إدخال بالنظام', 'تم إدخال الموظف بالنظام: ' + e.name);
   updateEmpInMemory(e.id, {status:'entered', appointStatus:'entered'});
   showLoading(false);
   showSuccessPopup(e);
 }
 
+// ── الدالة المصلحة ──
 function showSuccessPopup(emp) {
   var popup = document.createElement('div');
   popup.className = 'success-popup';
@@ -690,13 +685,14 @@ function openOutlookEmail(e) {
   window.location.href = 'mailto:' + to + '?cc=' + cc + '&subject=' + subject + '&body=' + body;
 }
 
+// ── الدالة المصلحة ──
 async function resetWorkflow(id, toStatus) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!confirm('إرجاع حالة "' + e.name + '" للخلف؟')) return;
   showLoading(true);
   var newAppoint = toStatus || '';
   var newStatus = toStatus==='appointed' ? 'appointed' : toStatus==='entered' ? 'entered' : 'active';
-  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH', headers:H, body:JSON.stringify({appointment_status:newAppoint, status:newStatus})});
+  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:newAppoint, status:newStatus})});
   await logAction('إرجاع حالة', 'إرجاع حالة ' + e.name + ' إلى ' + (newAppoint||'الأولى'));
   updateEmpInMemory(e.id, {status:newStatus, appointStatus:newAppoint});
   showLoading(false); showToast('✅ تم إرجاع الحالة');
@@ -714,7 +710,7 @@ async function doComplete(id) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!confirm('تأكيد اكتمال ملف "' + e.name + '"؟')) return;
   showLoading(true);
-  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH', headers:H, body:JSON.stringify({appointment_status:'complete', status:'complete'})});
+  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'complete',status:'complete'})});
   await logAction('ملف مكتمل', 'اكتمل ملف الموظف: ' + e.name);
   updateEmpInMemory(e.id, {status:'complete', appointStatus:'complete'});
   showLoading(false); showToast('✅ تم اكتمال الملف');
@@ -754,10 +750,7 @@ function applyFilters() {
   currentPage=1; render();
 }
 
-function toggleSelectMode() {
-  selectMode = !selectMode; clearSelection();
-  document.getElementById('selectBtn').textContent = selectMode ? 'إيقاف التحديد' : '☑️ تحديد';
-}
+function toggleSelectMode() { selectMode=!selectMode; clearSelection(); document.getElementById('selectBtn').textContent=selectMode?'إيقاف التحديد':'☑️ تحديد'; }
 function toggleSelect(id, cb) { if(cb.checked)selected.add(id);else selected.delete(id); updateSelectBar(); render(); }
 function toggleAll(cb) { if(cb.checked)filtered.forEach(function(e){selected.add(e.id);});else selected.clear(); updateSelectBar(); render(); }
 function rowClick(ev, id) { if(!selectMode)return; if(selected.has(id))selected.delete(id);else selected.add(id); updateSelectBar(); render(); }
@@ -774,7 +767,7 @@ async function appointSelected() {
   if (!confirm('قرار تعيين لـ ' + ids.length + ' موظف؟')) return;
   showLoading(true);
   for (var i=0; i<ids.length; i++) {
-    await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(ids[i].empId), {method:'PATCH', headers:H, body:JSON.stringify({appointment_status:'appointed', status:'appointed'})});
+    await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'appointed',status:'appointed'})});
     updateEmpInMemory(ids[i].id, {status:'appointed', appointStatus:'appointed'});
   }
   await logAction('قرار تعيين جماعي', 'قرار تعيين لـ ' + ids.length + ' موظف');
@@ -787,7 +780,7 @@ async function enterSelected() {
   if (!confirm('إدخال بالنظام لـ ' + ids.length + ' موظف؟')) return;
   showLoading(true);
   for (var i=0; i<ids.length; i++) {
-    await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(ids[i].empId), {method:'PATCH', headers:H, body:JSON.stringify({appointment_status:'entered', status:'entered'})});
+    await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered'})});
     updateEmpInMemory(ids[i].id, {status:'entered', appointStatus:'entered'});
   }
   await logAction('إدخال جماعي بالنظام', 'إدخال ' + ids.length + ' موظف بالنظام');
@@ -800,7 +793,7 @@ async function enterSelected() {
 function openBulkEmail(emps) {
   var to = 'a.almuqbil@amnco.com.sa';
   var cc = 'y.alqaysi@amnco.com.sa;bashar@amnco.com.sa';
-  var today = new Date().toLocaleDateString('ar-SA', {year:'numeric', month:'long', day:'numeric'});
+  var today = new Date().toLocaleDateString('ar-SA', {year:'numeric',month:'long',day:'numeric'});
   var subject = encodeURIComponent('رفع عقود قوى - ' + today);
   var lines = [];
   emps.forEach(function(e, i){
@@ -831,7 +824,7 @@ async function deleteSelected() {
   if (!confirm('حذف ' + selected.size + ' موظف؟')) return;
   showLoading(true);
   var ids = employees.filter(function(e){ return selected.has(e.id); }).map(function(e){ return e.empId; });
-  for (var i=0; i<ids.length; i++) await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(ids[i]), {method:'DELETE', headers:H});
+  for (var i=0; i<ids.length; i++) await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(ids[i]), {method:'DELETE',headers:H});
   selected.clear(); await loadEmployees(); showToast('تم الحذف');
 }
 
@@ -839,23 +832,19 @@ async function deleteOne(id) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!confirm('حذف "' + e.name + '"؟')) return;
   showLoading(true);
-  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'DELETE', headers:H});
+  await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(e.empId), {method:'DELETE',headers:H});
   await loadEmployees(); showToast('تم الحذف');
 }
 
 function openEmpModal() { editingEmpId=null; clearEmpForm(); document.getElementById('empModalTitle').textContent='➕ إضافة موظف'; document.getElementById('empModalBg').classList.add('show'); }
 function openEmpEdit(id) {
   var e = employees.find(function(x){ return x.id===id; }); editingEmpId=id;
-  document.getElementById('f-empid').value = e.empId;
-  document.getElementById('f-name').value = e.name;
-  document.getElementById('f-idnum').value = e.idNum;
-  document.getElementById('f-dept').value = e.dept||'';
-  document.getElementById('f-project').value = e.project||'';
-  document.getElementById('f-date').value = e.date||'';
-  document.getElementById('f-contract').value = e.contract||'';
-  document.getElementById('f-salary').value = e.salary||'';
-  document.getElementById('f-status').value = e.status;
-  document.getElementById('empModalTitle').textContent = '✏️ تعديل بيانات الموظف';
+  document.getElementById('f-empid').value=e.empId; document.getElementById('f-name').value=e.name;
+  document.getElementById('f-idnum').value=e.idNum; document.getElementById('f-dept').value=e.dept||'';
+  document.getElementById('f-project').value=e.project||''; document.getElementById('f-date').value=e.date||'';
+  document.getElementById('f-contract').value=e.contract||''; document.getElementById('f-salary').value=e.salary||'';
+  document.getElementById('f-status').value=e.status;
+  document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
 }
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
@@ -865,13 +854,13 @@ function clearEmpForm() {
 }
 
 async function saveEmployee() {
-  var empId = document.getElementById('f-empid').value.trim();
-  var name = document.getElementById('f-name').value.trim();
-  var idNum = document.getElementById('f-idnum').value.trim();
+  var empId=document.getElementById('f-empid').value.trim();
+  var name=document.getElementById('f-name').value.trim();
+  var idNum=document.getElementById('f-idnum').value.trim();
   if (!empId||!name||!idNum) { showToast('يرجى تعبئة الحقول المطلوبة'); return; }
   if (employees.find(function(e){ return e.empId===empId&&e.id!==editingEmpId; })) { showToast('الرقم الوظيفي مكرر!'); return; }
   if (employees.find(function(e){ return e.idNum===idNum&&e.id!==editingEmpId; })) { showToast('رقم الهوية مكرر!'); return; }
-  var data = {emp_id:empId, name:name, id_num:idNum,
+  var data = {emp_id:empId,name:name,id_num:idNum,
     dept:document.getElementById('f-dept').value,
     project:document.getElementById('f-project').value.trim(),
     date:document.getElementById('f-date').value,
@@ -881,15 +870,15 @@ async function saveEmployee() {
   showLoading(true);
   if (editingEmpId) {
     var eOld = employees.find(function(x){ return x.id===editingEmpId; });
-    await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(eOld.empId), {method:'PATCH', headers:H, body:JSON.stringify({name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status})});
+    await fetch(EMP_API + '?emp_id=eq.' + encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status})});
     await logAction('تعديل', 'تعديل بيانات: ' + name);
-    var idx = employees.findIndex(function(x){ return x.id===editingEmpId; });
-    if (idx>=0) employees[idx] = Object.assign({}, employees[idx], {name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
-    var fidx = filtered.findIndex(function(x){ return x.id===editingEmpId; });
-    if (fidx>=0) filtered[fidx] = Object.assign({}, filtered[fidx], {name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
+    var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
+    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
+    var fidx=filtered.findIndex(function(x){ return x.id===editingEmpId; });
+    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
     closeEmpModal(); render(); showLoading(false); showToast('✅ تم التعديل');
   } else {
-    await fetch(EMP_API, {method:'POST', headers:H, body:JSON.stringify(data)});
+    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)});
     await logAction('إضافة', 'إضافة موظف: ' + name);
     closeEmpModal(); await loadEmployees(); showToast('✅ تم إضافة الموظف');
   }
@@ -900,6 +889,8 @@ async function loadUsers() {
   var r = await fetch(USR_API + '?order=id', {headers:H});
   users = await r.json() || []; renderUsers(); showLoading(false);
 }
+
+// ── الدالة المصلحة ──
 function renderUsers() {
   document.getElementById('usersBody').innerHTML = users.map(function(u,i){
     var roleLabel = u.role==='admin' ? '🛡️ مسؤول' : u.role==='viewer' ? '👁️ مطلع' : '👤 موظف';
@@ -915,38 +906,39 @@ function renderUsers() {
       '</div></td></tr>';
   }).join('');
 }
+
 function openUserModal() { editingUserId=null; clearUserForm(); document.getElementById('userModalTitle').textContent='➕ إضافة مستخدم'; document.getElementById('userModalBg').classList.add('show'); }
 function openUserEdit(id) {
   var u = users.find(function(x){ return x.id===id; }); editingUserId=id;
-  document.getElementById('u-username').value = u.username;
-  document.getElementById('u-password').value = u.password||'';
-  document.getElementById('u-fullname').value = u.full_name;
-  document.getElementById('u-role').value = u.role;
+  document.getElementById('u-username').value=u.username;
+  document.getElementById('u-password').value=u.password||'';
+  document.getElementById('u-fullname').value=u.full_name;
+  document.getElementById('u-role').value=u.role;
   toggleDeptSelect();
-  if (u.dept_access) document.getElementById('u-dept').value = u.dept_access;
-  document.getElementById('userModalTitle').textContent = '✏️ تعديل مستخدم';
+  if (u.dept_access) document.getElementById('u-dept').value=u.dept_access;
+  document.getElementById('userModalTitle').textContent='✏️ تعديل مستخدم';
   document.getElementById('userModalBg').classList.add('show');
 }
 function closeUserModal() { document.getElementById('userModalBg').classList.remove('show'); }
-function toggleDeptSelect() { document.getElementById('deptSelectWrap').style.display = document.getElementById('u-role').value==='viewer'?'block':'none'; }
+function toggleDeptSelect() { document.getElementById('deptSelectWrap').style.display=document.getElementById('u-role').value==='viewer'?'block':'none'; }
 function clearUserForm() {
   ['u-username','u-password','u-fullname'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('u-role').value='employee'; toggleDeptSelect();
 }
 async function saveUser() {
-  var username = document.getElementById('u-username').value.trim();
-  var password = document.getElementById('u-password').value.trim();
-  var fullname = document.getElementById('u-fullname').value.trim();
-  var role = document.getElementById('u-role').value;
-  var deptAccess = role==='viewer' ? document.getElementById('u-dept').value : 'all';
+  var username=document.getElementById('u-username').value.trim();
+  var password=document.getElementById('u-password').value.trim();
+  var fullname=document.getElementById('u-fullname').value.trim();
+  var role=document.getElementById('u-role').value;
+  var deptAccess=role==='viewer'?document.getElementById('u-dept').value:'all';
   if (!username||!password||!fullname) { showToast('يرجى تعبئة جميع الحقول'); return; }
   showLoading(true);
-  var payload = {username:username, password:password, full_name:fullname, role:role, dept_access:deptAccess};
+  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess};
   if (editingUserId) {
-    await fetch(USR_API + '?id=eq.' + editingUserId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
+    await fetch(USR_API + '?id=eq.' + editingUserId, {method:'PATCH',headers:H,body:JSON.stringify(payload)});
     showToast('✅ تم تعديل المستخدم');
   } else {
-    await fetch(USR_API, {method:'POST', headers:H, body:JSON.stringify(payload)});
+    await fetch(USR_API, {method:'POST',headers:H,body:JSON.stringify(payload)});
     showToast('✅ تم إضافة المستخدم');
   }
   closeUserModal(); await loadUsers();
@@ -956,10 +948,11 @@ async function deleteUser(id) {
   if (u.username==='admin') { showToast('لا يمكن حذف المسؤول الرئيسي'); return; }
   if (!confirm('حذف "' + u.full_name + '"؟')) return;
   showLoading(true);
-  await fetch(USR_API + '?id=eq.' + id, {method:'DELETE', headers:H});
+  await fetch(USR_API + '?id=eq.' + id, {method:'DELETE',headers:H});
   await loadUsers(); showToast('تم الحذف');
 }
 
+// ── الدالة المصلحة ──
 async function loadLogs() {
   var r = await fetch(LOG_API + '?order=created_at.desc&limit=100', {headers:H});
   var logs = await r.json() || [];
@@ -976,14 +969,15 @@ async function loadLogs() {
       '<td style="color:var(--sub);font-size:11px;">' + time + '</td></tr>';
   }).join('');
 }
+
 async function clearLogs() {
   if (!confirm('مسح كل السجل؟')) return;
-  await fetch(LOG_API + '?id=gte.0', {method:'DELETE', headers:H});
+  await fetch(LOG_API + '?id=gte.0', {method:'DELETE',headers:H});
   loadLogs(); showToast('تم مسح السجل');
 }
 
 function exportExcel() {
-  var source = (filtered.length && filtered.length<employees.length) ? filtered : employees;
+  var source = (filtered.length&&filtered.length<employees.length)?filtered:employees;
   var rows = source.map(function(e,i){
     return {'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,
       'الإدارة':e.dept||'','المشروع':e.project||'',
@@ -991,51 +985,66 @@ function exportExcel() {
       'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
       'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status};
   });
-  var ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
-  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
-  var wbout = XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  var blob = new Blob([wbout],{type:'application/octet-stream'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url; a.download='متابعة_التوظيف.xlsx';
+  var ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='متابعة_التوظيف.xlsx';
   document.body.appendChild(a); a.click();
-  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); },1000);
   showToast('تم التصدير');
 }
 
 function importExcel(e) {
-  var file = e.target.files[0]; if(!file) return;
-  var reader = new FileReader();
-  reader.onload = async function(ev) {
+  var file=e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload = async function(ev){
     try {
-      var wb = XLSX.read(ev.target.result,{type:'binary'});
-      var ws = wb.Sheets[wb.SheetNames[0]];
-      var rows = XLSX.utils.sheet_to_json(ws);
-      var sr = {'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned','مكتمل':'complete'};
-      var cr = {'عقد قوى':'qowa','عقد تدريب':'train'};
+      var wb=XLSX.read(ev.target.result,{type:'binary'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws);
+      var sr={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','مستقيل':'resigned','مكتمل':'complete'};
+      var cr={'عقد قوى':'qowa','عقد تدريب':'train'};
       showLoading(true);
       for (var i=0; i<rows.length; i++) {
-        var row = rows[i];
-        var dateVal = row['تاريخ المباشرة'], dateStr = '';
+        var row=rows[i];
+        var dateVal=row['تاريخ المباشرة'], dateStr='';
         if (dateVal) {
-          if (typeof dateVal==='number') { var j=new Date((dateVal-25569)*86400*1000); dateStr=j.toISOString().split('T')[0]; }
-          else if (typeof dateVal==='string'&&dateVal.includes('/')) { var p=dateVal.split('/'); if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
-          else { dateStr=dateVal; }
+          if (typeof dateVal==='number'){var j=new Date((dateVal-25569)*86400*1000);dateStr=j.toISOString().split('T')[0];}
+          else if (typeof dateVal==='string'&&dateVal.includes('/')){var p=dateVal.split('/');if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+          else{dateStr=dateVal;}
         }
-        await fetch(EMP_API, {method:'POST', headers:H, body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',id_num:String(row['رقم الهوية']||''),dept:row['الإدارة']||'',project:row['المشروع']||'',contract_type:cr[row['نوع العقد']]||'',date:dateStr,status:sr[row['الحالة']]||'active'})});
+        await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',id_num:String(row['رقم الهوية']||''),dept:row['الإدارة']||'',project:row['المشروع']||'',contract_type:cr[row['نوع العقد']]||'',date:dateStr,status:sr[row['الحالة']]||'active'})});
       }
       await loadEmployees(); showToast('تم استيراد ' + rows.length + ' موظف');
-    } catch(err) { showToast('خطأ في قراءة الملف'); showLoading(false); }
+    } catch(err){ showToast('خطأ في قراءة الملف'); showLoading(false); }
   };
   reader.readAsBinaryString(file); e.target.value='';
 }
 
-function showLoading(s) { document.getElementById('loadingBar').style.display = s?'block':'none'; }
-function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2800); }
+function downloadTemplate() {
+  var headers=[{'م':'','الرقم الوظيفي':'','الاسم':'','رقم الهوية':'','الإدارة':'','المشروع':'','تاريخ المباشرة':'','نوع العقد':'','الراتب':'','الحالة':''}];
+  var ws=XLSX.utils.json_to_sheet(headers);
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
+  XLSX.utils.sheet_add_aoa(ws,[['','','','','','','DD/MM/YYYY','عقد قوى أو عقد تدريب','','نشط / قيد الإجراءات / مستقيل / مكتمل']],{origin:'A2'});
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'قالب الموظفين');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='قالب_الموظفين.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); },1000);
+  showToast('تم تنزيل القالب');
+}
 
-document.getElementById('empModalBg').addEventListener('click', function(e){ if(e.target===this)closeEmpModal(); });
-document.getElementById('userModalBg').addEventListener('click', function(e){ if(e.target===this)closeUserModal(); });
-document.getElementById('changePassBg').addEventListener('click', function(e){ if(e.target===this)closeChangePass(); });
+function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
+function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2800); }
+
+document.getElementById('empModalBg').addEventListener('click',function(e){ if(e.target===this)closeEmpModal(); });
+document.getElementById('userModalBg').addEventListener('click',function(e){ if(e.target===this)closeUserModal(); });
+document.getElementById('changePassBg').addEventListener('click',function(e){ if(e.target===this)closeChangePass(); });
 </script>
 </body>
 </html>
