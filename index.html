@@ -225,7 +225,7 @@ td.id-num{font-family:monospace;font-size:12px;}
 
     <div class="select-bar" id="selectBar">
       <span class="select-count" id="selectCount">0 محدد</span>
-      <button class="btn btn-warning btn-sm" onclick="appointSelected()">📋 قرار تعيين</button>
+      <button class="btn btn-warning btn-sm" onclick="appointSelected()">📋 تم عمل قرار تعيين</button>
       <button class="btn btn-outline btn-sm" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;" onclick="enterSelected()">🖥️ إدخال بالنظام</button>
       <button class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display:none;" onclick="deleteSelected()">🗑️ حذف</button>
       <button class="btn btn-outline btn-sm" onclick="clearSelection()">✕</button>
@@ -248,10 +248,10 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="fbtn" id="filter-all" onclick="filterByStatus('all')" style="background:#e0e7ff;color:#2563eb;border-color:#2563eb;">📋 الكل</button>
       <button class="fbtn" id="filter-active" onclick="filterByStatus('active')" style="background:var(--success-light);color:var(--success);border-color:#6ee7b7;">✅ نشط</button>
       <button class="fbtn" id="filter-pending" onclick="filterByStatus('pending')" style="background:var(--warning-light);color:var(--warning);border-color:#fcd34d;">⏳ قيد</button>
-      <button class="fbtn" id="filter-resigned" onclick="filterByStatus('resigned')" style="background:var(--danger-light);color:var(--danger);border-color:#fca5a5;">🔴 مستقيل</button>
+      <button class="fbtn" id="filter-resigned" onclick="filterByStatus('resigned')" style="background:var(--danger-light);color:var(--danger);border-color:#fca5a5;">🔴 منهى خدماته</button>
       <button class="fbtn" id="filter-complete" onclick="filterByStatus('complete')" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7;">✔️ مكتمل</button>
-      <button class="fbtn" id="filter-appointed" onclick="filterByStatus('appointed')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📋 قرار تعيين</button>
-      <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ الإدخال بالنظام</button>
+      <button class="fbtn" id="filter-appointed" onclick="filterByStatus('appointed')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📋 تم عمل قرار تعيين</button>
+      <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ تم الإدخال بالنظام</button>
       <button class="fbtn" id="filter-contract-qowa" onclick="filterByContract('qowa')" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;">🔵 عقد قوى <span id="cnt-qowa">0</span></button>
       <button class="fbtn" id="filter-contract-train" onclick="filterByContract('train')" style="background:#f3e8ff;color:#7c3aed;border-color:#c4b5fd;">🟣 عقد تدريب <span id="cnt-train">0</span></button>
     </div>
@@ -300,6 +300,7 @@ td.id-num{font-family:monospace;font-size:12px;}
 
   <div id="tabLogs" style="display:none;">
     <div class="toolbar">
+      <button class="btn btn-primary btn-sm" onclick="exportDailyReport()">📊 تقرير اليوم Excel</button>
       <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑️ مسح السجل</button>
     </div>
     <div class="table-wrapper">
@@ -339,10 +340,12 @@ td.id-num{font-family:monospace;font-size:12px;}
         <select id="f-status">
           <option value="active">✅ نشط</option>
           <option value="pending">⏳ قيد الإجراءات</option>
-          <option value="resigned">🔴 مستقيل</option>
+          <option value="resigned">🔴 منهى خدماته</option>
           <option value="complete">✔️ مكتمل</option>
         </select>
       </div>
+      <div class="fg2"><label>الإجراء المتخذ</label><input id="f-action-taken" placeholder="مثال: تم رفع العقد"/></div>
+      <div class="fg2 full"><label>ملاحظات</label><input id="f-notes" placeholder="أي ملاحظات إضافية..."/></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeEmpModal()">إلغاء</button>
@@ -443,12 +446,12 @@ var currentUser = null;
 var statusMap = {
   active:    {label:'نشط',             cls:'s-active'},
   pending:   {label:'قيد الإجراءات',   cls:'s-pending'},
-  resigned:  {label:'مستقيل',          cls:'s-resigned'},
+  resigned:  {label:'منهى خدماته',      cls:'s-resigned'},
   transfer:  {label:'محول',            cls:'s-transfer'},
   leave:     {label:'إجازة',           cls:'s-leave'},
   complete:  {label:'مكتمل',           cls:'s-complete'},
-  appointed: {label:'قرار تعيين',      cls:'s-appointed'},
-  entered:   {label:'الإدخال بالنظام', cls:'s-entered'}
+  appointed: {label:'تم عمل قرار تعيين', cls:'s-appointed'},
+  entered:   {label:'تم الإدخال بالنظام', cls:'s-entered'}
 };
 var contractMap = {qowa:'عقد قوى', train:'عقد تدريب'};
 
@@ -493,7 +496,7 @@ function enterApp() {
   document.getElementById('addEmpBtn').style.display = isViewer ? 'none' : 'inline-flex';
 
   var head = document.getElementById('empTableHead');
-  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th>';
+  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>الإجراء المتخذ</th><th>ملاحظات</th><th>إجراءات</th>';
 
   loadDepartments().then(function(){ loadEmployees(); });
 }
@@ -615,7 +618,8 @@ async function loadEmployees() {
     return {id:i+1, empId:e.emp_id||'', name:e.name||'', idNum:e.id_num||'',
       dept:e.dept||'', project:e.project||'', date:e.date||'',
       status:e.status||'active', contract:e.contract_type||'',
-      salary:e.salary||'', appointStatus:e.appointment_status||''};
+      salary:e.salary||'', appointStatus:e.appointment_status||'',
+      notes:e.notes||'', actionTaken:e.action_taken||''};
   }) : [];
   if (currentUser.role==='viewer' && currentUser.dept_access && currentUser.dept_access!=='all') {
     filtered = employees.filter(function(e){ return e.dept===currentUser.dept_access; });
@@ -672,6 +676,8 @@ function render() {
     html += '<td>' + (e.project||'-') + '</td><td>' + dateStr + '</td>';
     html += '<td>' + contractBadge(e.contract) + '</td><td>' + salary + '</td>';
     html += '<td>' + statusBadge(e.status) + '</td>';
+    html += '<td><input type="text" value="' + (e.actionTaken||'').replace(/"/g,'&quot;') + '" placeholder="الإجراء المتخذ" style="width:110px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'action_taken\',this.value)" onclick="event.stopPropagation()"/></td>';
+    html += '<td><input type="text" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." style="width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()"/></td>';
     html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
   }
   tbody.innerHTML = html;
@@ -938,12 +944,14 @@ function openEmpEdit(id) {
   document.getElementById('f-project').value=e.project||''; document.getElementById('f-date').value=e.date||'';
   document.getElementById('f-contract').value=e.contract||''; document.getElementById('f-salary').value=e.salary||'';
   document.getElementById('f-status').value=e.status;
+  document.getElementById('f-action-taken').value=e.actionTaken||'';
+  document.getElementById('f-notes').value=e.notes||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
 }
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
 function clearEmpForm() {
-  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
+  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-notes','f-action-taken'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
   document.getElementById('f-dept').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active';
 }
 
@@ -960,19 +968,21 @@ async function saveEmployee() {
     date:document.getElementById('f-date').value,
     contract_type:document.getElementById('f-contract').value,
     salary:document.getElementById('f-salary').value.trim(),
-    status:document.getElementById('f-status').value};
+    status:document.getElementById('f-status').value,
+    notes:document.getElementById('f-notes').value.trim(),
+    action_taken:document.getElementById('f-action-taken').value.trim()};
   showLoading(true);
   if (editingEmpId) {
     var eOld=employees.find(function(x){ return x.id===editingEmpId; });
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status})});
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken})});
     await logAction('تعديل', 'تعديل بيانات: '+name);
     var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
-    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
+    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
     var fidx=filtered.findIndex(function(x){ return x.id===editingEmpId; });
-    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
+    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
     closeEmpModal(); render(); showLoading(false); showToast('✅ تم التعديل');
   } else {
-    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)});
+    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)}); // includes notes and action_taken
     await logAction('إضافة', 'إضافة موظف: '+name);
     closeEmpModal(); await loadEmployees(); showToast('✅ تم إضافة الموظف');
   }
@@ -1077,7 +1087,8 @@ function exportExcel() {
       'الإدارة':e.dept||'','المشروع':e.project||'',
       'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
       'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
-      'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status};
+      'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status,
+      'الإجراء المتخذ':e.actionTaken||'','ملاحظات':e.notes||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
@@ -1130,6 +1141,123 @@ function downloadTemplate() {
   document.body.appendChild(a); a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); },1000);
   showToast('تم تنزيل القالب');
+}
+
+async function exportDailyReport() {
+  showLoading(true);
+  // جلب سجلات اليوم فقط
+  var today = new Date();
+  var todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  var r = await fetch(LOG_API + '?order=created_at.desc&limit=500', {headers:H});
+  var logs = await r.json() || [];
+
+  // فلترة سجلات اليوم
+  var todayLogs = logs.filter(function(l){
+    return l.created_at && l.created_at.startsWith(todayStr);
+  });
+
+  // جلب بيانات الموظفين الذين تغيرت حالتهم اليوم
+  var affectedEmpIds = [];
+  todayLogs.forEach(function(l){
+    if (l.details) {
+      employees.forEach(function(e){
+        if (l.details.indexOf(e.name) !== -1 && affectedEmpIds.indexOf(e.empId) === -1) {
+          affectedEmpIds.push(e.empId);
+        }
+      });
+    }
+  });
+
+  var dateLabel = today.toLocaleDateString('ar-SA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  // ورقة 1: ملخص الحركات
+  var summaryRows = [
+    {'التقرير': 'تقرير الحركات اليومية', 'القيمة': dateLabel},
+    {'التقرير': 'إجمالي الحركات', 'القيمة': todayLogs.length},
+    {'التقرير': 'عدد الإضافات', 'القيمة': todayLogs.filter(function(l){return l.action==='إضافة';}).length},
+    {'التقرير': 'عدد التعديلات', 'القيمة': todayLogs.filter(function(l){return l.action==='تعديل';}).length},
+    {'التقرير': 'قرارات التعيين', 'القيمة': todayLogs.filter(function(l){return l.action==='قرار تعيين'||l.action==='قرار تعيين جماعي';}).length},
+    {'التقرير': 'إدخالات بالنظام', 'القيمة': todayLogs.filter(function(l){return l.action==='إدخال بالنظام'||l.action==='إدخال جماعي بالنظام';}).length},
+    {'التقرير': 'ملفات مكتملة', 'القيمة': todayLogs.filter(function(l){return l.action==='ملف مكتمل';}).length},
+    {'التقرير': 'عمليات الحذف', 'القيمة': todayLogs.filter(function(l){return l.action&&l.action.indexOf('حذف')!==-1;}).length},
+  ];
+
+  // ورقة 2: تفاصيل الحركات
+  var detailRows = todayLogs.map(function(l, i){
+    var time = new Date(l.created_at).toLocaleTimeString('ar-SA');
+    return {
+      'م': i+1,
+      'المستخدم': l.emp_name || '',
+      'اسم المستخدم': l.emp_id || '',
+      'الإجراء': l.action || '',
+      'التفاصيل': l.details || '',
+      'الوقت': time
+    };
+  });
+
+  // ورقة 3: الموظفون المتأثرون
+  var affectedEmps = employees.filter(function(e){
+    return affectedEmpIds.indexOf(e.empId) !== -1;
+  }).map(function(e, i){
+    return {
+      'م': i+1,
+      'الرقم الوظيفي': e.empId,
+      'الاسم': e.name,
+      'رقم الهوية': e.idNum,
+      'الإدارة': e.dept || '',
+      'المشروع': e.project || '',
+      'الحالة الحالية': statusMap[e.status] ? statusMap[e.status].label : e.status,
+      'نوع العقد': contractMap[e.contract] || ''
+    };
+  });
+
+  var wb = XLSX.utils.book_new();
+
+  // ورقة الملخص
+  var ws1 = XLSX.utils.json_to_sheet(summaryRows);
+  ws1['!cols'] = [{wch:24},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'ملخص اليوم');
+
+  // ورقة التفاصيل
+  if (detailRows.length > 0) {
+    var ws2 = XLSX.utils.json_to_sheet(detailRows);
+    ws2['!cols'] = [{wch:5},{wch:22},{wch:14},{wch:20},{wch:40},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'تفاصيل الحركات');
+  } else {
+    var wsEmpty = XLSX.utils.aoa_to_sheet([['لا توجد حركات اليوم']]);
+    XLSX.utils.book_append_sheet(wb, wsEmpty, 'تفاصيل الحركات');
+  }
+
+  // ورقة الموظفين المتأثرين
+  if (affectedEmps.length > 0) {
+    var ws3 = XLSX.utils.json_to_sheet(affectedEmps);
+    ws3['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:18},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws3, 'الموظفون المتأثرون');
+  }
+
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbout], {type:'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var fileName = 'تقرير_' + todayStr + '.xlsx';
+  var a = document.createElement('a'); a.href=url; a.download=fileName;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showLoading(false);
+  showToast('✅ تم سحب تقرير ' + dateLabel);
+}
+
+
+async function saveFieldInline(id, field, value) {
+  var e = employees.find(function(x){ return x.id===id; });
+  if (!e) return;
+  var payload = {};
+  payload[field] = value;
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify(payload)});
+  // update in memory
+  [employees,filtered].forEach(function(arr){
+    var idx=arr.findIndex(function(x){ return x.id===id; });
+    if (idx>=0) arr[idx][field==='notes'?'notes':'actionTaken'] = value;
+  });
 }
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
