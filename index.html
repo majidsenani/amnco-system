@@ -204,7 +204,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       <div class="stat blue"><div class="stat-num" id="st-total">0</div><div class="stat-lbl">إجمالي</div></div>
       <div class="stat green"><div class="stat-num" id="st-active">0</div><div class="stat-lbl">نشط</div></div>
       <div class="stat orange"><div class="stat-num" id="st-pending">0</div><div class="stat-lbl">قيد الإجراءات</div></div>
-      <div class="stat red"><div class="stat-num" id="st-resigned">0</div><div class="stat-lbl">منهى خدماته/محول</div></div>
+      <div class="stat red"><div class="stat-num" id="st-Terminated his services">0</div><div class="stat-lbl">منهى خدماته/محول</div></div>
     </div>
 
     <div class="toolbar">
@@ -248,7 +248,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="fbtn" id="filter-all" onclick="filterByStatus('all')" style="background:#e0e7ff;color:#2563eb;border-color:#2563eb;">📋 الكل</button>
       <button class="fbtn" id="filter-active" onclick="filterByStatus('active')" style="background:var(--success-light);color:var(--success);border-color:#6ee7b7;">✅ نشط</button>
       <button class="fbtn" id="filter-pending" onclick="filterByStatus('pending')" style="background:var(--warning-light);color:var(--warning);border-color:#fcd34d;">⏳ قيد</button>
-      <button class="fbtn" id="filter-resigned" onclick="filterByStatus('resigned')" style="background:var(--danger-light);color:var(--danger);border-color:#fca5a5;">🔴 منهى خدماته</button>
+      <button class="fbtn" id="filter-Terminated his services" onclick="filterByStatus('Terminated his services')" style="background:var(--danger-light);color:var(--danger);border-color:#fca5a5;">🔴 منهى خدماته</button>
       <button class="fbtn" id="filter-complete" onclick="filterByStatus('complete')" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7;">✔️ مكتمل</button>
       <button class="fbtn" id="filter-appointed" onclick="filterByStatus('appointed')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📋 قرار تعيين</button>
       <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ الإدخال بالنظام</button>
@@ -339,7 +339,7 @@ td.id-num{font-family:monospace;font-size:12px;}
         <select id="f-status">
           <option value="active">✅ نشط</option>
           <option value="pending">⏳ قيد الإجراءات</option>
-          <option value="resigned">🔴 منهى خدماته</option>
+          <option value="Terminated his services">🔴 منهى خدماته</option>
           <option value="complete">✔️ مكتمل</option>
         </select>
       </div>
@@ -443,7 +443,7 @@ var currentUser = null;
 var statusMap = {
   active:    {label:'نشط',             cls:'s-active'},
   pending:   {label:'قيد الإجراءات',   cls:'s-pending'},
-  resigned:  {label:'منهى خدماته',          cls:'s-resigned'},
+  Terminated his services:  {label:'منهى خدماته',          cls:'s-Terminated his services'},
   transfer:  {label:'محول',            cls:'s-transfer'},
   leave:     {label:'إجازة',           cls:'s-leave'},
   complete:  {label:'مكتمل',           cls:'s-complete'},
@@ -1099,7 +1099,7 @@ function importExcel(e) {
       var wb=XLSX.read(ev.target.result,{type:'binary'});
       var ws=wb.Sheets[wb.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(ws);
-      var sr={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','منهى خدماته':'resigned','مكتمل':'complete'};
+      var sr={'نشط':'active','قيد الإجراءات':'pending','إجازة':'leave','محول':'transfer','منهى خدماته':'Terminated his services','مكتمل':'complete'};
       var cr={'عقد قوى':'qowa','عقد تدريب':'train'};
       showLoading(true);
       for (var i=0;i<rows.length;i++) {
