@@ -161,6 +161,13 @@ td.id-num{font-family:monospace;font-size:12px;}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:11px 22px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── inline notes / action field styles ── */
+.inline-field{width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;}
+.inline-field-action{width:110px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;}
+/* action cell: hidden by default, shown when note exists */
+.action-cell-wrap{position:relative;}
+.action-locked{display:inline-flex;align-items:center;gap:4px;color:var(--sub);font-size:11px;cursor:default;opacity:0.45;}
 </style>
 </head>
 <body>
@@ -344,8 +351,8 @@ td.id-num{font-family:monospace;font-size:12px;}
           <option value="complete">✔️ مكتمل</option>
         </select>
       </div>
-      <div class="fg2"><label>الإجراء المتخذ</label><input id="f-action-taken" placeholder="مثال: تم رفع العقد"/></div>
       <div class="fg2 full"><label>ملاحظات</label><input id="f-notes" placeholder="أي ملاحظات إضافية..."/></div>
+      <div class="fg2 full"><label>الإجراء المتخذ</label><input id="f-action-taken" placeholder="مثال: تم رفع العقد"/></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeEmpModal()">إلغاء</button>
@@ -496,7 +503,8 @@ function enterApp() {
   document.getElementById('addEmpBtn').style.display = isViewer ? 'none' : 'inline-flex';
 
   var head = document.getElementById('empTableHead');
-  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>الإجراء المتخذ</th><th>ملاحظات</th><th>إجراءات</th>';
+  // Column order: ملاحظات BEFORE الإجراء المتخذ
+  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>ملاحظات</th><th>الإجراء المتخذ</th><th>إجراءات</th>';
 
   loadDepartments().then(function(){ loadEmployees(); });
 }
@@ -642,7 +650,7 @@ function render() {
   var page = filtered.slice(start, end);
   var tbody = document.getElementById('empTableBody');
   if (!filtered.length) {
-    tbody.innerHTML='<tr><td colspan="12"><div class="empty">لا توجد نتائج</div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="14"><div class="empty">لا توجد نتائج</div></td></tr>';
     document.getElementById('pageInfo').textContent='0 موظف';
     document.getElementById('pageBtns').innerHTML=''; return;
   }
@@ -669,6 +677,19 @@ function render() {
     var salary = e.salary ? '<span style="font-family:monospace;font-weight:700;color:var(--success);">' + Number(e.salary).toLocaleString() + ' ريال</span>' : '<span style="color:var(--sub);font-size:11px;"></span>';
     var dateStr = e.date ? e.date.split('-').reverse().join('/') : '';
     var editBtn = !isViewer ? '<button class="icon-btn edit" data-id="' + e.id + '" title="تعديل">&#9998;</button>' : '';
+
+    // ── ملاحظات column (always editable) ──
+    var notesCell = '<td><input type="text" class="inline-field" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()" oninput="onNotesInput(this,' + e.id + ')"/></td>';
+
+    // ── الإجراء المتخذ column — only enabled when notes is not empty ──
+    var hasNote = (e.notes||'').trim() !== '';
+    var actionCell;
+    if (hasNote) {
+      actionCell = '<td><input type="text" class="inline-field-action" value="' + (e.actionTaken||'').replace(/"/g,'&quot;') + '" placeholder="الإجراء المتخذ" onchange="saveFieldInline(' + e.id + ',\'action_taken\',this.value)" onclick="event.stopPropagation()"/></td>';
+    } else {
+      actionCell = '<td><span class="action-locked" title="أضف ملاحظة أولاً">🔒 يتطلب ملاحظة</span></td>';
+    }
+
     html += '<tr class="' + (sel?'selected':'') + '" data-id="' + e.id + '">';
     html += cbCol + '<td class="num">' + (start+i+1) + '</td>';
     html += '<td class="emp-id">' + e.empId + '</td><td class="name">' + e.name + '</td>';
@@ -676,8 +697,9 @@ function render() {
     html += '<td>' + (e.project||'-') + '</td><td>' + dateStr + '</td>';
     html += '<td>' + contractBadge(e.contract) + '</td><td>' + salary + '</td>';
     html += '<td>' + statusBadge(e.status) + '</td>';
-    html += '<td><input type="text" value="' + (e.actionTaken||'').replace(/"/g,'&quot;') + '" placeholder="الإجراء المتخذ" style="width:110px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'action_taken\',this.value)" onclick="event.stopPropagation()"/></td>';
-    html += '<td><input type="text" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." style="width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()"/></td>';
+    // ملاحظات THEN الإجراء المتخذ
+    html += notesCell;
+    html += actionCell;
     html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
   }
   tbody.innerHTML = html;
@@ -707,6 +729,24 @@ function render() {
     b.textContent = p;
     (function(pg){ b.onclick=function(){ currentPage=pg; render(); }; })(p);
     pb.appendChild(b);
+  }
+}
+
+// When notes input changes inline, toggle the action field in same row
+function onNotesInput(notesInput, id) {
+  var tr = notesInput.closest('tr');
+  if (!tr) return;
+  var hasNote = notesInput.value.trim() !== '';
+  // find the action cell (13th td = index 12, after notes at index 11)
+  var tds = tr.querySelectorAll('td');
+  // notes is at index 11 (0-based), action is at index 12
+  var actionTd = tds[12];
+  if (!actionTd) return;
+  var e = employees.find(function(x){ return x.id===id; });
+  if (hasNote) {
+    actionTd.innerHTML = '<input type="text" class="inline-field-action" value="' + ((e&&e.actionTaken)||'').replace(/"/g,'&quot;') + '" placeholder="الإجراء المتخذ" onchange="saveFieldInline(' + id + ',\'action_taken\',this.value)" onclick="event.stopPropagation()"/>';
+  } else {
+    actionTd.innerHTML = '<span class="action-locked" title="أضف ملاحظة أولاً">🔒 يتطلب ملاحظة</span>';
   }
 }
 
@@ -747,7 +787,6 @@ async function doEnter(id) {
   showLoading(false); showSuccessPopup(e);
 }
 
-// ── الدالة المصلحة ──
 function showSuccessPopup(emp) {
   var popup = document.createElement('div');
   popup.className = 'success-popup';
@@ -789,7 +828,6 @@ function openOutlookEmail(e) {
   window.location.href = 'mailto:'+to+'?cc='+cc+'&subject='+subject+'&body='+body;
 }
 
-// ── الدالة المصلحة ──
 async function resetWorkflow(id, toStatus) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!confirm('إرجاع حالة "'+e.name+'" للخلف؟')) return;
@@ -944,8 +982,8 @@ function openEmpEdit(id) {
   document.getElementById('f-project').value=e.project||''; document.getElementById('f-date').value=e.date||'';
   document.getElementById('f-contract').value=e.contract||''; document.getElementById('f-salary').value=e.salary||'';
   document.getElementById('f-status').value=e.status;
-  document.getElementById('f-action-taken').value=e.actionTaken||'';
   document.getElementById('f-notes').value=e.notes||'';
+  document.getElementById('f-action-taken').value=e.actionTaken||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
 }
@@ -982,7 +1020,7 @@ async function saveEmployee() {
     if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
     closeEmpModal(); render(); showLoading(false); showToast('✅ تم التعديل');
   } else {
-    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)}); // includes notes and action_taken
+    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)});
     await logAction('إضافة', 'إضافة موظف: '+name);
     closeEmpModal(); await loadEmployees(); showToast('✅ تم إضافة الموظف');
   }
@@ -995,7 +1033,6 @@ async function loadUsers() {
   users=await r.json()||[]; renderUsers(); showLoading(false);
 }
 
-// ── الدالة المصلحة ──
 function renderUsers() {
   document.getElementById('usersBody').innerHTML = users.map(function(u,i){
     var roleLabel=u.role==='admin'?'🛡️ مسؤول':u.role==='viewer'?'👁️ مطلع':'👤 موظف';
@@ -1057,7 +1094,6 @@ async function deleteUser(id) {
   await loadUsers(); showToast('تم الحذف');
 }
 
-// ── الدالة المصلحة ──
 async function loadLogs() {
   var r=await fetch(LOG_API+'?order=created_at.desc&limit=100', {headers:H});
   var logs=await r.json()||[];
@@ -1088,10 +1124,10 @@ function exportExcel() {
       'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
       'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
       'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status,
-      'الإجراء المتخذ':e.actionTaken||'','ملاحظات':e.notes||''};
+      'ملاحظات':e.notes||'','الإجراء المتخذ':e.actionTaken||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18},{wch:22},{wch:22}];
   var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
   var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   var blob=new Blob([wbout],{type:'application/octet-stream'});
@@ -1143,34 +1179,18 @@ function downloadTemplate() {
   showToast('تم تنزيل القالب');
 }
 
+// ── Daily Report — ورقة واحدة فقط: ملخص اليوم ──
 async function exportDailyReport() {
   showLoading(true);
-  // جلب سجلات اليوم فقط
   var today = new Date();
-  var todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  var todayStr = today.toISOString().split('T')[0];
   var r = await fetch(LOG_API + '?order=created_at.desc&limit=500', {headers:H});
   var logs = await r.json() || [];
-
-  // فلترة سجلات اليوم
   var todayLogs = logs.filter(function(l){
     return l.created_at && l.created_at.startsWith(todayStr);
   });
-
-  // جلب بيانات الموظفين الذين تغيرت حالتهم اليوم
-  var affectedEmpIds = [];
-  todayLogs.forEach(function(l){
-    if (l.details) {
-      employees.forEach(function(e){
-        if (l.details.indexOf(e.name) !== -1 && affectedEmpIds.indexOf(e.empId) === -1) {
-          affectedEmpIds.push(e.empId);
-        }
-      });
-    }
-  });
-
   var dateLabel = today.toLocaleDateString('ar-SA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
-  // ورقة 1: ملخص الحركات
   var summaryRows = [
     {'التقرير': 'تقرير الحركات اليومية', 'القيمة': dateLabel},
     {'التقرير': 'إجمالي الحركات', 'القيمة': todayLogs.length},
@@ -1182,58 +1202,10 @@ async function exportDailyReport() {
     {'التقرير': 'عمليات الحذف', 'القيمة': todayLogs.filter(function(l){return l.action&&l.action.indexOf('حذف')!==-1;}).length},
   ];
 
-  // ورقة 2: تفاصيل الحركات
-  var detailRows = todayLogs.map(function(l, i){
-    var time = new Date(l.created_at).toLocaleTimeString('ar-SA');
-    return {
-      'م': i+1,
-      'المستخدم': l.emp_name || '',
-      'اسم المستخدم': l.emp_id || '',
-      'الإجراء': l.action || '',
-      'التفاصيل': l.details || '',
-      'الوقت': time
-    };
-  });
-
-  // ورقة 3: الموظفون المتأثرون
-  var affectedEmps = employees.filter(function(e){
-    return affectedEmpIds.indexOf(e.empId) !== -1;
-  }).map(function(e, i){
-    return {
-      'م': i+1,
-      'الرقم الوظيفي': e.empId,
-      'الاسم': e.name,
-      'رقم الهوية': e.idNum,
-      'الإدارة': e.dept || '',
-      'المشروع': e.project || '',
-      'الحالة الحالية': statusMap[e.status] ? statusMap[e.status].label : e.status,
-      'نوع العقد': contractMap[e.contract] || ''
-    };
-  });
-
   var wb = XLSX.utils.book_new();
-
-  // ورقة الملخص
   var ws1 = XLSX.utils.json_to_sheet(summaryRows);
   ws1['!cols'] = [{wch:24},{wch:30}];
   XLSX.utils.book_append_sheet(wb, ws1, 'ملخص اليوم');
-
-  // ورقة التفاصيل
-  if (detailRows.length > 0) {
-    var ws2 = XLSX.utils.json_to_sheet(detailRows);
-    ws2['!cols'] = [{wch:5},{wch:22},{wch:14},{wch:20},{wch:40},{wch:12}];
-    XLSX.utils.book_append_sheet(wb, ws2, 'تفاصيل الحركات');
-  } else {
-    var wsEmpty = XLSX.utils.aoa_to_sheet([['لا توجد حركات اليوم']]);
-    XLSX.utils.book_append_sheet(wb, wsEmpty, 'تفاصيل الحركات');
-  }
-
-  // ورقة الموظفين المتأثرين
-  if (affectedEmps.length > 0) {
-    var ws3 = XLSX.utils.json_to_sheet(affectedEmps);
-    ws3['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:18},{wch:16},{wch:14}];
-    XLSX.utils.book_append_sheet(wb, ws3, 'الموظفون المتأثرون');
-  }
 
   var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
   var blob = new Blob([wbout], {type:'application/octet-stream'});
@@ -1246,14 +1218,12 @@ async function exportDailyReport() {
   showToast('✅ تم سحب تقرير ' + dateLabel);
 }
 
-
 async function saveFieldInline(id, field, value) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!e) return;
   var payload = {};
   payload[field] = value;
   await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify(payload)});
-  // update in memory
   [employees,filtered].forEach(function(arr){
     var idx=arr.findIndex(function(x){ return x.id===id; });
     if (idx>=0) arr[idx][field==='notes'?'notes':'actionTaken'] = value;
