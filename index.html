@@ -752,10 +752,9 @@ async function loadEmployees(){
       salary:e.salary||'',appointStatus:e.appointment_status||'',
       notes:e.notes||'',actionTaken:e.action_taken||''};
   }):[];
-  if(currentUser.role==='viewer'&&currentUser.dept_access&&currentUser.dept_access!=='all')
-    filtered=employees.filter(function(e){return e.dept===currentUser.dept_access;});
-  else filtered=employees.slice();
-  populateYears();render();showLoading(false);
+  populateYears();
+  applyFilters(); // يطبّق كل الفلاتر النشطة ويستدعي render()
+  showLoading(false);
 }
 
 async function logAction(action,details){if(!currentUser)return;await fetch(LOG_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:currentUser.username,emp_name:currentUser.full_name,action:action,details:details})});}
@@ -862,7 +861,7 @@ function openOutlookEmail(e){
 function populateYears(){var years=[];employees.forEach(function(e){if(e.date){var y=e.date.split('-')[0];if(y&&years.indexOf(y)===-1)years.push(y);}});years.sort().reverse();var sel=document.getElementById('filterYear'),cur=sel.value;sel.innerHTML='<option value="">كل السنوات</option>';years.forEach(function(y){var o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o);});sel.value=cur;}
 function clearDateFilter(){document.getElementById('filterMonth').value='';document.getElementById('filterYear').value='';applyFilters();}
 function filterByStatus(s){activeStatusFilter=s;document.querySelectorAll('[id^="filter-"]').forEach(function(b){b.style.opacity='0.5';});document.getElementById('filter-'+s).style.opacity='1';currentPage=1;applyFilters();}
-function applyFilters(){var q=document.getElementById('searchInput').value.toLowerCase().trim();var month=document.getElementById('filterMonth').value;var year=document.getElementById('filterYear').value;var base=(currentUser.role==='viewer'&&currentUser.dept_access&&currentUser.dept_access!=='all')?employees.filter(function(e){return e.dept===currentUser.dept_access;}):employees;filtered=base.filter(function(e){var ms=!q||e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q)||e.idNum.includes(q)||(e.dept&&e.dept.includes(q));var mst=activeStatusFilter==='all'||e.status===activeStatusFilter;var mm=!month||(e.date&&e.date.split('-')[1]===month);var my=!year||(e.date&&e.date.split('-')[0]===year);var mc=!activeContractFilter||(e.contract===activeContractFilter);return ms&&mst&&mm&&my&&mc;});currentPage=1;render();}
+function applyFilters(){var q=document.getElementById("searchInput")?document.getElementById("searchInput").value.toLowerCase().trim():"";var month=document.getElementById("filterMonth")?document.getElementById("filterMonth").value:"";var year=document.getElementById("filterYear")?document.getElementById("filterYear").value:"";var base=(currentUser&&currentUser.role==="viewer"&&currentUser.dept_access&&currentUser.dept_access!=="all")?employees.filter(function(e){return e.dept===currentUser.dept_access;}):employees;filtered=base.filter(function(e){var ms=!q||e.name.toLowerCase().includes(q)||e.empId.toLowerCase().includes(q)||e.idNum.includes(q)||(e.dept&&e.dept.toLowerCase().includes(q));var mst=activeStatusFilter==="all"||e.status===activeStatusFilter;var mm=!month||(e.date&&e.date.split("-")[1]===month);var my=!year||(e.date&&e.date.split("-")[0]===year);var mc=!activeContractFilter||(e.contract===activeContractFilter);return ms&&mst&&mm&&my&&mc;});currentPage=1;render();}
 function toggleSelectMode(){selectMode=!selectMode;clearSelection();document.getElementById('selectBtn').textContent=selectMode?'إيقاف التحديد':'☑️ تحديد';}
 function toggleSelect(id,cb){if(cb.checked)selected.add(id);else selected.delete(id);updateSelectBar();render();}
 function toggleAll(cb){if(cb.checked)filtered.forEach(function(e){selected.add(e.id);});else selected.clear();updateSelectBar();render();}
