@@ -224,7 +224,7 @@ td.id-num{font-family:monospace;font-size:12px;}
 <body>
 <div id="loadingBar" class="loading-bar"></div>
 
-<div class="login-wrap" id="loginScreen">
+<div class="login-wrap" id="loginScreen" style="display:flex;">
   <div class="login-card">
     <div class="login-logo">&#128084;</div>
     <div class="login-title">متابعة التوظيف</div>
@@ -494,6 +494,33 @@ td.id-num{font-family:monospace;font-size:12px;}
 </div>
 
 <!-- Change Password Modal -->
+<div class="modal-bg" id="taskModalBg">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">&#128203; إرسال مهمة</div>
+      <button class="modal-close" onclick="closeTaskModal()">&#10005;</button>
+    </div>
+    <div class="fg2 full" style="margin-bottom:12px;">
+      <label>إرسال إلى *</label>
+      <select id="t-to" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:Tajawal,sans-serif;font-size:13px;width:100%;outline:none;background:var(--bg);color:var(--text);">
+        <option value="">-- اختر المستخدم --</option>
+      </select>
+    </div>
+    <div class="fg2 full" style="margin-bottom:12px;">
+      <label>عنوان المهمة *</label>
+      <input id="t-title" placeholder="عنوان المهمة..." style="padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:Tajawal,sans-serif;font-size:13px;width:100%;outline:none;background:var(--bg);color:var(--text);"/>
+    </div>
+    <div class="fg2 full">
+      <label>التفاصيل</label>
+      <textarea id="t-desc" rows="3" placeholder="تفاصيل المهمة..." style="padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:Tajawal,sans-serif;font-size:13px;width:100%;outline:none;background:var(--bg);color:var(--text);resize:vertical;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeTaskModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="sendTask()">&#128203; إرسال</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="changePassBg">
   <div class="modal" style="max-width:380px;">
     <div class="modal-header">
@@ -567,6 +594,7 @@ async function doLogin() {
   showLoading(false);
   if (!d||!d.length) { showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة'); return; }
   currentUser = d[0];
+  sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
   document.getElementById('errMsg').classList.remove('show');
   enterApp();
 }
@@ -598,6 +626,7 @@ function enterApp() {
 
 function logout() {
   currentUser = null; selectMode = false; selected.clear();
+  sessionStorage.removeItem('currentUser');
   if(taskPollInterval){clearInterval(taskPollInterval);taskPollInterval=null;}
   if(chartStatusInst){chartStatusInst.destroy();chartStatusInst=null;}
   if(chartContractInst){chartContractInst.destroy();chartContractInst=null;}
@@ -1430,7 +1459,8 @@ function renderDashboard(){
 }
 
 /* ── TASKS ── */
-function openTaskModal() {
+async function openTaskModal() {
+  if(!users.length) await loadUsers();
   document.getElementById('t-title').value='';
   document.getElementById('t-desc').value='';
   var sel=document.getElementById('t-to');
@@ -1523,6 +1553,10 @@ document.getElementById('userModalBg').addEventListener('click',function(e){if(e
 document.getElementById('deptModalBg').addEventListener('click',function(e){if(e.target===this)closeDeptModal();});
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
+document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
+// Auto-restore on refresh
+(function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
+
 </script>
 </body>
 </html>
