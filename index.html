@@ -1068,16 +1068,27 @@ async function deleteOne(id) {
 }
 
 function openEmpModal() { editingEmpId=null; clearEmpForm(); document.getElementById('empModalTitle').textContent='➕ إضافة موظف'; document.getElementById('empModalBg').classList.add('show'); }
-function openEmpEdit(id) {
-  var e=employees.find(function(x){ return x.id===id; }); editingEmpId=id;
-  document.getElementById('f-empid').value=e.empId; document.getElementById('f-name').value=e.name;
-  document.getElementById('f-idnum').value=e.idNum; document.getElementById('f-dept').value=e.dept||'';
-  document.getElementById('f-project').value=e.project||''; document.getElementById('f-date').value=e.date||'';
-  document.getElementById('f-contract').value=e.contract||''; document.getElementById('f-salary').value=e.salary||'';
-  document.getElementById('f-status').value=e.status;
-  document.getElementById('f-action-taken').value=e.actionTaken||'';
-  document.getElementById('f-notes').value=e.notes||'';
-  document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
+async function openEmpEdit(id) {
+  var eMem = employees.find(function(x){ return x.id===id; });
+  editingEmpId = id;
+  // جلب البيانات مباشرة من Supabase لضمان اكتمال جميع الحقول
+  showLoading(true);
+  var r = await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eMem.empId), {headers:H});
+  var rows = await r.json();
+  showLoading(false);
+  var e = rows && rows.length ? rows[0] : {};
+  document.getElementById('f-empid').value       = e.emp_id||eMem.empId||'';
+  document.getElementById('f-name').value        = e.name||eMem.name||'';
+  document.getElementById('f-idnum').value       = e.id_num||eMem.idNum||'';
+  document.getElementById('f-dept').value        = e.dept||eMem.dept||'';
+  document.getElementById('f-project').value     = e.project||eMem.project||'';
+  document.getElementById('f-date').value        = e.date||eMem.date||'';
+  document.getElementById('f-contract').value    = e.contract_type||eMem.contract||'';
+  document.getElementById('f-salary').value      = e.salary||eMem.salary||'';
+  document.getElementById('f-status').value      = e.status||eMem.status||'active';
+  document.getElementById('f-action-taken').value= e.action_taken||eMem.actionTaken||'';
+  document.getElementById('f-notes').value       = e.notes||eMem.notes||'';
+  document.getElementById('empModalTitle').textContent = '✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
 }
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
@@ -1106,7 +1117,24 @@ async function saveEmployee() {
   if (editingEmpId) {
     var eOld=employees.find(function(x){ return x.id===editingEmpId; });
     await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken})});
-    await logAction('تعديل', 'تعديل بيانات: '+name);
+    // بناء رسالة تفصيلية بالحقول التي تغيّرت
+    var fieldLabels={emp_id:'الرقم الوظيفي',name:'الاسم',id_num:'رقم الهوية',dept:'الإدارة',project:'المشروع',date:'تاريخ المباشرة',contract_type:'نوع العقد',salary:'الراتب',status:'الحالة',notes:'الملاحظات',action_taken:'الإجراء المتخذ'};
+    var statusLabels={active:'نشط',pending:'قيد الإجراءات',resigned:'منهى خدماته',complete:'مكتمل',appointed:'تم عمل قرار تعيين',entered:'تم الإدخال بالنظام'};
+    var contractLabels={qowa:'عقد قوى',train:'عقد تدريب'};
+    var oldVals={emp_id:eOld.empId,name:eOld.name,id_num:eOld.idNum,dept:eOld.dept,project:eOld.project,date:eOld.date,contract_type:eOld.contract,salary:eOld.salary,status:eOld.status,notes:eOld.notes,action_taken:eOld.actionTaken};
+    var newVals={emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken};
+    var diffs=[];
+    Object.keys(fieldLabels).forEach(function(k){
+      var ov=String(oldVals[k]||'').trim(), nv=String(newVals[k]||'').trim();
+      if(ov!==nv){
+        var label=fieldLabels[k];
+        var ovDisplay=k==='status'?(statusLabels[ov]||ov):k==='contract_type'?(contractLabels[ov]||ov):ov||'—';
+        var nvDisplay=k==='status'?(statusLabels[nv]||nv):k==='contract_type'?(contractLabels[nv]||nv):nv||'—';
+        diffs.push(label+': '+ovDisplay+' ← '+nvDisplay);
+      }
+    });
+    var logMsg = diffs.length ? 'تعديل بيانات '+name+':\n'+diffs.join(' | ') : 'تعديل بيانات: '+name;
+    await logAction('تعديل', logMsg);
     var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
     if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
     var fidx=filtered.findIndex(function(x){ return x.id===editingEmpId; });
@@ -1201,7 +1229,7 @@ async function loadLogs() {
       '<td class="num">'+(i+1)+'</td>' +
       '<td class="name">'+(l.emp_name||'')+' <span style="color:var(--sub);font-size:11px;">('+( l.emp_id||'')+')</span></td>' +
       '<td><span class="log-action '+cls+'">'+l.action+'</span></td>' +
-      '<td>'+(l.details||'')+'</td>' +
+      '<td style="font-size:12px;line-height:1.7;white-space:pre-wrap;max-width:320px;">'+(l.details||'').replace(/\\n/g,'<br>').replace(/\|/g,'<br>')+'</td>' +
       '<td style="color:var(--sub);font-size:11px;">'+time+'</td></tr>';
   }).join('');
 }
@@ -1429,9 +1457,9 @@ function renderDashboard(){
   document.getElementById('chartContractBadge').textContent=qowa+train;
   setTimeout(function(){
   Chart.defaults.font.family="'Tajawal', sans-serif";Chart.defaults.color='#64748b';
-  try{if(chartStatusInst){chartStatusInst.destroy();chartStatusInst=null;}}catch(e){}
+  if(chartStatusInst)chartStatusInst.destroy();
   chartStatusInst=new Chart(document.getElementById('chartStatus').getContext('2d'),{type:'doughnut',data:{labels:['نشط','قيد الإجراءات','قرار تعيين','إدخال بالنظام','مكتمل','منهى خدماته'],datasets:[{data:[active,pending,appointed,entered,complete,resigned],backgroundColor:['#059669','#d97706','#92400e','#4f46e5','#065f46','#dc2626'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:11},usePointStyle:true}}}}});
-  try{if(chartContractInst){chartContractInst.destroy();chartContractInst=null;}}catch(e){}
+  if(chartContractInst)chartContractInst.destroy();
   chartContractInst=new Chart(document.getElementById('chartContract').getContext('2d'),{type:'doughnut',data:{labels:['عقد قوى','عقد تدريب','غير محدد'],datasets:[{data:[qowa,train,total-qowa-train],backgroundColor:['#2563eb','#7c3aed','#cbd5e1'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:11},usePointStyle:true}}}}});
   var thisYear=new Date().getFullYear().toString();
   var monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -1443,7 +1471,7 @@ function renderDashboard(){
   var ctxM=document.getElementById('chartMonthly').getContext('2d');
   var gradM=ctxM.createLinearGradient(0,0,0,240);gradM.addColorStop(0,'rgba(37,99,235,0.4)');gradM.addColorStop(1,'rgba(37,99,235,0.02)');
   chartMonthlyInst=new Chart(ctxM,{type:'bar',data:{labels:monthNames,datasets:[{label:'عدد المباشرين',data:monthlyCounts,backgroundColor:gradM,borderColor:'#2563eb',borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}});
-  },50);
+  },80);
   var deptMap={};
   employees.forEach(function(e){var d=e.dept||'غير محدد';if(!deptMap[d])deptMap[d]={total:0,active:0,pending:0,complete:0};deptMap[d].total++;if(e.status==='active')deptMap[d].active++;if(e.status==='pending')deptMap[d].pending++;if(e.status==='complete')deptMap[d].complete++;});
   var deptArr=Object.keys(deptMap).map(function(k){return Object.assign({name:k},deptMap[k]);}).sort(function(a,b){return b.total-a.total;});
