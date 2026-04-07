@@ -401,6 +401,7 @@ td.id-num{font-family:monospace;font-size:12px;}
           <tbody id="logsBody"></tbody>
         </table>
       </div>
+      <div id="logsPagination"></div>
     </div>
   </div>
 </div>
@@ -561,6 +562,8 @@ var activeStatusFilter = 'all', activeContractFilter = '';
 var editingEmpId = null, editingUserId = null, editingDeptId = null;
 var selectMode = false, selected = new Set();
 var currentUser = null;
+var tasks = [], taskPollInterval = null;
+var chartStatusInst = null, chartContractInst = null, chartMonthlyInst = null;
 
 var statusMap = {
   active:    {label:'نشط',             cls:'s-active'},
@@ -1120,10 +1123,7 @@ async function saveEmployee() {
     var oldV={emp_id:eOld.empId,name:eOld.name,id_num:eOld.idNum,dept:eOld.dept,project:eOld.project,date:eOld.date,contract_type:eOld.contract,salary:eOld.salary,status:eOld.status,notes:eOld.notes,action_taken:eOld.actionTaken};
     var newV={emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken};
     var diffs=[];
-    Object.keys(fieldLabels).forEach(function(k){
-      var ov=String(oldV[k]||'').trim(),nv=String(newV[k]||'').trim();
-      if(ov!==nv){var lb=fieldLabels[k];var od=k==='status'?(sLbls[ov]||ov):k==='contract_type'?(cLbls[ov]||ov):ov||'—';var nd=k==='status'?(sLbls[nv]||nv):k==='contract_type'?(cLbls[nv]||nv):nv||'—';diffs.push(lb+': '+od+' ← '+nd);}
-    });
+    Object.keys(fieldLabels).forEach(function(k){var ov=String(oldV[k]||'').trim(),nv=String(newV[k]||'').trim();if(ov!==nv){var lb=fieldLabels[k];var od=k==='status'?(sLbls[ov]||ov):k==='contract_type'?(cLbls[ov]||ov):ov||'—';var nd=k==='status'?(sLbls[nv]||nv):k==='contract_type'?(cLbls[nv]||nv):nv||'—';diffs.push(lb+': '+od+' ← '+nd);}});
     var logMsg=diffs.length?'تعديل '+name+' | '+diffs.join(' | '):'تعديل بيانات: '+name;
     await logAction('تعديل', logMsg);
     var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
@@ -1208,21 +1208,59 @@ async function deleteUser(id) {
 }
 
 // ── الدالة المصلحة ──
+var logsCurrentPage = 1;
+var LOG_PER_PAGE = 50;
+var allLogs = [];
+
 async function loadLogs() {
-  var r=await fetch(LOG_API+'?order=created_at.desc&limit=100', {headers:H});
-  var logs=await r.json()||[];
-  var tbody=document.getElementById('logsBody');
-  if (!logs.length) { tbody.innerHTML='<tr><td colspan="5"><div class="empty">لا توجد سجلات</div></td></tr>'; return; }
-  tbody.innerHTML=logs.map(function(l,i){
-    var cls=l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
-    var time=new Date(l.created_at).toLocaleString('ar-SA');
+  showLoading(true);
+  // جلب كل السجلات بدون حد
+  var r = await fetch(LOG_API + '?order=created_at.desc', {headers:H});
+  allLogs = await r.json() || [];
+  logsCurrentPage = 1;
+  renderLogs();
+  showLoading(false);
+}
+
+function renderLogs() {
+  var tbody = document.getElementById('logsBody');
+  if (!allLogs.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty">لا توجد سجلات</div></td></tr>';
+    document.getElementById('logsPagination').innerHTML = '';
+    return;
+  }
+  var start = (logsCurrentPage - 1) * LOG_PER_PAGE;
+  var end = start + LOG_PER_PAGE;
+  var page = allLogs.slice(start, end);
+  tbody.innerHTML = page.map(function(l, i) {
+    var cls = l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
+    var time = new Date(l.created_at).toLocaleString('ar-SA');
+    var details = (l.details||'').replace(/\|/g,'<br>• ');
     return '<tr>' +
-      '<td class="num">'+(i+1)+'</td>' +
+      '<td class="num">'+(start+i+1)+'</td>' +
       '<td class="name">'+(l.emp_name||'')+' <span style="color:var(--sub);font-size:11px;">('+( l.emp_id||'')+')</span></td>' +
       '<td><span class="log-action '+cls+'">'+l.action+'</span></td>' +
-      '<td style="font-size:12px;line-height:1.6;max-width:300px;word-break:break-word;">'+(l.details||'').replace(/\|/g,'<br>• ')+'</td>' +
+      '<td style="font-size:12px;line-height:1.6;max-width:300px;word-break:break-word;">'+details+'</td>' +
       '<td style="color:var(--sub);font-size:11px;">'+time+'</td></tr>';
   }).join('');
+
+  // Pagination
+  var totalPages = Math.ceil(allLogs.length / LOG_PER_PAGE) || 1;
+  var pgDiv = document.getElementById('logsPagination');
+  var pgHtml = '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--sub);">';
+  pgHtml += '<span>' + allLogs.length + ' سجل - صفحة ' + logsCurrentPage + ' من ' + totalPages + '</span>';
+  pgHtml += '<div style="display:flex;gap:5px;">';
+  for (var p = 1; p <= totalPages; p++) {
+    pgHtml += '<button onclick="goLogsPage('+p+')" style="width:30px;height:30px;border-radius:7px;border:1.5px solid '+(p===logsCurrentPage?'var(--primary)':'var(--border)')+';background:'+(p===logsCurrentPage?'var(--primary)':'var(--surface)')+';color:'+(p===logsCurrentPage?'#fff':'var(--text)')+';cursor:pointer;font-size:12px;font-weight:600;font-family:Tajawal,sans-serif;">'+p+'</button>';
+  }
+  pgHtml += '</div></div>';
+  pgDiv.innerHTML = pgHtml;
+}
+
+function goLogsPage(p) {
+  logsCurrentPage = p;
+  renderLogs();
+  document.getElementById('tabLogs').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function clearLogs() {
   if (!confirm('مسح كل السجل؟')) return;
@@ -1446,10 +1484,9 @@ function renderDashboard(){
   document.getElementById('kpiCards').innerHTML=html;
   document.getElementById('chartStatusBadge').textContent=total;
   document.getElementById('chartContractBadge').textContent=qowa+train;
-    // رسم المخططات بعد أن يصبح الـ canvas مرئياً
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      Chart.defaults.font.family="'Tajawal', sans-serif";Chart.defaults.color='#64748b';
+        Chart.defaults.font.family="'Tajawal', sans-serif";Chart.defaults.color='#64748b';
       if(chartStatusInst)chartStatusInst.destroy();
       chartStatusInst=new Chart(document.getElementById('chartStatus').getContext('2d'),{type:'doughnut',data:{labels:['نشط','قيد الإجراءات','قرار تعيين','إدخال بالنظام','مكتمل','منهى خدماته'],datasets:[{data:[active,pending,appointed,entered,complete,resigned],backgroundColor:['#059669','#d97706','#92400e','#4f46e5','#065f46','#dc2626'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:11},usePointStyle:true}}}}});
       if(chartContractInst)chartContractInst.destroy();
@@ -1464,7 +1501,6 @@ function renderDashboard(){
       var ctxM=document.getElementById('chartMonthly').getContext('2d');
       var gradM=ctxM.createLinearGradient(0,0,0,240);gradM.addColorStop(0,'rgba(37,99,235,0.4)');gradM.addColorStop(1,'rgba(37,99,235,0.02)');
       chartMonthlyInst=new Chart(ctxM,{type:'bar',data:{labels:monthNames,datasets:[{label:'عدد المباشرين',data:monthlyCounts,backgroundColor:gradM,borderColor:'#2563eb',borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}});
-
     });
   });
   var deptMap={};
