@@ -105,6 +105,8 @@ td.id-num{font-family:monospace;font-size:12px;}
 .s-complete .status-dot{background:#059669;}
 .s-appointed{background:#fef3c7;color:#92400e;}
 .s-appointed .status-dot{background:#d97706;}
+.s-trained{background:#fef3c7;color:#92400e;}
+.s-trained .status-dot{background:#d97706;}
 .s-entered{background:#e0e7ff;color:#3730a3;}
 .s-entered .status-dot{background:#4f46e5;}
 .contract-badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;}
@@ -222,6 +224,21 @@ td.id-num{font-family:monospace;font-size:12px;}
 </style>
 </head>
 <body>
+<!-- 
+  ═══════════════════════════════════════════════════════
+  SQL للتشغيل في Supabase قبل استخدام هذا الإصدار:
+  
+  ALTER TABLE users 
+    ADD COLUMN IF NOT EXISTS can_appoint INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS can_enter INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS can_complete INTEGER DEFAULT 0;
+
+  ALTER TABLE employees
+    ADD COLUMN IF NOT EXISTS appointed_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS entered_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP;
+  ═══════════════════════════════════════════════════════
+-->
 <div id="loadingBar" class="loading-bar"></div>
 
 <div class="login-wrap" id="loginScreen" style="display:flex;">
@@ -285,7 +302,7 @@ td.id-num{font-family:monospace;font-size:12px;}
 
     <div class="select-bar" id="selectBar">
       <span class="select-count" id="selectCount">0 محدد</span>
-      <button class="btn btn-warning btn-sm" onclick="appointSelected()">📋 تم عمل قرار تعيين</button>
+      <button class="btn btn-warning btn-sm" id="bulkAppointBtn" onclick="appointSelected()">📋 تم عمل قرار تعيين / عقد تدريب</button>
       <button class="btn btn-outline btn-sm" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;" onclick="enterSelected()">🖥️ إدخال بالنظام</button>
       <button class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display:none;" onclick="deleteSelected()">🗑️ حذف</button>
       <button class="btn btn-outline btn-sm" onclick="clearSelection()">✕</button>
@@ -311,6 +328,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="fbtn" id="filter-resigned" onclick="filterByStatus('resigned')" style="background:var(--danger-light);color:var(--danger);border-color:#fca5a5;">🔴 منهى خدماته</button>
       <button class="fbtn" id="filter-complete" onclick="filterByStatus('complete')" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7;">✔️ مكتمل</button>
       <button class="fbtn" id="filter-appointed" onclick="filterByStatus('appointed')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📋 تم عمل قرار تعيين</button>
+      <button class="fbtn" id="filter-trained" onclick="filterByStatus('trained')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📝 تم عمل عقد تدريب</button>
       <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ تم الإدخال بالنظام</button>
       <button class="fbtn" id="filter-contract-qowa" onclick="filterByContract('qowa')" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;">🔵 عقد قوى <span id="cnt-qowa">0</span></button>
       <button class="fbtn" id="filter-contract-train" onclick="filterByContract('train')" style="background:#f3e8ff;color:#7c3aed;border-color:#c4b5fd;">🟣 عقد تدريب <span id="cnt-train">0</span></button>
@@ -368,7 +386,7 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="table-wrapper">
       <div class="table-scroll">
         <table>
-          <thead><tr><th>م</th><th>اسم المستخدم</th><th>الاسم الكامل</th><th>الصلاحية</th><th>إجراءات</th></tr></thead>
+          <thead><tr><th>م</th><th>اسم المستخدم</th><th>الاسم الكامل</th><th>الصلاحية</th><th>صلاحيات الخطوات</th><th>إجراءات</th></tr></thead>
           <tbody id="usersBody"></tbody>
         </table>
       </div>
@@ -468,6 +486,23 @@ td.id-num{font-family:monospace;font-size:12px;}
         <label>الإدارة المخصصة</label>
         <select id="u-dept"><option value="all">كل الإدارات</option></select>
       </div>
+      <div class="fg2 full" id="permissionsWrap">
+        <label style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:8px;display:block;">🔐 صلاحيات خطوات سير العمل</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-appoint" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">📋 قرار التعيين / عقد التدريب</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-enter" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">🖥️ الإدخال بالنظام</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-complete" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">✔️ اكتمال الملف</span>
+          </label>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeUserModal()">إلغاء</button>
@@ -566,17 +601,29 @@ var tasks = [], taskPollInterval = null;
 var chartStatusInst = null, chartContractInst = null, chartMonthlyInst = null;
 
 var statusMap = {
-  active:    {label:'نشط',             cls:'s-active'},
-  pending:   {label:'قيد الإجراءات',   cls:'s-pending'},
-  resigned:  {label:'منهى خدماته',      cls:'s-resigned'},
-  transfer:  {label:'محول',            cls:'s-transfer'},
-  leave:     {label:'إجازة',           cls:'s-leave'},
-  complete:  {label:'مكتمل',           cls:'s-complete'},
-  appointed: {label:'تم عمل قرار تعيين', cls:'s-appointed'},
-  entered:   {label:'تم الإدخال بالنظام', cls:'s-entered'}
+  active:    {label:'نشط',                  cls:'s-active'},
+  pending:   {label:'قيد الإجراءات',        cls:'s-pending'},
+  resigned:  {label:'منهى خدماته',          cls:'s-resigned'},
+  transfer:  {label:'محول',                cls:'s-transfer'},
+  leave:     {label:'إجازة',               cls:'s-leave'},
+  complete:  {label:'مكتمل',               cls:'s-complete'},
+  appointed: {label:'تم عمل قرار تعيين',   cls:'s-appointed'},
+  trained:   {label:'تم عمل عقد تدريب',    cls:'s-appointed'},
+  entered:   {label:'تم الإدخال بالنظام',  cls:'s-entered'}
 };
 var contractMap = {qowa:'عقد قوى', train:'عقد تدريب'};
 
+
+// ── Permission helpers ──
+function userCan(perm) {
+  if (!currentUser) return false;
+  if (currentUser.role === 'admin') return true;
+  return currentUser[perm] == 1 || currentUser[perm] === true || currentUser[perm] === '1';
+}
+function fmtDT(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('ar-SA', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
 function statusBadge(s) {
   var m = statusMap[s] || {label:s, cls:''};
   return '<span class="status ' + m.cls + '"><span class="status-dot"></span>' + m.label + '</span>';
@@ -625,6 +672,13 @@ function enterApp() {
 
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
+  // Show/hide select-bar buttons based on permissions
+  var canApp = userCan('can_appoint');
+  var canEnt = userCan('can_enter');
+  var bulkAB = document.getElementById('bulkAppointBtn');
+  if(bulkAB) bulkAB.style.display = canApp ? 'inline-flex' : 'none';
+  var enterBarBtn = document.querySelector('.select-bar .btn-outline[onclick="enterSelected()"]');
+  if(enterBarBtn) enterBarBtn.style.display = canEnt ? 'inline-flex' : 'none';
 }
 
 function logout() {
@@ -753,7 +807,8 @@ async function loadEmployees() {
       dept:e.dept||'', project:e.project||'', date:e.date||'',
       status:e.status||'active', contract:e.contract_type||'',
       salary:e.salary||'', appointStatus:e.appointment_status||'',
-      notes:e.notes||'', actionTaken:e.action_taken||''};
+      notes:e.notes||'', actionTaken:e.action_taken||'',
+      appointedAt:e.appointed_at||'', enteredAt:e.entered_at||'', completedAt:e.completed_at||''};
   }) : [];
   if (currentUser.role==='viewer' && currentUser.dept_access && currentUser.dept_access!=='all') {
     filtered = employees.filter(function(e){ return e.dept===currentUser.dept_access; });
@@ -788,15 +843,24 @@ function render() {
     var workflowBtns = '';
     if (!isViewer) {
       var as = e.appointStatus;
-      if (!as||as==='') {
-        workflowBtns = '<button class="icon-btn appoint" data-id="' + e.id + '" title="قرار تعيين">&#128203;</button>';
-      } else if (as==='appointed') {
-        workflowBtns = '<button class="icon-btn enter" data-id="' + e.id + '" title="الإدخال بالنظام">&#128421;</button>';
+      var isTrain = e.contract === 'train';
+      var step1Label = isTrain ? 'تم عمل عقد تدريب' : 'تم عمل قرار تعيين';
+      var step1Icon = isTrain ? '&#128221;' : '&#128203;';
+      if (!as || as === '') {
+        if (userCan('can_appoint')) {
+          workflowBtns = '<button class="icon-btn appoint" data-id="' + e.id + '" title="' + step1Label + '">' + step1Icon + '</button>';
+        }
+      } else if (as === 'appointed' || as === 'trained') {
+        if (userCan('can_enter')) {
+          workflowBtns = '<button class="icon-btn enter" data-id="' + e.id + '" title="الإدخال بالنظام">&#128421;</button>';
+        }
         if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="" title="إرجاع">&#8617;</button>';
-      } else if (as==='entered') {
-        workflowBtns = '<button class="icon-btn complete" data-id="' + e.id + '" title="ملف مكتمل">&#10003;</button>';
+      } else if (as === 'entered') {
+        if (userCan('can_complete')) {
+          workflowBtns = '<button class="icon-btn complete" data-id="' + e.id + '" title="ملف مكتمل">&#10003;</button>';
+        }
         if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="appointed" title="إرجاع">&#8617;</button>';
-      } else if (as==='complete') {
+      } else if (as === 'complete') {
         if (isAdm) workflowBtns = '<button class="icon-btn reset" data-id="' + e.id + '" data-to="entered" title="إرجاع">&#8617;</button>';
       }
     }
@@ -809,7 +873,11 @@ function render() {
     html += '<td class="id-num">' + e.idNum + '</td><td>' + (e.dept||'-') + '</td>';
     html += '<td>' + (e.project||'-') + '</td><td>' + dateStr + '</td>';
     html += '<td>' + contractBadge(e.contract) + '</td><td>' + salary + '</td>';
-    html += '<td>' + statusBadge(e.status) + '</td>';
+    var tsHtml = '';
+    if(e.appointedAt) tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#128203; '+fmtDT(e.appointedAt)+'</div>';
+    if(e.enteredAt)   tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#128421; '+fmtDT(e.enteredAt)+'</div>';
+    if(e.completedAt) tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#10003; '+fmtDT(e.completedAt)+'</div>';
+    html += '<td>' + statusBadge(e.status) + (tsHtml?'<div style="margin-top:4px;">'+tsHtml+'</div>':'') + '</td>';
     html += '<td><input type="text" value="' + (e.actionTaken||'').replace(/"/g,'&quot;') + '" placeholder="الإجراء المتخذ" style="width:110px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'action_taken\',this.value)" onclick="event.stopPropagation()"/></td>';
     html += '<td><input type="text" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." style="width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()"/></td>';
     html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
@@ -864,20 +932,25 @@ function filterByContract(contract) {
 // ── Workflow ──
 async function doAppoint(id) {
   var e = employees.find(function(x){ return x.id===id; });
-  if (!confirm('تأكيد قرار التعيين للموظف "' + e.name + '"؟')) return;
+  var isTrain = e.contract === 'train';
+  var label = isTrain ? 'عقد التدريب' : 'قرار التعيين';
+  var newStatus = isTrain ? 'trained' : 'appointed';
+  if (!confirm('تأكيد ' + label + ' للموظف "' + e.name + '"؟')) return;
   showLoading(true);
-  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'appointed',status:'appointed'})});
-  await logAction('قرار تعيين', 'تم إصدار قرار تعيين: '+e.name);
-  updateEmpInMemory(e.id, {status:'appointed',appointStatus:'appointed'});
-  showLoading(false); showToast('✅ تم إصدار قرار التعيين');
+  var now = new Date().toISOString();
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:newStatus,status:newStatus,appointed_at:now})});
+  await logAction(isTrain?'عقد تدريب':'قرار تعيين', 'تم إصدار '+label+': '+e.name);
+  updateEmpInMemory(e.id, {status:newStatus, appointStatus:newStatus, appointedAt:now});
+  showLoading(false); showToast('✅ تم إصدار ' + label);
 }
 
 async function doEnter(id) {
   var e = employees.find(function(x){ return x.id===id; });
   showLoading(true);
-  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered'})});
+  var now = new Date().toISOString();
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered',entered_at:now})});
   await logAction('إدخال بالنظام', 'تم إدخال الموظف بالنظام: '+e.name);
-  updateEmpInMemory(e.id, {status:'entered',appointStatus:'entered'});
+  updateEmpInMemory(e.id, {status:'entered', appointStatus:'entered', enteredAt:now});
   showLoading(false); showSuccessPopup(e);
 }
 
@@ -929,10 +1002,31 @@ async function resetWorkflow(id, toStatus) {
   if (!confirm('إرجاع حالة "'+e.name+'" للخلف؟')) return;
   showLoading(true);
   var newAppoint = toStatus || '';
-  var newStatus = toStatus==='appointed' ? 'appointed' : toStatus==='entered' ? 'entered' : 'active';
-  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:newAppoint,status:newStatus})});
+  // handle trained (train contract) as well as appointed
+  var isTrain = e.contract === 'train';
+  var newStatus;
+  if (toStatus === 'appointed' || toStatus === 'trained') {
+    newStatus = isTrain ? 'trained' : 'appointed';
+    newAppoint = newStatus;
+  } else if (toStatus === 'entered') {
+    newStatus = 'entered';
+  } else {
+    newStatus = 'active';
+    newAppoint = '';
+  }
+  // Clear timestamps for reset steps
+  var clearFields = {};
+  if (!toStatus) { clearFields = {appointed_at:null, entered_at:null, completed_at:null}; }
+  else if (toStatus === 'appointed' || toStatus === 'trained') { clearFields = {entered_at:null, completed_at:null}; }
+  else if (toStatus === 'entered') { clearFields = {completed_at:null}; }
+  var patchBody = Object.assign({appointment_status:newAppoint, status:newStatus}, clearFields);
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify(patchBody)});
   await logAction('إرجاع حالة', 'إرجاع حالة '+e.name+' إلى '+(newAppoint||'الأولى'));
-  updateEmpInMemory(e.id, {status:newStatus, appointStatus:newAppoint});
+  var memUpdates = {status:newStatus, appointStatus:newAppoint};
+  if (!toStatus) { memUpdates.appointedAt=''; memUpdates.enteredAt=''; memUpdates.completedAt=''; }
+  else if (toStatus === 'appointed' || toStatus === 'trained') { memUpdates.enteredAt=''; memUpdates.completedAt=''; }
+  else if (toStatus === 'entered') { memUpdates.completedAt=''; }
+  updateEmpInMemory(e.id, memUpdates);
   showLoading(false); showToast('✅ تم إرجاع الحالة');
 }
 
@@ -948,9 +1042,10 @@ async function doComplete(id) {
   var e = employees.find(function(x){ return x.id===id; });
   if (!confirm('تأكيد اكتمال ملف "'+e.name+'"؟')) return;
   showLoading(true);
-  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'complete',status:'complete'})});
+  var now = new Date().toISOString();
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'complete',status:'complete',completed_at:now})});
   await logAction('ملف مكتمل', 'اكتمل ملف الموظف: '+e.name);
-  updateEmpInMemory(e.id, {status:'complete',appointStatus:'complete'});
+  updateEmpInMemory(e.id, {status:'complete', appointStatus:'complete', completedAt:now});
   showLoading(false); showToast('✅ تم اكتمال الملف');
 }
 
@@ -1003,8 +1098,11 @@ async function appointSelected() {
   if (!confirm('قرار تعيين لـ '+ids.length+' موظف؟')) return;
   showLoading(true);
   for (var i=0;i<ids.length;i++) {
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'appointed',status:'appointed'})});
-    updateEmpInMemory(ids[i].id, {status:'appointed',appointStatus:'appointed'});
+    var nowB=new Date().toISOString();
+    var isTrainB=ids[i].contract==='train';
+    var bStatus=isTrainB?'trained':'appointed';
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:bStatus,status:bStatus,appointed_at:nowB})});
+    updateEmpInMemory(ids[i].id, {status:bStatus,appointStatus:bStatus,appointedAt:nowB});
   }
   await logAction('قرار تعيين جماعي', 'قرار تعيين لـ '+ids.length+' موظف');
   clearSelection(); showLoading(false); showToast('✅ تم إصدار قرار التعيين لـ '+ids.length+' موظف');
@@ -1016,8 +1114,9 @@ async function enterSelected() {
   if (!confirm('إدخال بالنظام لـ '+ids.length+' موظف؟')) return;
   showLoading(true);
   for (var i=0;i<ids.length;i++) {
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered'})});
-    updateEmpInMemory(ids[i].id, {status:'entered',appointStatus:'entered'});
+    var nowE=new Date().toISOString();
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered',entered_at:nowE})});
+    updateEmpInMemory(ids[i].id, {status:'entered',appointStatus:'entered',enteredAt:nowE});
   }
   await logAction('إدخال جماعي بالنظام', 'إدخال '+ids.length+' موظف بالنظام');
   showLoading(false);
@@ -1102,6 +1201,15 @@ async function saveEmployee() {
   var name=document.getElementById('f-name').value.trim();
   var idNum=document.getElementById('f-idnum').value.trim();
   if (!empId||!name||!idNum) { showToast('يرجى تعبئة الحقول المطلوبة'); return; }
+  var deptVal = document.getElementById('f-dept').value;
+  var contractVal = document.getElementById('f-contract').value;
+  var salaryVal = document.getElementById('f-salary').value.trim();
+  var dateVal2 = document.getElementById('f-date').value;
+  if (!deptVal)     { showToast('❌ يرجى اختيار الإدارة'); document.getElementById('f-dept').focus(); return; }
+  if (!contractVal) { showToast('❌ يرجى اختيار نوع العقد'); document.getElementById('f-contract').focus(); return; }
+  if (!dateVal2)    { showToast('❌ يرجى إدخال تاريخ المباشرة'); document.getElementById('f-date').focus(); return; }
+  if (!salaryVal)   { showToast('❌ يرجى إدخال الراتب'); document.getElementById('f-salary').focus(); return; }
+  if (isNaN(Number(salaryVal)) || Number(salaryVal) <= 0) { showToast('❌ يرجى إدخال راتب صحيح'); document.getElementById('f-salary').focus(); return; }
   if (employees.find(function(e){ return e.empId===empId&&e.id!==editingEmpId; })) { showToast('الرقم الوظيفي مكرر!'); return; }
   if (employees.find(function(e){ return e.idNum===idNum&&e.id!==editingEmpId; })) { showToast('رقم الهوية مكرر!'); return; }
   var data={emp_id:empId,name:name,id_num:idNum,
@@ -1150,11 +1258,19 @@ function renderUsers() {
   document.getElementById('usersBody').innerHTML = users.map(function(u,i){
     var roleLabel=u.role==='admin'?'🛡️ مسؤول':u.role==='viewer'?'👁️ مطلع':'👤 موظف';
     var roleCls=u.role==='admin'?'ur-admin':u.role==='viewer'?'ur-viewer':'ur-employee';
+    var perms = [];
+    if(u.role==='admin') { perms.push('<span style="font-size:10px;background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:6px;">كل الصلاحيات</span>'); }
+    else {
+      if(u.can_appoint==1||u.can_appoint===true||u.can_appoint==='1') perms.push('<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;">📋 قرار</span>');
+      if(u.can_enter==1||u.can_enter===true||u.can_enter==='1')    perms.push('<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:6px;">🖥️ إدخال</span>');
+      if(u.can_complete==1||u.can_complete===true||u.can_complete==='1') perms.push('<span style="font-size:10px;background:#d1fae5;color:#065f46;padding:2px 7px;border-radius:6px;">✔️ اكتمال</span>');
+    }
     return '<tr>' +
       '<td class="num">'+(i+1)+'</td>' +
       '<td class="emp-id">'+u.username+'</td>' +
       '<td class="name">'+u.full_name+'</td>' +
       '<td><span class="user-role-badge '+roleCls+'">'+roleLabel+'</span></td>' +
+      '<td>'+(perms.length?perms.join(' '):'<span style="color:var(--sub);font-size:11px;">—</span>')+'</td>'+
       '<td><div class="actions">' +
       '<button class="icon-btn edit" onclick="openUserEdit('+u.id+')">&#9998;</button>' +
       '<button class="icon-btn delete" onclick="deleteUser('+u.id+')">&#128465;</button>' +
@@ -1171,6 +1287,9 @@ function openUserEdit(id) {
   document.getElementById('u-role').value=u.role;
   toggleDeptSelect();
   if (u.dept_access) document.getElementById('u-dept').value=u.dept_access;
+  document.getElementById('u-can-appoint').checked  = (u.can_appoint==1||u.can_appoint===true||u.can_appoint==='1');
+  document.getElementById('u-can-enter').checked    = (u.can_enter==1||u.can_enter===true||u.can_enter==='1');
+  document.getElementById('u-can-complete').checked = (u.can_complete==1||u.can_complete===true||u.can_complete==='1');
   document.getElementById('userModalTitle').textContent='✏️ تعديل مستخدم';
   document.getElementById('userModalBg').classList.add('show');
 }
@@ -1179,6 +1298,9 @@ function toggleDeptSelect() { document.getElementById('deptSelectWrap').style.di
 function clearUserForm() {
   ['u-username','u-password','u-fullname'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('u-role').value='employee'; toggleDeptSelect();
+  document.getElementById('u-can-appoint').checked=false;
+  document.getElementById('u-can-enter').checked=false;
+  document.getElementById('u-can-complete').checked=false;
 }
 async function saveUser() {
   var username=document.getElementById('u-username').value.trim();
@@ -1188,7 +1310,10 @@ async function saveUser() {
   var deptAccess=role==='viewer'?document.getElementById('u-dept').value:'all';
   if (!username||!password||!fullname) { showToast('يرجى تعبئة جميع الحقول'); return; }
   showLoading(true);
-  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess};
+  var canAppoint = document.getElementById('u-can-appoint').checked ? 1 : 0;
+  var canEnter   = document.getElementById('u-can-enter').checked ? 1 : 0;
+  var canComplete= document.getElementById('u-can-complete').checked ? 1 : 0;
+  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete};
   if (editingUserId) {
     await fetch(USR_API+'?id=eq.'+editingUserId, {method:'PATCH',headers:H,body:JSON.stringify(payload)});
     showToast('✅ تم تعديل المستخدم');
@@ -1459,7 +1584,7 @@ function renderDashboard(){
   var pending=employees.filter(function(e){return e.status==='pending';}).length;
   var resigned=employees.filter(function(e){return e.status==='resigned';}).length;
   var complete=employees.filter(function(e){return e.status==='complete';}).length;
-  var appointed=employees.filter(function(e){return e.status==='appointed';}).length;
+  var appointed=employees.filter(function(e){return e.status==='appointed'||e.status==='trained';}).length;
   var entered=employees.filter(function(e){return e.status==='entered';}).length;
   var qowa=employees.filter(function(e){return e.contract==='qowa';}).length;
   var train=employees.filter(function(e){return e.contract==='train';}).length;
