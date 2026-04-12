@@ -622,7 +622,7 @@ function userCan(perm) {
 }
 function fmtDT(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('ar-SA', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  return new Date(iso).toLocaleString('ar-SA', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',calendar:'gregory',numberingSystem:'latn'});
 }
 function statusBadge(s) {
   var m = statusMap[s] || {label:s, cls:''};
@@ -1369,7 +1369,7 @@ function renderLogs() {
   var page = allLogs.slice(start, end);
   tbody.innerHTML = page.map(function(l, i) {
     var cls = l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
-    var time = new Date(l.created_at).toLocaleString('ar-SA');
+    var time = new Date(l.created_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
     var details = (l.details||'').replace(/\|/g,'<br>• ');
     return '<tr>' +
       '<td class="num">'+(start+i+1)+'</td>' +
@@ -1491,7 +1491,7 @@ async function exportDailyReport() {
     }
   });
 
-  var dateLabel = today.toLocaleDateString('ar-SA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  var dateLabel = today.toLocaleDateString('ar-SA', {weekday:'long', year:'numeric', month:'long', day:'numeric', calendar:'gregory', numberingSystem:'latn'});
 
   // ورقة 1: ملخص الحركات
   var summaryRows = [
@@ -1587,7 +1587,7 @@ async function saveFieldInline(id, field, value) {
 
 /* ═══════════════════════════════ KPI DASHBOARD ═══════════════════════════════ */
 function renderDashboard(){
-  var now=new Date().toLocaleString('ar-SA');
+  var now=new Date().toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
   document.getElementById('kpiLastUpdate').textContent='آخر تحديث: '+now;
   var total=employees.length;
   var active=employees.filter(function(e){return e.status==='active';}).length;
@@ -1707,8 +1707,8 @@ function renderTasks(){
   container.innerHTML=myTasks.map(function(t){
     var isPending=t.status==='pending';
     var isMyTask=t.assigned_to===currentUser.username;
-    var time=new Date(t.created_at).toLocaleString('ar-SA');
-    var completedTime=t.completed_at?' - اكتملت: '+new Date(t.completed_at).toLocaleString('ar-SA'):'';
+    var time=new Date(t.created_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
+    var completedTime=t.completed_at?' - اكتملت: '+new Date(t.completed_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'}):'';
     var doneBtn=isMyTask&&isPending?'<button class="btn btn-success btn-sm" onclick="completeTask('+t.id+')">&#10003; تم</button>':'';
     var deleteBtn=(isAdm||t.created_by===currentUser.username)?'<button class="btn btn-danger btn-sm" onclick="deleteTask('+t.id+')">&#128465;</button>':'';
     return '<div class="task-card '+(isPending?'pending':'done')+'">' +
