@@ -646,11 +646,21 @@ async function doLogin() {
   currentUser = d[0];
   sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
   document.getElementById('errMsg').classList.remove('show');
-  enterApp();
+  await enterApp();
 }
 function showErr(msg) { var e = document.getElementById('errMsg'); e.textContent=msg; e.classList.add('show'); }
 
-function enterApp() {
+async function enterApp() {
+  // Re-fetch fresh user data from Supabase to get latest permissions
+  try {
+    if (!currentUser.id) throw new Error('no id');
+    var freshR = await fetch(USR_API + '?id=eq.' + currentUser.id, {headers:H});
+    var freshD = await freshR.json();
+    if (freshD && freshD.length) {
+      currentUser = freshD[0];
+      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+  } catch(e) { /* استمر بالبيانات المحفوظة */ }
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
   var isAdm = currentUser.role === 'admin';
@@ -1741,7 +1751,7 @@ document.getElementById('changePassBg').addEventListener('click',function(e){if(
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 // Auto-restore on refresh
-(function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
+(async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
 </script>
 </body>
