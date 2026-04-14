@@ -503,8 +503,8 @@ td.id-num{font-family:monospace;font-size:12px;}
       <div class="fg2"><label>الرقم الوظيفي *</label><input id="f-empid" placeholder="EMP-001"/></div>
       <div class="fg2"><label>رقم الهوية *</label><input id="f-idnum" placeholder="1xxxxxxxxx" maxlength="10"/></div>
       <div class="fg2 full"><label>الاسم الكامل *</label><input id="f-name" placeholder="اسم الموظف رباعياً"/></div>
-      <div class="fg2"><label>الإدارة</label><select id="f-dept" onchange="toggleDeptSection()"><option value="">-- اختر الإدارة --</option></select></div>
-      <div class="fg2" id="deptSectionWrap" style="display:none;"><label>القسم</label>
+      <div class="fg2"><label>الإدارة</label><select id="f-dept"><option value="">-- اختر الإدارة --</option></select></div>
+      <div class="fg2"><label>القسم (اختياري)</label>
         <select id="f-section">
           <option value="">-- اختر القسم --</option>
           <option value="الصرف الالي">الصرف الالي</option>
@@ -1003,6 +1003,7 @@ function render() {
     html += cbCol + '<td class="num">' + (start+i+1) + '</td>';
     html += '<td class="emp-id">' + e.empId + '</td><td class="name">' + e.name + '</td>';
     html += '<td class="id-num">' + e.idNum + '</td><td>' + (e.dept||'-') + '</td>';
+    html += '<td style="font-size:12px;color:var(--sub);">' + (e.section||'—') + '</td>';
     html += '<td>' + (e.project||'-') + '</td><td>' + dateStr + '</td>';
     html += '<td>' + contractBadge(e.contract) + '</td><td>' + salary + '</td>';
     var tsHtml = '';
@@ -1318,7 +1319,6 @@ async function openEmpEdit(id) {
   document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
   document.getElementById('f-status').value       = e.status||eMem.status||'active';
   document.getElementById('f-action-taken').value = e.action_taken||eMem.actionTaken||'';
-  toggleDeptSection();
   document.getElementById('f-section').value = e.dept_section||eMem.section||'';
   document.getElementById('f-notes').value        = e.notes||eMem.notes||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
@@ -1327,7 +1327,7 @@ async function openEmpEdit(id) {
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
 function clearEmpForm() {
   ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-notes','f-action-taken'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
-  document.getElementById('f-dept').value=''; document.getElementById('f-section').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active'; toggleDeptSection();
+  document.getElementById('f-dept').value=''; document.getElementById('f-section').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active';
 }
 
 async function saveEmployee() {
@@ -2064,17 +2064,6 @@ function exportExclExcel() {
   document.body.appendChild(a); a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
   showToast('تم التصدير');
-}
-
-function toggleDeptSection() {
-  var dept = document.getElementById('f-dept').value;
-  var wrap = document.getElementById('deptSectionWrap');
-  if (dept === 'ادارة الحلول النقدية') {
-    wrap.style.display = 'block';
-  } else {
-    wrap.style.display = 'none';
-    document.getElementById('f-section').value = '';
-  }
 }
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
