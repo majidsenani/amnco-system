@@ -221,6 +221,10 @@ td.id-num{font-family:monospace;font-size:12px;}
 .mini-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:#f8faff;}
 .mini-item-label{font-size:12px;font-weight:700;color:var(--sub);}
 .mini-item-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--text);}
+
+/* ═══════════════ EXCLUSIONS ═══════════════ */
+.excl-badge{padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+.reason-badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;background:#fee2e2;color:#dc2626;}
 </style>
 </head>
 <body>
@@ -237,6 +241,16 @@ td.id-num{font-family:monospace;font-size:12px;}
     ADD COLUMN IF NOT EXISTS appointed_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS entered_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP;
+
+  CREATE TABLE IF NOT EXISTS exclusions (
+    id BIGSERIAL PRIMARY KEY,
+    emp_id TEXT,
+    name TEXT NOT NULL,
+    last_day DATE,
+    reason TEXT,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
   ═══════════════════════════════════════════════════════
 -->
 <div id="loadingBar" class="loading-bar"></div>
@@ -273,6 +287,7 @@ td.id-num{font-family:monospace;font-size:12px;}
     <button class="main-tab" id="tabUsersBtn" style="display:none;" onclick="switchTab('users',this)">&#128100; المستخدمون</button>
     <button class="main-tab" id="tabTasksBtn" onclick="switchTab('tasks',this)">&#128203; المهام <span id="tasksBadge" style="display:none;background:#dc2626;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-right:4px;">0</span></button>
     <button class="main-tab" id="tabDeptsBtn" style="display:none;" onclick="switchTab('depts',this)">&#127970; الإدارات</button>
+    <button class="main-tab" id="tabExclBtn" onclick="switchTab('excl',this)">🚫 الاستبعادات</button>
     <button class="main-tab" id="tabLogsBtn" style="display:none;" onclick="switchTab('logs',this)">📋 سجل التعديلات</button>
   </div>
 
@@ -377,6 +392,55 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="btn btn-primary btn-sm" id="sendTaskBtn" onclick="openTaskModal()">&#128203; إرسال مهمة</button>
     </div>
     <div id="tasksList" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+
+
+  <!-- EXCLUSIONS TAB -->
+  <div id="tabExcl" style="display:none;">
+    <div class="toolbar">
+      <div class="search-box">
+        <span style="color:var(--sub)">🔍</span>
+        <input type="text" id="exclSearch" placeholder="ابحث بالاسم أو الرقم الوظيفي..." oninput="applyExclFilters()"/>
+      </div>
+      <select class="fsel" id="exclReasonFilter" onchange="applyExclFilters()" style="max-width:200px;">
+        <option value="">كل الأسباب</option>
+        <option value="استقالة فورية">استقالة فورية</option>
+        <option value="استقالة نظامية">استقالة نظامية</option>
+        <option value="انهاء فترة التجربة">انهاء فترة التجربة</option>
+        <option value="انهاء على الماده 77">انهاء على الماده 77</option>
+        <option value="انتهاء مشروع">انتهاء مشروع</option>
+        <option value="انهاء فترة التدريب">انهاء فترة التدريب</option>
+        <option value="اتفاقية انهاء عقد بالتراضي">اتفاقية انهاء عقد بالتراضي</option>
+        <option value="عدم تجديد العقد">عدم تجديد العقد</option>
+        <option value="انهاء على الماده 80">انهاء على الماده 80</option>
+        <option value="الوفاة">الوفاة</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="exportExclExcel()">📥 سحب Excel</button>
+      <button class="btn btn-danger btn-sm" id="addExclBtn" onclick="openExclModal()">➕ إضافة استبعاد</button>
+    </div>
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>م</th>
+              <th>الرقم الوظيفي</th>
+              <th>الاسم</th>
+              <th>آخر يوم عمل</th>
+              <th>سبب الانهاء</th>
+              <th>ملاحظات</th>
+              <th>تاريخ الإدخال</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="exclBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span id="exclPageInfo">0 سجل</span>
+        <div class="page-btns" id="exclPageBtns"></div>
+      </div>
+    </div>
   </div>
 
   <div id="tabUsers" style="display:none;">
@@ -557,6 +621,42 @@ td.id-num{font-family:monospace;font-size:12px;}
   </div>
 </div>
 
+
+<!-- Exclusion Modal -->
+<div class="modal-bg" id="exclModalBg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="exclModalTitle">➕ إضافة استبعاد</div>
+      <button class="modal-close" onclick="closeExclModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg2"><label>الرقم الوظيفي *</label><input id="ex-empid" placeholder="EMP-001"/></div>
+      <div class="fg2"><label>الاسم الكامل *</label><input id="ex-name" placeholder="اسم الموظف"/></div>
+      <div class="fg2"><label>آخر يوم عمل *</label><input type="date" id="ex-lastday"/></div>
+      <div class="fg2"><label>سبب الانهاء *</label>
+        <select id="ex-reason">
+          <option value="">-- اختر السبب --</option>
+          <option value="استقالة فورية">استقالة فورية</option>
+          <option value="استقالة نظامية">استقالة نظامية</option>
+          <option value="انهاء فترة التجربة">انهاء فترة التجربة</option>
+          <option value="انهاء على الماده 77">انهاء على الماده 77</option>
+          <option value="انتهاء مشروع">انتهاء مشروع</option>
+          <option value="انهاء فترة التدريب">انهاء فترة التدريب</option>
+          <option value="اتفاقية انهاء عقد بالتراضي">اتفاقية انهاء عقد بالتراضي</option>
+          <option value="عدم تجديد العقد">عدم تجديد العقد</option>
+          <option value="انهاء على الماده 80">انهاء على الماده 80</option>
+          <option value="الوفاة">الوفاة</option>
+        </select>
+      </div>
+      <div class="fg2 full"><label>ملاحظات</label><input id="ex-notes" placeholder="أي ملاحظات إضافية..."/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeExclModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveExcl()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="changePassBg">
   <div class="modal" style="max-width:380px;">
     <div class="modal-header">
@@ -589,6 +689,7 @@ var USR_API  = SUPA_URL + '/rest/v1/users';
 var LOG_API  = SUPA_URL + '/rest/v1/activity_log';
 var DEPT_API = SUPA_URL + '/rest/v1/departments';
 var TASK_API = SUPA_URL + '/rest/v1/tasks';
+var EXCL_API = SUPA_URL + '/rest/v1/exclusions';
 var H = {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation'};
 
 var employees = [], filtered = [], users = [], departments = [];
@@ -598,6 +699,7 @@ var editingEmpId = null, editingUserId = null, editingDeptId = null;
 var selectMode = false, selected = new Set();
 var currentUser = null;
 var tasks = [], taskPollInterval = null;
+var exclusions = [], editingExclId = null;
 var chartStatusInst = null, chartContractInst = null, chartMonthlyInst = null;
 
 var statusMap = {
@@ -703,7 +805,7 @@ function logout() {
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   document.querySelectorAll('.main-tab').forEach(function(t,i){ t.classList.toggle('active',i===0); });
-  ['tabEmployees','tabDashboard','tabTasks','tabUsers','tabDepts','tabLogs'].forEach(function(t,i){ document.getElementById(t).style.display=i===0?'block':'none'; });
+  ['tabEmployees','tabDashboard','tabTasks','tabExcl','tabUsers','tabDepts','tabLogs'].forEach(function(t,i){ document.getElementById(t).style.display=i===0?'block':'none'; });
 }
 
 function openChangePass() { document.getElementById('changePassBg').classList.add('show'); }
@@ -722,8 +824,8 @@ async function saveChangePass() {
 }
 
 function switchTab(tab, btn) {
-  ['tabEmployees','tabDashboard','tabTasks','tabUsers','tabDepts','tabLogs'].forEach(function(t){ document.getElementById(t).style.display='none'; });
-  var idMap={employees:'tabEmployees',dashboard:'tabDashboard',tasks:'tabTasks',users:'tabUsers',depts:'tabDepts',logs:'tabLogs'};
+  ['tabEmployees','tabDashboard','tabTasks','tabExcl','tabUsers','tabDepts','tabLogs'].forEach(function(t){ document.getElementById(t).style.display='none'; });
+  var idMap={employees:'tabEmployees',dashboard:'tabDashboard',tasks:'tabTasks',excl:'tabExcl',users:'tabUsers',depts:'tabDepts',logs:'tabLogs'};
   document.getElementById(idMap[tab]).style.display='block';
   document.querySelectorAll('.main-tab').forEach(function(t){ t.classList.remove('active'); });
   btn.classList.add('active');
@@ -731,6 +833,7 @@ function switchTab(tab, btn) {
   if(tab==='depts')renderDepts();
   if(tab==='logs')loadLogs();
   if(tab==='tasks')loadTasks();
+  if(tab==='excl')loadExcl();
   if(tab==='dashboard')renderDashboard();
 }
 
@@ -1741,6 +1844,158 @@ function startTaskPoll(){
   },15000);
 }
 
+
+/* ═══════════════════════════════ EXCLUSIONS ═══════════════════════════════ */
+var exclFiltered = [], exclCurrentPage = 1, EXCL_PER_PAGE = 50;
+
+async function loadExcl() {
+  showLoading(true);
+  var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
+  exclusions = await r.json() || [];
+  applyExclFilters();
+  showLoading(false);
+}
+
+function applyExclFilters() {
+  var q = (document.getElementById('exclSearch')||{value:''}).value.toLowerCase().trim();
+  var reason = (document.getElementById('exclReasonFilter')||{value:''}).value;
+  exclFiltered = exclusions.filter(function(e){
+    var ms = !q || (e.name||'').toLowerCase().includes(q) || (e.emp_id||'').toLowerCase().includes(q);
+    var mr = !reason || e.reason === reason;
+    return ms && mr;
+  });
+  exclCurrentPage = 1;
+  renderExcl();
+}
+
+function renderExcl() {
+  var tbody = document.getElementById('exclBody');
+  if (!exclFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">لا توجد سجلات استبعاد</div></td></tr>';
+    document.getElementById('exclPageInfo').textContent = '0 سجل';
+    document.getElementById('exclPageBtns').innerHTML = '';
+    return;
+  }
+  var start = (exclCurrentPage-1)*EXCL_PER_PAGE, end = start+EXCL_PER_PAGE;
+  var page = exclFiltered.slice(start, end);
+  var isAdm = currentUser && currentUser.role === 'admin';
+
+  tbody.innerHTML = page.map(function(e, i){
+    var lastDay = e.last_day ? e.last_day.split('-').reverse().join('/') : '—';
+    var createdAt = e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : '—';
+    var delBtn = isAdm ? '<button class="icon-btn delete" onclick="deleteExcl('+e.id+')" title="حذف">&#128465;</button>' : '';
+    return '<tr>' +
+      '<td class="num">' + (start+i+1) + '</td>' +
+      '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
+      '<td class="name">' + (e.name||'—') + '</td>' +
+      '<td>' + lastDay + '</td>' +
+      '<td><span class="reason-badge">' + (e.reason||'—') + '</span></td>' +
+      '<td style="font-size:12px;color:var(--sub);max-width:200px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--sub);">' + createdAt + '</td>' +
+      '<td><div class="actions">' +
+        '<button class="icon-btn edit" onclick="openExclEdit('+e.id+')" title="تعديل">&#9998;</button>' +
+        delBtn +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+
+  var total = exclFiltered.length, pages = Math.ceil(total/EXCL_PER_PAGE)||1;
+  document.getElementById('exclPageInfo').textContent = 'عرض ' + Math.min(end,total) + ' من ' + total + ' سجل';
+  var pb = document.getElementById('exclPageBtns'); pb.innerHTML = '';
+  for (var p=1; p<=pages; p++) {
+    var b = document.createElement('button');
+    b.className = 'page-btn' + (p===exclCurrentPage?' active':'');
+    b.textContent = p;
+    (function(pg){ b.onclick = function(){ exclCurrentPage=pg; renderExcl(); }; })(p);
+    pb.appendChild(b);
+  }
+}
+
+function openExclModal() {
+  editingExclId = null;
+  ['ex-empid','ex-name','ex-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ex-lastday').value = '';
+  document.getElementById('ex-reason').value = '';
+  document.getElementById('exclModalTitle').textContent = '➕ إضافة استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function openExclEdit(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!ex) return;
+  editingExclId = id;
+  document.getElementById('ex-empid').value   = ex.emp_id || '';
+  document.getElementById('ex-name').value    = ex.name || '';
+  document.getElementById('ex-lastday').value = ex.last_day || '';
+  document.getElementById('ex-reason').value  = ex.reason || '';
+  document.getElementById('ex-notes').value   = ex.notes || '';
+  document.getElementById('exclModalTitle').textContent = '✏️ تعديل استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function closeExclModal() { document.getElementById('exclModalBg').classList.remove('show'); }
+
+async function saveExcl() {
+  var empId   = document.getElementById('ex-empid').value.trim();
+  var name    = document.getElementById('ex-name').value.trim();
+  var lastDay = document.getElementById('ex-lastday').value;
+  var reason  = document.getElementById('ex-reason').value;
+  var notes   = document.getElementById('ex-notes').value.trim();
+
+  if (!empId)   { showToast('❌ يرجى إدخال الرقم الوظيفي'); document.getElementById('ex-empid').focus(); return; }
+  if (!name)    { showToast('❌ يرجى إدخال الاسم'); document.getElementById('ex-name').focus(); return; }
+  if (!lastDay) { showToast('❌ يرجى تحديد آخر يوم عمل'); document.getElementById('ex-lastday').focus(); return; }
+  if (!reason)  { showToast('❌ يرجى اختيار سبب الانهاء'); document.getElementById('ex-reason').focus(); return; }
+
+  showLoading(true);
+  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes};
+  if (editingExclId) {
+    await fetch(EXCL_API + '?id=eq.' + editingExclId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
+    await logAction('تعديل استبعاد', 'تعديل استبعاد: ' + name);
+    showToast('✅ تم التعديل');
+  } else {
+    await fetch(EXCL_API, {method:'POST', headers:H, body:JSON.stringify(payload)});
+    await logAction('إضافة استبعاد', 'إضافة استبعاد: ' + name + ' - ' + reason);
+    showToast('✅ تم إضافة الاستبعاد');
+  }
+  closeExclModal();
+  await loadExcl();
+}
+
+async function deleteExcl(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!confirm('حذف سجل "' + (ex?ex.name:'') + '"؟')) return;
+  showLoading(true);
+  await fetch(EXCL_API + '?id=eq.' + id, {method:'DELETE', headers:H});
+  await loadExcl();
+  showToast('تم الحذف');
+}
+
+function exportExclExcel() {
+  var rows = exclFiltered.map(function(e, i){
+    return {
+      'م': i+1,
+      'الرقم الوظيفي': e.emp_id||'',
+      'الاسم': e.name||'',
+      'آخر يوم عمل': e.last_day ? e.last_day.split('-').reverse().join('/') : '',
+      'سبب الانهاء': e.reason||'',
+      'ملاحظات': e.notes||'',
+      'تاريخ الإدخال': e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : ''
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:16},{wch:28},{wch:30},{wch:20}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الاستبعادات');
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbout], {type:'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='الاستبعادات.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('تم التصدير');
+}
+
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -1749,10 +2004,10 @@ document.getElementById('userModalBg').addEventListener('click',function(e){if(e
 document.getElementById('deptModalBg').addEventListener('click',function(e){if(e.target===this)closeDeptModal();});
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
-document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
+document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
 </script>
 </body>
-</html>
+  </html>
