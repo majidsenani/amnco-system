@@ -235,12 +235,14 @@ td.id-num{font-family:monospace;font-size:12px;}
   ALTER TABLE users 
     ADD COLUMN IF NOT EXISTS can_appoint INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS can_enter INTEGER DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS can_complete INTEGER DEFAULT 0;
+    ADD COLUMN IF NOT EXISTS can_complete INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS can_excl INTEGER DEFAULT 0;
 
   ALTER TABLE employees
     ADD COLUMN IF NOT EXISTS appointed_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS entered_at TIMESTAMP,
-    ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP;
+    ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS dept_section TEXT;
 
   CREATE TABLE IF NOT EXISTS exclusions (
     id BIGSERIAL PRIMARY KEY,
@@ -287,7 +289,7 @@ td.id-num{font-family:monospace;font-size:12px;}
     <button class="main-tab" id="tabUsersBtn" style="display:none;" onclick="switchTab('users',this)">&#128100; المستخدمون</button>
     <button class="main-tab" id="tabTasksBtn" onclick="switchTab('tasks',this)">&#128203; المهام <span id="tasksBadge" style="display:none;background:#dc2626;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-right:4px;">0</span></button>
     <button class="main-tab" id="tabDeptsBtn" style="display:none;" onclick="switchTab('depts',this)">&#127970; الإدارات</button>
-    <button class="main-tab" id="tabExclBtn" onclick="switchTab('excl',this)">🚫 الاستبعادات</button>
+    <button class="main-tab" id="tabExclBtn" style="display:none;" onclick="switchTab('excl',this)">🚫 الاستبعادات</button>
     <button class="main-tab" id="tabLogsBtn" style="display:none;" onclick="switchTab('logs',this)">📋 سجل التعديلات</button>
   </div>
 
@@ -416,6 +418,8 @@ td.id-num{font-family:monospace;font-size:12px;}
         <option value="الوفاة">الوفاة</option>
       </select>
       <button class="btn btn-outline btn-sm" onclick="exportExclExcel()">📥 سحب Excel</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadExclTemplate()">📄 قالب</button>
+      <label class="btn btn-success btn-sm">📤 رفع Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExclExcel(event)"/></label>
       <button class="btn btn-danger btn-sm" id="addExclBtn" onclick="openExclModal()">➕ إضافة استبعاد</button>
     </div>
     <div class="table-wrapper">
@@ -499,7 +503,15 @@ td.id-num{font-family:monospace;font-size:12px;}
       <div class="fg2"><label>الرقم الوظيفي *</label><input id="f-empid" placeholder="EMP-001"/></div>
       <div class="fg2"><label>رقم الهوية *</label><input id="f-idnum" placeholder="1xxxxxxxxx" maxlength="10"/></div>
       <div class="fg2 full"><label>الاسم الكامل *</label><input id="f-name" placeholder="اسم الموظف رباعياً"/></div>
-      <div class="fg2"><label>الإدارة</label><select id="f-dept"><option value="">-- اختر الإدارة --</option></select></div>
+      <div class="fg2"><label>الإدارة</label><select id="f-dept" onchange="toggleDeptSection()"><option value="">-- اختر الإدارة --</option></select></div>
+      <div class="fg2" id="deptSectionWrap" style="display:none;"><label>القسم</label>
+        <select id="f-section">
+          <option value="">-- اختر القسم --</option>
+          <option value="الصرف الالي">الصرف الالي</option>
+          <option value="النقل المؤتمن">النقل المؤتمن</option>
+          <option value="مراكز النقد">مراكز النقد</option>
+        </select>
+      </div>
       <div class="fg2"><label>المشروع</label><input id="f-project" placeholder="اسم المشروع"/></div>
       <div class="fg2"><label>تاريخ المباشرة</label><input type="date" id="f-date"/></div>
       <div class="fg2"><label>نوع العقد</label>
@@ -564,6 +576,10 @@ td.id-num{font-family:monospace;font-size:12px;}
           <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
             <input type="checkbox" id="u-can-complete" style="accent-color:var(--primary);width:16px;height:16px;"/>
             <span style="font-size:12px;font-weight:700;">✔️ اكتمال الملف</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-excl" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">🚫 الاستبعادات</span>
           </label>
         </div>
       </div>
@@ -778,9 +794,11 @@ async function enterApp() {
   document.getElementById('adminToolbar').style.display = isAdm ? 'flex' : 'none';
   document.getElementById('bulkDeleteBtn').style.display = isAdm ? 'inline-flex' : 'none';
   document.getElementById('addEmpBtn').style.display = isViewer ? 'none' : 'inline-flex';
+  var canExclUser = isAdm||(currentUser.can_excl==1||currentUser.can_excl===true||currentUser.can_excl==='1');
+  document.getElementById('tabExclBtn').style.display = canExclUser ? 'block' : 'none';
 
   var head = document.getElementById('empTableHead');
-  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>الإجراء المتخذ</th><th>ملاحظات</th><th>إجراءات</th>';
+  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>الإجراء المتخذ</th><th>ملاحظات</th><th>إجراءات</th>';
 
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
@@ -921,7 +939,8 @@ async function loadEmployees() {
       status:e.status||'active', contract:e.contract_type||'',
       salary:e.salary||'', appointStatus:e.appointment_status||'',
       notes:e.notes||'', actionTaken:e.action_taken||'',
-      appointedAt:e.appointed_at||'', enteredAt:e.entered_at||'', completedAt:e.completed_at||''};
+      appointedAt:e.appointed_at||'', enteredAt:e.entered_at||'', completedAt:e.completed_at||'',
+      section:e.dept_section||''};
   }) : [];
   if (currentUser.role==='viewer' && currentUser.dept_access && currentUser.dept_access!=='all') {
     filtered = employees.filter(function(e){ return e.dept===currentUser.dept_access; });
@@ -1299,6 +1318,8 @@ async function openEmpEdit(id) {
   document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
   document.getElementById('f-status').value       = e.status||eMem.status||'active';
   document.getElementById('f-action-taken').value = e.action_taken||eMem.actionTaken||'';
+  toggleDeptSection();
+  document.getElementById('f-section').value = e.dept_section||eMem.section||'';
   document.getElementById('f-notes').value        = e.notes||eMem.notes||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
@@ -1306,7 +1327,7 @@ async function openEmpEdit(id) {
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
 function clearEmpForm() {
   ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-notes','f-action-taken'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
-  document.getElementById('f-dept').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active';
+  document.getElementById('f-dept').value=''; document.getElementById('f-section').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active'; toggleDeptSection();
 }
 
 async function saveEmployee() {
@@ -1333,11 +1354,12 @@ async function saveEmployee() {
     salary:document.getElementById('f-salary').value.trim(),
     status:document.getElementById('f-status').value,
     notes:document.getElementById('f-notes').value.trim(),
-    action_taken:document.getElementById('f-action-taken').value.trim()};
+    action_taken:document.getElementById('f-action-taken').value.trim(),
+    dept_section:document.getElementById('f-section').value};
   showLoading(true);
   if (editingEmpId) {
     var eOld=employees.find(function(x){ return x.id===editingEmpId; });
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken})});
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken,dept_section:data.dept_section})});
     var fieldLabels={emp_id:'الرقم الوظيفي',name:'الاسم',id_num:'رقم الهوية',dept:'الإدارة',project:'المشروع',date:'تاريخ المباشرة',contract_type:'نوع العقد',salary:'الراتب',status:'الحالة',notes:'الملاحظات',action_taken:'الإجراء المتخذ'};
     var sLbls={active:'نشط',pending:'قيد الإجراءات',resigned:'منهى خدماته',complete:'مكتمل',appointed:'تم عمل قرار تعيين',entered:'تم الإدخال بالنظام'};
     var cLbls={qowa:'عقد قوى',train:'عقد تدريب'};
@@ -1348,12 +1370,12 @@ async function saveEmployee() {
     var logMsg=diffs.length?'تعديل '+name+' | '+diffs.join(' | '):'تعديل بيانات: '+name;
     await logAction('تعديل', logMsg);
     var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
-    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
+    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
     var fidx=filtered.findIndex(function(x){ return x.id===editingEmpId; });
-    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
+    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
     closeEmpModal(); render(); showLoading(false); showToast('✅ تم التعديل');
   } else {
-    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)}); // includes notes and action_taken
+    await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)});
     await logAction('إضافة', 'إضافة موظف: '+name);
     closeEmpModal(); await loadEmployees(); showToast('✅ تم إضافة الموظف');
   }
@@ -1377,6 +1399,7 @@ function renderUsers() {
       if(u.can_appoint==1||u.can_appoint===true||u.can_appoint==='1') perms.push('<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;">📋 قرار</span>');
       if(u.can_enter==1||u.can_enter===true||u.can_enter==='1')    perms.push('<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:6px;">🖥️ إدخال</span>');
       if(u.can_complete==1||u.can_complete===true||u.can_complete==='1') perms.push('<span style="font-size:10px;background:#d1fae5;color:#065f46;padding:2px 7px;border-radius:6px;">✔️ اكتمال</span>');
+      if(u.can_excl==1||u.can_excl===true||u.can_excl==='1') perms.push('<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:6px;">🚫 استبعاد</span>');
     }
     return '<tr>' +
       '<td class="num">'+(i+1)+'</td>' +
@@ -1403,6 +1426,7 @@ function openUserEdit(id) {
   document.getElementById('u-can-appoint').checked  = (u.can_appoint==1||u.can_appoint===true||u.can_appoint==='1');
   document.getElementById('u-can-enter').checked    = (u.can_enter==1||u.can_enter===true||u.can_enter==='1');
   document.getElementById('u-can-complete').checked = (u.can_complete==1||u.can_complete===true||u.can_complete==='1');
+  document.getElementById('u-can-excl').checked     = (u.can_excl==1||u.can_excl===true||u.can_excl==='1');
   document.getElementById('userModalTitle').textContent='✏️ تعديل مستخدم';
   document.getElementById('userModalBg').classList.add('show');
 }
@@ -1414,6 +1438,7 @@ function clearUserForm() {
   document.getElementById('u-can-appoint').checked=false;
   document.getElementById('u-can-enter').checked=false;
   document.getElementById('u-can-complete').checked=false;
+  document.getElementById('u-can-excl').checked=false;
 }
 async function saveUser() {
   var username=document.getElementById('u-username').value.trim();
@@ -1426,7 +1451,8 @@ async function saveUser() {
   var canAppoint = document.getElementById('u-can-appoint').checked ? 1 : 0;
   var canEnter   = document.getElementById('u-can-enter').checked ? 1 : 0;
   var canComplete= document.getElementById('u-can-complete').checked ? 1 : 0;
-  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete};
+  var canExcl    = document.getElementById('u-can-excl').checked ? 1 : 0;
+  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete,can_excl:canExcl};
   if (editingUserId) {
     await fetch(USR_API+'?id=eq.'+editingUserId, {method:'PATCH',headers:H,body:JSON.stringify(payload)});
     showToast('✅ تم تعديل المستخدم');
@@ -1514,7 +1540,7 @@ function exportExcel() {
       'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
       'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
       'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status,
-      'الإجراء المتخذ':e.actionTaken||'','ملاحظات':e.notes||''};
+      'القسم':e.section||'','الإجراء المتخذ':e.actionTaken||'','ملاحظات':e.notes||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
@@ -1971,6 +1997,50 @@ async function deleteExcl(id) {
   showToast('تم الحذف');
 }
 
+function downloadExclTemplate() {
+  var headers = [{'الرقم الوظيفي':'','الاسم':'','آخر يوم عمل':'','سبب الانهاء':'','ملاحظات':''}];
+  var ws = XLSX.utils.json_to_sheet(headers);
+  ws['!cols'] = [{wch:14},{wch:28},{wch:16},{wch:30},{wch:30}];
+  XLSX.utils.sheet_add_aoa(ws,[['','','DD/MM/YYYY','استقالة فورية / استقالة نظامية / انهاء فترة التجربة / ...','']],{origin:'A2'});
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'قالب الاستبعادات');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='قالب_الاستبعادات.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  showToast('تم تنزيل القالب');
+}
+
+function importExclExcel(ev) {
+  var file=ev.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    try {
+      var wb=XLSX.read(e.target.result,{type:'binary'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws);
+      showLoading(true);
+      var count=0;
+      for(var i=0;i<rows.length;i++){
+        var row=rows[i];
+        var dateVal=row['آخر يوم عمل'], dateStr='';
+        if(dateVal){
+          if(typeof dateVal==='number'){var j=new Date((dateVal-25569)*86400*1000);dateStr=j.toISOString().split('T')[0];}
+          else if(typeof dateVal==='string'&&dateVal.includes('/')){var p=dateVal.split('/');if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+          else{dateStr=dateVal;}
+        }
+        if(!row['الاسم'])continue;
+        await fetch(EXCL_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',last_day:dateStr,reason:row['سبب الانهاء']||'',notes:row['ملاحظات']||''})});
+        count++;
+      }
+      await loadExcl();
+      showToast('تم استيراد '+count+' سجل');
+    } catch(err){showToast('خطأ في قراءة الملف');showLoading(false);}
+  };
+  reader.readAsBinaryString(file);ev.target.value='';
+}
+
 function exportExclExcel() {
   var rows = exclFiltered.map(function(e, i){
     return {
@@ -1996,6 +2066,17 @@ function exportExclExcel() {
   showToast('تم التصدير');
 }
 
+function toggleDeptSection() {
+  var dept = document.getElementById('f-dept').value;
+  var wrap = document.getElementById('deptSectionWrap');
+  if (dept === 'ادارة الحلول النقدية') {
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+    document.getElementById('f-section').value = '';
+  }
+}
+
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -2010,4 +2091,4 @@ document.getElementById('exclModalBg').addEventListener('click',function(e){if(e
 
 </script>
 </body>
-  </html>
+</html>
