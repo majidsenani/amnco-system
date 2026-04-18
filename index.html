@@ -109,6 +109,10 @@ td.id-num{font-family:monospace;font-size:12px;}
 .s-trained .status-dot{background:#d97706;}
 .s-entered{background:#e0e7ff;color:#3730a3;}
 .s-entered .status-dot{background:#4f46e5;}
+.s-sent{background:#cffafe;color:#0891b2;}
+.s-sent .status-dot{background:#0891b2;}
+.s-filed{background:#f0fdf4;color:#065f46;}
+.s-filed .status-dot{background:#059669;}
 .contract-badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;}
 .c-qowa{background:#dbeafe;color:#1d4ed8;}
 .c-train{background:#f3e8ff;color:#7c3aed;}
@@ -126,6 +130,12 @@ td.id-num{font-family:monospace;font-size:12px;}
 .icon-btn.complete:hover{background:#059669;color:#fff;}
 .icon-btn.reset{background:#fee2e2;color:#dc2626;}
 .icon-btn.reset:hover{background:#dc2626;color:#fff;}
+.icon-btn.pdf{background:#fdf4ff;color:#7c3aed;}
+.icon-btn.pdf:hover{background:#7c3aed;color:#fff;}
+.icon-btn.send{background:#cffafe;color:#0891b2;}
+.icon-btn.send:hover{background:#0891b2;color:#fff;}
+.icon-btn.file{background:#f0fdf4;color:#065f46;}
+.icon-btn.file:hover{background:#059669;color:#fff;}
 .cb{width:16px;height:16px;cursor:pointer;accent-color:var(--primary);}
 .pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--sub);}
 .page-btns{display:flex;gap:5px;}
@@ -236,7 +246,9 @@ td.id-num{font-family:monospace;font-size:12px;}
     ADD COLUMN IF NOT EXISTS can_appoint INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS can_enter INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS can_complete INTEGER DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS can_excl INTEGER DEFAULT 0;
+    ADD COLUMN IF NOT EXISTS can_excl INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS can_send INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS can_file INTEGER DEFAULT 0;
 
   ALTER TABLE employees
     ADD COLUMN IF NOT EXISTS appointed_at TIMESTAMP,
@@ -346,6 +358,8 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="fbtn" id="filter-complete" onclick="filterByStatus('complete')" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7;">✔️ مكتمل</button>
       <button class="fbtn" id="filter-appointed" onclick="filterByStatus('appointed')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📋 تم عمل قرار تعيين</button>
       <button class="fbtn" id="filter-trained" onclick="filterByStatus('trained')" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">📝 تم عمل عقد تدريب</button>
+      <button class="fbtn" id="filter-sent" onclick="filterByStatus('sent')" style="background:#cffafe;color:#0891b2;border-color:#67e8f9;">📨 تم ارساله لادارته</button>
+      <button class="fbtn" id="filter-filed" onclick="filterByStatus('filed')" style="background:#f0fdf4;color:#065f46;border-color:#86efac;">📁 اكتمل الملف</button>
       <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ تم الإدخال بالنظام</button>
       <button class="fbtn" id="filter-contract-qowa" onclick="filterByContract('qowa')" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;">🔵 عقد قوى <span id="cnt-qowa">0</span></button>
       <button class="fbtn" id="filter-contract-train" onclick="filterByContract('train')" style="background:#f3e8ff;color:#7c3aed;border-color:#c4b5fd;">🟣 عقد تدريب <span id="cnt-train">0</span></button>
@@ -530,7 +544,6 @@ td.id-num{font-family:monospace;font-size:12px;}
           <option value="complete">✔️ مكتمل</option>
         </select>
       </div>
-      <div class="fg2"><label>الإجراء المتخذ</label><input id="f-action-taken" placeholder="مثال: تم رفع العقد"/></div>
       <div class="fg2 full"><label>ملاحظات</label><input id="f-notes" placeholder="أي ملاحظات إضافية..."/></div>
     </div>
     <div class="modal-footer">
@@ -576,6 +589,14 @@ td.id-num{font-family:monospace;font-size:12px;}
           <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
             <input type="checkbox" id="u-can-complete" style="accent-color:var(--primary);width:16px;height:16px;"/>
             <span style="font-size:12px;font-weight:700;">✔️ اكتمال الملف</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-send" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">📨 ارسال لادارته</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-file" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">📁 اكتمال الملف</span>
           </label>
           <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
             <input type="checkbox" id="u-can-excl" style="accent-color:var(--primary);width:16px;height:16px;"/>
@@ -673,6 +694,61 @@ td.id-num{font-family:monospace;font-size:12px;}
   </div>
 </div>
 
+
+<!-- PDF Modal - قرار التعيين -->
+<div class="modal-bg" id="pdfModalBg">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <div class="modal-title">📄 توليد قرار التعيين</div>
+      <button class="modal-close" onclick="closePdfModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg2"><label>الوظيفة *</label><input id="pdf-position" placeholder="مثال: سائق مصفحة"/></div>
+      <div class="fg2"><label>نوع التوظيف *</label>
+        <select id="pdf-recruit-type">
+          <option value="جديد">جديد</option>
+          <option value="بديل">بديل</option>
+          <option value="نقل داخلي">نقل داخلي</option>
+        </select>
+      </div>
+      <div class="fg2"><label>الحالة الاجتماعية *</label>
+        <select id="pdf-marital">
+          <option value="أعزب">أعزب</option>
+          <option value="متزوج">متزوج</option>
+        </select>
+      </div>
+      <div class="fg2"><label>الجنسية *</label><input id="pdf-nationality" placeholder="سعودي"/></div>
+      <div class="fg2"><label>الجوال *</label><input id="pdf-mobile" placeholder="05xxxxxxxx"/></div>
+      <div class="fg2"><label>منطقة العمل *</label><input id="pdf-location" placeholder="الرياض"/></div>
+      <div class="fg2"><label>الراتب الأساسي</label><input id="pdf-basic" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل السكن</label><input id="pdf-housing" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل المواصلات</label><input id="pdf-transport" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل الطعام</label><input id="pdf-food" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل المحروقات</label><input id="pdf-fuel" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل الاتصال</label><input id="pdf-comm" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل أمن</label><input id="pdf-security" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدلات أخرى</label><input id="pdf-other" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل طبيعة العمل</label><input id="pdf-nature" placeholder="0" type="number" oninput="calcTotal()"/></div>
+      <div class="fg2 full" style="background:#f8faff;border-radius:10px;padding:10px;text-align:center;">
+        <span style="font-size:13px;color:var(--sub);">الراتب الإجمالي: </span>
+        <span id="pdf-total" style="font-size:18px;font-weight:900;color:var(--success);">0</span>
+        <span style="font-size:13px;color:var(--sub);"> ريال</span>
+      </div>
+      <div class="fg2 full" style="border-top:2px solid var(--border);padding-top:14px;margin-top:4px;">
+        <label style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:10px;display:block;">✍️ اعتماد الإدارة المعنية</label>
+      </div>
+      <div class="fg2"><label>اسم المشرف المباشر</label><input id="pdf-sup-name" placeholder="الاسم"/></div>
+      <div class="fg2"><label>الرقم الوظيفي للمشرف</label><input id="pdf-sup-id" placeholder="الرقم"/></div>
+      <div class="fg2"><label>اسم المدير التنفيذي</label><input id="pdf-mgr-name" placeholder="الاسم"/></div>
+      <div class="fg2"><label>الرقم الوظيفي للمدير</label><input id="pdf-mgr-id" placeholder="الرقم"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePdfModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="generatePdf()">📄 توليد PDF</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="changePassBg">
   <div class="modal" style="max-width:380px;">
     <div class="modal-header">
@@ -727,6 +803,8 @@ var statusMap = {
   complete:  {label:'مكتمل',               cls:'s-complete'},
   appointed: {label:'تم عمل قرار تعيين',   cls:'s-appointed'},
   trained:   {label:'تم عمل عقد تدريب',    cls:'s-appointed'},
+  sent:      {label:'تم ارساله لادارته',   cls:'s-sent'},
+  filed:     {label:'اكتمل الملف',           cls:'s-filed'},
   entered:   {label:'تم الإدخال بالنظام',  cls:'s-entered'}
 };
 var contractMap = {qowa:'عقد قوى', train:'عقد تدريب'};
@@ -798,7 +876,7 @@ async function enterApp() {
   document.getElementById('tabExclBtn').style.display = canExclUser ? 'block' : 'none';
 
   var head = document.getElementById('empTableHead');
-  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>الإجراء المتخذ</th><th>ملاحظات</th><th>إجراءات</th>';
+  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>';
 
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
@@ -982,7 +1060,26 @@ function render() {
         if (userCan('can_appoint')) {
           workflowBtns = '<button class="icon-btn appoint" data-id="' + e.id + '" title="' + step1Label + '">' + step1Icon + '</button>';
         }
-      } else if (as === 'appointed' || as === 'trained') {
+      } else if (as === 'appointed') {
+        // عقد قوى: بعد قرار التعيين → ارسال لادارته
+        if (userCan('can_send')) {
+          workflowBtns = '<button class="icon-btn send" data-id="' + e.id + '" title="تم ارساله لادارته">&#128232;</button>';
+        }
+        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="" title="إرجاع">&#8617;</button>';
+      } else if (as === 'sent') {
+        // عقد قوى: بعد الارسال → اكتمال الملف
+        if (userCan('can_file')) {
+          workflowBtns = '<button class="icon-btn file" data-id="' + e.id + '" title="اكتمل الملف">&#128196;</button>';
+        }
+        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="appointed" title="إرجاع">&#8617;</button>';
+      } else if (as === 'filed') {
+        // عقد قوى: بعد اكتمال الملف → إدخال بالنظام
+        if (userCan('can_enter')) {
+          workflowBtns = '<button class="icon-btn enter" data-id="' + e.id + '" title="الإدخال بالنظام">&#128421;</button>';
+        }
+        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="sent" title="إرجاع">&#8617;</button>';
+      } else if (as === 'trained') {
+        // عقد تدريب: مباشرة → إدخال بالنظام
         if (userCan('can_enter')) {
           workflowBtns = '<button class="icon-btn enter" data-id="' + e.id + '" title="الإدخال بالنظام">&#128421;</button>';
         }
@@ -991,7 +1088,7 @@ function render() {
         if (userCan('can_complete')) {
           workflowBtns = '<button class="icon-btn complete" data-id="' + e.id + '" title="ملف مكتمل">&#10003;</button>';
         }
-        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="appointed" title="إرجاع">&#8617;</button>';
+        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="' + (e.contract==='qowa'?'filed':'trained') + '" title="إرجاع">&#8617;</button>';
       } else if (as === 'complete') {
         if (isAdm) workflowBtns = '<button class="icon-btn reset" data-id="' + e.id + '" data-to="entered" title="إرجاع">&#8617;</button>';
       }
@@ -1011,9 +1108,10 @@ function render() {
     if(e.enteredAt)   tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#128421; '+fmtDT(e.enteredAt)+'</div>';
     if(e.completedAt) tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#10003; '+fmtDT(e.completedAt)+'</div>';
     html += '<td>' + statusBadge(e.status) + (tsHtml?'<div style="margin-top:4px;">'+tsHtml+'</div>':'') + '</td>';
-    html += '<td><input type="text" value="' + (e.actionTaken||'').replace(/"/g,'&quot;') + '" placeholder="الإجراء المتخذ" style="width:110px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'action_taken\',this.value)" onclick="event.stopPropagation()"/></td>';
+
     html += '<td><input type="text" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." style="width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()"/></td>';
-    html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
+    var pdfBtn = (!isViewer && e.contract==='qowa') ? '<button class="icon-btn pdf" data-id="' + e.id + '" title="توليد قرار التعيين">&#128196;</button>' : '';
+    html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + pdfBtn + '</div></td></tr>';
   }
   tbody.innerHTML = html;
 
@@ -1030,6 +1128,9 @@ function render() {
       if (btn.classList.contains('enter'))    { doEnter(id); return; }
       if (btn.classList.contains('complete')) { doComplete(id); return; }
       if (btn.classList.contains('reset'))    { resetWorkflow(id, btn.dataset.to||''); return; }
+      if (btn.classList.contains('send'))       { doSend(id); return; }
+      if (btn.classList.contains('file'))       { doFile(id); return; }
+      if (btn.classList.contains('pdf'))        { openPdfModal(id); return; }
     } else if (tr) { rowClick(ev, id); }
   };
 
@@ -1075,6 +1176,29 @@ async function doAppoint(id) {
   await logAction(isTrain?'عقد تدريب':'قرار تعيين', 'تم إصدار '+label+': '+e.name);
   updateEmpInMemory(e.id, {status:newStatus, appointStatus:newStatus, appointedAt:now});
   showLoading(false); showToast('✅ تم إصدار ' + label);
+}
+
+
+async function doSend(id) {
+  var e = employees.find(function(x){ return x.id===id; });
+  if (!confirm('تأكيد ارسال ملف "'+e.name+'" لادارته؟')) return;
+  showLoading(true);
+  var now = new Date().toISOString();
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'sent',status:'sent',entered_at:now})});
+  await logAction('ارسال لادارته', 'تم ارسال ملف: '+e.name+' لادارته');
+  updateEmpInMemory(e.id, {status:'sent', appointStatus:'sent', enteredAt:now});
+  showLoading(false); showToast('✅ تم ارسال الملف لادارته');
+}
+
+async function doFile(id) {
+  var e = employees.find(function(x){ return x.id===id; });
+  if (!confirm('تأكيد اكتمال ملف "'+e.name+'"؟')) return;
+  showLoading(true);
+  var now = new Date().toISOString();
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'filed',status:'filed',completed_at:now})});
+  await logAction('اكتمال الملف', 'اكتمل ملف الموظف قبل الإدخال: '+e.name);
+  updateEmpInMemory(e.id, {status:'filed', appointStatus:'filed', completedAt:now});
+  showLoading(false); showToast('✅ تم تأكيد اكتمال الملف');
 }
 
 async function doEnter(id) {
@@ -1138,27 +1262,32 @@ async function resetWorkflow(id, toStatus) {
   // handle trained (train contract) as well as appointed
   var isTrain = e.contract === 'train';
   var newStatus;
-  if (toStatus === 'appointed' || toStatus === 'trained') {
-    newStatus = isTrain ? 'trained' : 'appointed';
-    newAppoint = newStatus;
+  if (toStatus === 'appointed') {
+    newStatus = 'appointed'; newAppoint = 'appointed';
+  } else if (toStatus === 'trained') {
+    newStatus = 'trained'; newAppoint = 'trained';
+  } else if (toStatus === 'sent') {
+    newStatus = 'sent'; newAppoint = 'sent';
+  } else if (toStatus === 'filed') {
+    newStatus = 'filed'; newAppoint = 'filed';
   } else if (toStatus === 'entered') {
-    newStatus = 'entered';
+    newStatus = 'entered'; newAppoint = 'entered';
   } else {
-    newStatus = 'active';
-    newAppoint = '';
+    newStatus = 'active'; newAppoint = '';
   }
   // Clear timestamps for reset steps
   var clearFields = {};
   if (!toStatus) { clearFields = {appointed_at:null, entered_at:null, completed_at:null}; }
   else if (toStatus === 'appointed' || toStatus === 'trained') { clearFields = {entered_at:null, completed_at:null}; }
-  else if (toStatus === 'entered') { clearFields = {completed_at:null}; }
+  else if (toStatus === 'sent') { clearFields = {completed_at:null}; }
+  else if (toStatus === 'filed' || toStatus === 'entered') { clearFields = {}; }
   var patchBody = Object.assign({appointment_status:newAppoint, status:newStatus}, clearFields);
   await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify(patchBody)});
   await logAction('إرجاع حالة', 'إرجاع حالة '+e.name+' إلى '+(newAppoint||'الأولى'));
   var memUpdates = {status:newStatus, appointStatus:newAppoint};
   if (!toStatus) { memUpdates.appointedAt=''; memUpdates.enteredAt=''; memUpdates.completedAt=''; }
   else if (toStatus === 'appointed' || toStatus === 'trained') { memUpdates.enteredAt=''; memUpdates.completedAt=''; }
-  else if (toStatus === 'entered') { memUpdates.completedAt=''; }
+  else if (toStatus === 'sent') { memUpdates.completedAt=''; }
   updateEmpInMemory(e.id, memUpdates);
   showLoading(false); showToast('✅ تم إرجاع الحالة');
 }
@@ -1318,7 +1447,7 @@ async function openEmpEdit(id) {
   document.getElementById('f-contract').value     = e.contract_type||eMem.contract||'';
   document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
   document.getElementById('f-status').value       = e.status||eMem.status||'active';
-  document.getElementById('f-action-taken').value = e.action_taken||eMem.actionTaken||'';
+  document.getElementById().value = e.action_taken||eMem.actionTaken||'';
   document.getElementById('f-section').value = e.dept_section||eMem.section||'';
   document.getElementById('f-notes').value        = e.notes||eMem.notes||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
@@ -1326,7 +1455,7 @@ async function openEmpEdit(id) {
 }
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
 function clearEmpForm() {
-  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-notes','f-action-taken'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
+  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-notes',].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
   document.getElementById('f-dept').value=''; document.getElementById('f-section').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active';
 }
 
@@ -1354,25 +1483,25 @@ async function saveEmployee() {
     salary:document.getElementById('f-salary').value.trim(),
     status:document.getElementById('f-status').value,
     notes:document.getElementById('f-notes').value.trim(),
-    action_taken:document.getElementById('f-action-taken').value.trim(),
+    action_taken:document.getElementById().value.trim(),
     dept_section:document.getElementById('f-section').value};
   showLoading(true);
   if (editingEmpId) {
     var eOld=employees.find(function(x){ return x.id===editingEmpId; });
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken,dept_section:data.dept_section})});
-    var fieldLabels={emp_id:'الرقم الوظيفي',name:'الاسم',id_num:'رقم الهوية',dept:'الإدارة',project:'المشروع',date:'تاريخ المباشرة',contract_type:'نوع العقد',salary:'الراتب',status:'الحالة',notes:'الملاحظات',action_taken:'الإجراء المتخذ'};
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,dept_section:data.dept_section})});
+    var fieldLabels={emp_id:'الرقم الوظيفي',name:'الاسم',id_num:'رقم الهوية',dept:'الإدارة',project:'المشروع',date:'تاريخ المباشرة',contract_type:'نوع العقد',salary:'الراتب',status:'الحالة',notes:'الملاحظات'};
     var sLbls={active:'نشط',pending:'قيد الإجراءات',resigned:'منهى خدماته',complete:'مكتمل',appointed:'تم عمل قرار تعيين',entered:'تم الإدخال بالنظام'};
     var cLbls={qowa:'عقد قوى',train:'عقد تدريب'};
     var oldV={emp_id:eOld.empId,name:eOld.name,id_num:eOld.idNum,dept:eOld.dept,project:eOld.project,date:eOld.date,contract_type:eOld.contract,salary:eOld.salary,status:eOld.status,notes:eOld.notes,action_taken:eOld.actionTaken};
-    var newV={emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,action_taken:data.action_taken};
+    var newV={emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes};
     var diffs=[];
     Object.keys(fieldLabels).forEach(function(k){var ov=String(oldV[k]||'').trim(),nv=String(newV[k]||'').trim();if(ov!==nv){var lb=fieldLabels[k];var od=k==='status'?(sLbls[ov]||ov):k==='contract_type'?(cLbls[ov]||ov):ov||'—';var nd=k==='status'?(sLbls[nv]||nv):k==='contract_type'?(cLbls[nv]||nv):nv||'—';diffs.push(lb+': '+od+' ← '+nd);}});
     var logMsg=diffs.length?'تعديل '+name+' | '+diffs.join(' | '):'تعديل بيانات: '+name;
     await logAction('تعديل', logMsg);
     var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
-    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
+    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes});
     var fidx=filtered.findIndex(function(x){ return x.id===editingEmpId; });
-    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,actionTaken:data.action_taken});
+    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes});
     closeEmpModal(); render(); showLoading(false); showToast('✅ تم التعديل');
   } else {
     await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)});
@@ -1399,6 +1528,8 @@ function renderUsers() {
       if(u.can_appoint==1||u.can_appoint===true||u.can_appoint==='1') perms.push('<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;">📋 قرار</span>');
       if(u.can_enter==1||u.can_enter===true||u.can_enter==='1')    perms.push('<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:6px;">🖥️ إدخال</span>');
       if(u.can_complete==1||u.can_complete===true||u.can_complete==='1') perms.push('<span style="font-size:10px;background:#d1fae5;color:#065f46;padding:2px 7px;border-radius:6px;">✔️ اكتمال</span>');
+      if(u.can_send==1||u.can_send===true||u.can_send==='1') perms.push('<span style="font-size:10px;background:#cffafe;color:#0891b2;padding:2px 7px;border-radius:6px;">📨 ارسال</span>');
+      if(u.can_file==1||u.can_file===true||u.can_file==='1') perms.push('<span style="font-size:10px;background:#f0fdf4;color:#065f46;padding:2px 7px;border-radius:6px;">📁 ملف</span>');
       if(u.can_excl==1||u.can_excl===true||u.can_excl==='1') perms.push('<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:6px;">🚫 استبعاد</span>');
     }
     return '<tr>' +
@@ -1427,6 +1558,8 @@ function openUserEdit(id) {
   document.getElementById('u-can-enter').checked    = (u.can_enter==1||u.can_enter===true||u.can_enter==='1');
   document.getElementById('u-can-complete').checked = (u.can_complete==1||u.can_complete===true||u.can_complete==='1');
   document.getElementById('u-can-excl').checked     = (u.can_excl==1||u.can_excl===true||u.can_excl==='1');
+  document.getElementById('u-can-send').checked     = (u.can_send==1||u.can_send===true||u.can_send==='1');
+  document.getElementById('u-can-file').checked     = (u.can_file==1||u.can_file===true||u.can_file==='1');
   document.getElementById('userModalTitle').textContent='✏️ تعديل مستخدم';
   document.getElementById('userModalBg').classList.add('show');
 }
@@ -1439,6 +1572,8 @@ function clearUserForm() {
   document.getElementById('u-can-enter').checked=false;
   document.getElementById('u-can-complete').checked=false;
   document.getElementById('u-can-excl').checked=false;
+  document.getElementById('u-can-send').checked=false;
+  document.getElementById('u-can-file').checked=false;
 }
 async function saveUser() {
   var username=document.getElementById('u-username').value.trim();
@@ -1452,7 +1587,9 @@ async function saveUser() {
   var canEnter   = document.getElementById('u-can-enter').checked ? 1 : 0;
   var canComplete= document.getElementById('u-can-complete').checked ? 1 : 0;
   var canExcl    = document.getElementById('u-can-excl').checked ? 1 : 0;
-  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete,can_excl:canExcl};
+  var canSend    = document.getElementById('u-can-send').checked ? 1 : 0;
+  var canFile    = document.getElementById('u-can-file').checked ? 1 : 0;
+  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete,can_excl:canExcl,can_send:canSend,can_file:canFile};
   if (editingUserId) {
     await fetch(USR_API+'?id=eq.'+editingUserId, {method:'PATCH',headers:H,body:JSON.stringify(payload)});
     showToast('✅ تم تعديل المستخدم');
@@ -1723,7 +1860,7 @@ function renderDashboard(){
   var pending=employees.filter(function(e){return e.status==='pending';}).length;
   var resigned=employees.filter(function(e){return e.status==='resigned';}).length;
   var complete=employees.filter(function(e){return e.status==='complete';}).length;
-  var appointed=employees.filter(function(e){return e.status==='appointed'||e.status==='trained';}).length;
+  var appointed=employees.filter(function(e){return e.status==='appointed'||e.status==='trained'||e.status==='sent'||e.status==='filed';}).length;
   var entered=employees.filter(function(e){return e.status==='entered';}).length;
   var qowa=employees.filter(function(e){return e.contract==='qowa';}).length;
   var train=employees.filter(function(e){return e.contract==='train';}).length;
@@ -2066,6 +2203,225 @@ function exportExclExcel() {
   showToast('تم التصدير');
 }
 
+
+/* ═══════════════════════════════ PDF GENERATOR ═══════════════════════════════ */
+var pdfTargetEmp = null;
+
+function openPdfModal(id) {
+  pdfTargetEmp = employees.find(function(x){ return x.id===id; });
+  if (!pdfTargetEmp) return;
+  // Pre-fill salary from employee data
+  var sal = Number(pdfTargetEmp.salary)||0;
+  document.getElementById('pdf-basic').value = sal;
+  ['pdf-housing','pdf-transport','pdf-food','pdf-fuel','pdf-comm','pdf-security','pdf-other','pdf-nature'].forEach(function(id){ document.getElementById(id).value='0'; });
+  ['pdf-position','pdf-nationality','pdf-mobile','pdf-location','pdf-sup-name','pdf-sup-id','pdf-mgr-name','pdf-mgr-id'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('pdf-recruit-type').value='جديد';
+  document.getElementById('pdf-marital').value='أعزب';
+  calcTotal();
+  document.getElementById('pdfModalBg').classList.add('show');
+}
+
+function closePdfModal() { document.getElementById('pdfModalBg').classList.remove('show'); }
+
+function calcTotal() {
+  var ids = ['pdf-basic','pdf-housing','pdf-transport','pdf-food','pdf-fuel','pdf-comm','pdf-security','pdf-other','pdf-nature'];
+  var total = ids.reduce(function(s,id){ return s + (Number(document.getElementById(id).value)||0); },0);
+  document.getElementById('pdf-total').textContent = total.toLocaleString();
+}
+
+function generatePdf() {
+  var e = pdfTargetEmp;
+  if (!e) return;
+
+  var position   = document.getElementById('pdf-position').value.trim();
+  var recruitType= document.getElementById('pdf-recruit-type').value;
+  var marital    = document.getElementById('pdf-marital').value;
+  var nationality= document.getElementById('pdf-nationality').value.trim();
+  var mobile     = document.getElementById('pdf-mobile').value.trim();
+  var location   = document.getElementById('pdf-location').value.trim();
+
+  if (!position||!nationality||!mobile||!location) { showToast('❌ يرجى تعبئة الحقول المطلوبة'); return; }
+
+  var basic    = Number(document.getElementById('pdf-basic').value)||0;
+  var housing  = Number(document.getElementById('pdf-housing').value)||0;
+  var transport= Number(document.getElementById('pdf-transport').value)||0;
+  var food     = Number(document.getElementById('pdf-food').value)||0;
+  var fuel     = Number(document.getElementById('pdf-fuel').value)||0;
+  var comm     = Number(document.getElementById('pdf-comm').value)||0;
+  var security = Number(document.getElementById('pdf-security').value)||0;
+  var other    = Number(document.getElementById('pdf-other').value)||0;
+  var nature   = Number(document.getElementById('pdf-nature').value)||0;
+  var total    = basic+housing+transport+food+fuel+comm+security+other+nature;
+
+  var supName  = document.getElementById('pdf-sup-name').value.trim();
+  var supId    = document.getElementById('pdf-sup-id').value.trim();
+  var mgrName  = document.getElementById('pdf-mgr-name').value.trim();
+  var mgrId    = document.getElementById('pdf-mgr-id').value.trim();
+
+  var today = new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'2-digit',day:'2-digit',calendar:'gregory',numberingSystem:'latn'});
+  var dateStr = e.date ? e.date.split('-').reverse().join('/') : '';
+  var dept = e.dept||'';
+  var section = e.section||'';
+  var project = e.project||'';
+
+  var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"/>';
+  html += '<title>قرار تعيين - '+e.name+'</title>';
+  html += '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet"/>';
+  html += '<style>';
+  html += '*{box-sizing:border-box;margin:0;padding:0;}';
+  html += 'body{font-family:Tajawal,sans-serif;font-size:11px;color:#000;background:#fff;padding:20px;}';
+  html += '.page{max-width:210mm;margin:0 auto;padding:10mm;border:1px solid #ccc;}';
+  html += '@media print{body{padding:0;}.page{border:none;max-width:100%;padding:8mm;}@page{size:A4;margin:8mm;}}';
+  html += '.header-wrap{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;border-bottom:2px solid #000;padding-bottom:6px;}';
+  html += '.header-en{font-size:9px;line-height:1.6;text-align:left;direction:ltr;}';
+  html += '.header-ar{font-size:9px;line-height:1.6;text-align:right;}';
+  html += '.header-title{text-align:center;font-size:13px;font-weight:900;padding:4px 0;}';
+  html += 'table{width:100%;border-collapse:collapse;margin-bottom:8px;}';
+  html += 'td,th{border:1px solid #aaa;padding:4px 8px;font-size:10px;}';
+  html += '.section-title{background:#d0d0d0;font-weight:900;font-size:11px;padding:4px 8px;text-align:right;border:1px solid #aaa;margin-bottom:0;}';
+  html += '.lbl{font-weight:700;color:#333;width:130px;text-align:right;}';
+  html += '.val{text-align:center;}';
+  html += '.lbl-en{font-size:9px;color:#555;text-align:left;direction:ltr;width:120px;}';
+  html += '.num-cell{text-align:center;font-weight:700;}';
+  html += '.sign-box{border:1px solid #aaa;padding:6px;text-align:center;min-height:80px;font-size:10px;}';
+  html += '.sign-label{font-weight:900;font-size:10px;margin-bottom:4px;}';
+  html += '.sign-name{margin:4px 0;font-size:10px;}';
+  html += '.sign-line{border-top:1px solid #888;margin-top:20px;padding-top:3px;font-size:9px;color:#555;}';
+  html += '.footer-wrap{display:flex;justify-content:space-between;font-size:8px;margin-top:8px;padding-top:4px;border-top:1px solid #999;}';
+  html += '.no-print{position:fixed;top:10px;left:10px;z-index:999;}';
+  html += '</style></head><body>';
+
+  // Print button
+  html += '<div class="no-print"><button onclick="window.print()" style="padding:8px 18px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-family:Tajawal,sans-serif;font-size:14px;cursor:pointer;">🖨️ طباعة / حفظ PDF</button></div>';
+
+  html += '<div class="page">';
+
+  // ── HEADER ──
+  html += '<div class="header-wrap">';
+  html += '<div class="header-en">Arabian Security &amp; Safety Services Co.Ltd<br/>C.R 1010061647 &nbsp; C.C 64<br/>P.O.Box 61547, Riyadh 11575<br/>Tel: 966114160702 &nbsp; Fax: 966114163594<br/>Common No. 920007030</div>';
+  html += '<div class="header-title">بيانات الموظف<br/><span style="font-size:10px;font-weight:400;">Employee Information</span></div>';
+  html += '<div class="header-ar">الشركة العربية لخدمات الأمن والسلامة المحدودة<br/>س.ت 1010061647 &nbsp; ع.م 64<br/>ص.ب 61547 الرياض 11575<br/>هاتف: 966114160702 &nbsp; فاكس: 966114163594<br/>الرقم الموحد: 920007030</div>';
+  html += '</div>';
+
+  // ── SECTION 1: بيانات الموظف ──
+  html += '<div class="section-title">بيانات الموظف &nbsp;|&nbsp; Employee Information</div>';
+  html += '<table>';
+
+  function row(arLabel, enLabel, value) {
+    return '<tr><td class="lbl-en">'+enLabel+':</td><td class="val" style="min-width:200px;">'+value+'</td><td class="lbl">'+arLabel+':</td></tr>';
+  }
+
+  html += row('التاريخ','Date', today);
+  html += row('اسم الموظف','Employee Name', e.name||'');
+  html += row('الرقم الوظيفي','Badge Number', e.empId||'');
+  html += row('نوع التوظيف','Recruitment Type', recruitType);
+  html += row('الوظيفة','Position', position);
+  html += row('الحالة الاجتماعية','Marital Status', marital);
+  html += row('الجنسية','Nationality', nationality);
+  html += row('رقم الهوية','ID Number', e.idNum||'');
+  html += row('الجوال','Mobile', mobile);
+  html += row('منطقة العمل','Work Location', location);
+  html += '</table>';
+
+  // ── SECTION 2: البيانات الوظيفية والمزايا ──
+  html += '<div class="section-title">البيانات الوظيفية والمزايا</div>';
+  html += '<table>';
+  html += '<tr>';
+  html += '<td class="lbl">المشروع</td><td class="val">'+project+'</td>';
+  html += '<td class="lbl">الراتب الأساسي</td><td class="num-cell">'+basic.toLocaleString()+'</td>';
+  html += '<td class="lbl">بدل طبيعة العمل</td><td class="num-cell">'+nature.toLocaleString()+'</td>';
+  html += '</tr><tr>';
+  html += '<td class="lbl">القسم</td><td class="val">'+section+'</td>';
+  html += '<td class="lbl">بدل السكن</td><td class="num-cell">'+housing.toLocaleString()+'</td>';
+  html += '<td class="lbl">بدل الطعام</td><td class="num-cell">'+food.toLocaleString()+'</td>';
+  html += '</tr><tr>';
+  html += '<td class="lbl">الإدارة</td><td class="val">'+dept+'</td>';
+  html += '<td class="lbl">بدل المواصلات</td><td class="num-cell">'+transport.toLocaleString()+'</td>';
+  html += '<td class="lbl">بدل المحروقات</td><td class="num-cell">'+fuel.toLocaleString()+'</td>';
+  html += '</tr><tr>';
+  html += '<td class="lbl">تاريخ المباشرة</td><td class="val">'+dateStr+'</td>';
+  html += '<td class="lbl">بدلات أخرى</td><td class="num-cell">'+other.toLocaleString()+'</td>';
+  html += '<td class="lbl">بدل الاتصال</td><td class="num-cell">'+comm.toLocaleString()+'</td>';
+  html += '</tr><tr>';
+  html += '<td class="lbl">مدير المشروع / الإدارة</td><td class="val">'+(mgrName||'')+'</td>';
+  html += '<td class="lbl" colspan="2"></td>';
+  html += '<td class="lbl">بدل أمن</td><td class="num-cell">'+security.toLocaleString()+'</td>';
+  html += '</tr><tr>';
+  html += '<td colspan="3"></td>';
+  html += '<td class="lbl" style="font-weight:900;background:#eee;">الراتب الإجمالي</td>';
+  html += '<td class="num-cell" style="font-weight:900;font-size:13px;background:#eee;" colspan="2">'+total.toLocaleString()+'</td>';
+  html += '</tr>';
+  html += '</table>';
+
+  // ── SECTION 3: اعتماد الإدارة المعنية ──
+  html += '<div class="section-title">اعتماد الإدارة المعنية</div>';
+  html += '<table><tr>';
+  // 1- اعتماد الموظف
+  html += '<td style="width:33%;"><div class="sign-box">';
+  html += '<div class="sign-label">1- اعتماد الموظف</div>';
+  html += '<div class="sign-name">الاسم &nbsp; '+e.name+'</div>';
+  html += '<div class="sign-name">الرقم الوظيفي &nbsp; '+e.empId+'</div>';
+  html += '<div class="sign-line">التاريخ</div>';
+  html += '<div class="sign-line">التوقيع</div>';
+  html += '</div></td>';
+  // 2- مشرف مباشر
+  html += '<td style="width:33%;"><div class="sign-box">';
+  html += '<div class="sign-label">2- مشرف مباشر / مدير مشروع</div>';
+  html += '<div class="sign-name">الاسم &nbsp; '+(supName||'')+'</div>';
+  html += '<div class="sign-name">الرقم الوظيفي &nbsp; '+(supId||'')+'</div>';
+  html += '<div class="sign-line">التاريخ</div>';
+  html += '<div class="sign-line">التوقيع</div>';
+  html += '</div></td>';
+  // 3- المدير التنفيذي
+  html += '<td style="width:33%;"><div class="sign-box">';
+  html += '<div class="sign-label">3- المدير التنفيذي / مدير إدارة</div>';
+  html += '<div class="sign-name">الاسم &nbsp; '+(mgrName||'')+'</div>';
+  html += '<div class="sign-name">الرقم الوظيفي &nbsp; '+(mgrId||'')+'</div>';
+  html += '<div class="sign-line">التاريخ</div>';
+  html += '<div class="sign-line">التوقيع</div>';
+  html += '</div></td>';
+  html += '</tr></table>';
+
+  // ── SECTION 4: اعتماد الموارد البشرية ──
+  html += '<div class="section-title">اعتماد الموارد البشرية</div>';
+  html += '<table><tr>';
+  html += '<td style="width:33%;"><div class="sign-box">';
+  html += '<div class="sign-label">أخصائي التوظيف</div>';
+  html += '<div class="sign-name">الاسم &nbsp; سليمان هزاع</div>';
+  html += '<div class="sign-name">الرقم الوظيفي &nbsp;</div>';
+  html += '<div class="sign-line">التاريخ</div>';
+  html += '<div class="sign-line">التوقيع</div>';
+  html += '</div></td>';
+  html += '<td style="width:33%;"><div class="sign-box">';
+  html += '<div class="sign-label">مسؤول التوظيف</div>';
+  html += '<div class="sign-name">الاسم &nbsp; بندر العنزي</div>';
+  html += '<div class="sign-name">الرقم الوظيفي &nbsp;</div>';
+  html += '<div class="sign-line">التاريخ</div>';
+  html += '<div class="sign-line">التوقيع</div>';
+  html += '</div></td>';
+  html += '<td style="width:33%;"><div class="sign-box">';
+  html += '<div class="sign-label">مدير الموارد البشرية</div>';
+  html += '<div class="sign-name">الاسم &nbsp; بشار الحميد</div>';
+  html += '<div class="sign-name">الرقم الوظيفي &nbsp;</div>';
+  html += '<div class="sign-line">التاريخ</div>';
+  html += '<div class="sign-line">التوقيع</div>';
+  html += '</div></td>';
+  html += '</tr></table>';
+
+  // ── FOOTER ──
+  html += '<div class="footer-wrap">';
+  html += '<div style="direction:ltr;text-align:left;">Arabian Security &amp; Safety Services Co.Ltd<br/>C.R 1010061647 &nbsp; C.C 64 &nbsp; P.O.Box 61547, Riyadh 11575<br/>Saudia Arabia &nbsp; Tel: 966114160702 &nbsp; Fax: 966114163594 &nbsp; Common No. 920007030</div>';
+  html += '<div style="text-align:right;">الشركة العربية لخدمات الأمن والسلامة المحدودة<br/>س.ت 1010061647 &nbsp; ع.م 640 &nbsp; ص.ب 61547 الرياض 11575 المملكة العربية السعودية<br/>هاتف: 966114160702 &nbsp; فاكس: 966114163594 &nbsp; الرقم الموحد: 920007030</div>';
+  html += '</div>';
+
+  html += '</div></body></html>';
+
+  var win = window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  closePdfModal();
+}
+
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -2075,6 +2431,7 @@ document.getElementById('deptModalBg').addEventListener('click',function(e){if(e
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
+document.getElementById('pdfModalBg').addEventListener('click',function(e){if(e.target===this)closePdfModal();});
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
