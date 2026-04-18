@@ -130,8 +130,6 @@ td.id-num{font-family:monospace;font-size:12px;}
 .icon-btn.complete:hover{background:#059669;color:#fff;}
 .icon-btn.reset{background:#fee2e2;color:#dc2626;}
 .icon-btn.reset:hover{background:#dc2626;color:#fff;}
-.icon-btn.pdf{background:#fdf4ff;color:#7c3aed;}
-.icon-btn.pdf:hover{background:#7c3aed;color:#fff;}
 .icon-btn.send{background:#cffafe;color:#0891b2;}
 .icon-btn.send:hover{background:#0891b2;color:#fff;}
 .icon-btn.file{background:#f0fdf4;color:#065f46;}
@@ -235,12 +233,8 @@ td.id-num{font-family:monospace;font-size:12px;}
 /* ═══════════════ EXCLUSIONS ═══════════════ */
 .excl-badge{padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;}
 .reason-badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;background:#fee2e2;color:#dc2626;}
-</style>
-</head>
-<body>
-<!-- 
-  ═══════════════════════════════════════════════════════
-  SQL للتشغيل في Supabase قبل استخدام هذا الإصدار:
+
+ هذا الإصدار:
   
   ALTER TABLE users 
     ADD COLUMN IF NOT EXISTS can_appoint INTEGER DEFAULT 0,
@@ -695,59 +689,6 @@ td.id-num{font-family:monospace;font-size:12px;}
 </div>
 
 
-<!-- PDF Modal - قرار التعيين -->
-<div class="modal-bg" id="pdfModalBg">
-  <div class="modal" style="max-width:640px;">
-    <div class="modal-header">
-      <div class="modal-title">📄 توليد قرار التعيين</div>
-      <button class="modal-close" onclick="closePdfModal()">✕</button>
-    </div>
-    <div class="form-grid">
-      <div class="fg2"><label>الوظيفة *</label><input id="pdf-position" placeholder="مثال: سائق مصفحة"/></div>
-      <div class="fg2"><label>نوع التوظيف *</label>
-        <select id="pdf-recruit-type">
-          <option value="جديد">جديد</option>
-          <option value="بديل">بديل</option>
-          <option value="نقل داخلي">نقل داخلي</option>
-        </select>
-      </div>
-      <div class="fg2"><label>الحالة الاجتماعية *</label>
-        <select id="pdf-marital">
-          <option value="أعزب">أعزب</option>
-          <option value="متزوج">متزوج</option>
-        </select>
-      </div>
-      <div class="fg2"><label>الجنسية *</label><input id="pdf-nationality" placeholder="سعودي"/></div>
-      <div class="fg2"><label>الجوال *</label><input id="pdf-mobile" placeholder="05xxxxxxxx"/></div>
-      <div class="fg2"><label>منطقة العمل *</label><input id="pdf-location" placeholder="الرياض"/></div>
-      <div class="fg2"><label>الراتب الأساسي</label><input id="pdf-basic" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل السكن</label><input id="pdf-housing" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل المواصلات</label><input id="pdf-transport" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل الطعام</label><input id="pdf-food" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل المحروقات</label><input id="pdf-fuel" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل الاتصال</label><input id="pdf-comm" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل أمن</label><input id="pdf-security" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدلات أخرى</label><input id="pdf-other" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2"><label>بدل طبيعة العمل</label><input id="pdf-nature" placeholder="0" type="number" oninput="calcTotal()"/></div>
-      <div class="fg2 full" style="background:#f8faff;border-radius:10px;padding:10px;text-align:center;">
-        <span style="font-size:13px;color:var(--sub);">الراتب الإجمالي: </span>
-        <span id="pdf-total" style="font-size:18px;font-weight:900;color:var(--success);">0</span>
-        <span style="font-size:13px;color:var(--sub);"> ريال</span>
-      </div>
-      <div class="fg2 full" style="border-top:2px solid var(--border);padding-top:14px;margin-top:4px;">
-        <label style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:10px;display:block;">✍️ اعتماد الإدارة المعنية</label>
-      </div>
-      <div class="fg2"><label>اسم المشرف المباشر</label><input id="pdf-sup-name" placeholder="الاسم"/></div>
-      <div class="fg2"><label>الرقم الوظيفي للمشرف</label><input id="pdf-sup-id" placeholder="الرقم"/></div>
-      <div class="fg2"><label>اسم المدير التنفيذي</label><input id="pdf-mgr-name" placeholder="الاسم"/></div>
-      <div class="fg2"><label>الرقم الوظيفي للمدير</label><input id="pdf-mgr-id" placeholder="الرقم"/></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closePdfModal()">إلغاء</button>
-      <button class="btn btn-primary" onclick="generatePdf()">📄 توليد PDF</button>
-    </div>
-  </div>
-</div>
 
 <div class="modal-bg" id="changePassBg">
   <div class="modal" style="max-width:380px;">
@@ -1110,19 +1051,18 @@ function render() {
     html += '<td>' + statusBadge(e.status) + (tsHtml?'<div style="margin-top:4px;">'+tsHtml+'</div>':'') + '</td>';
 
     html += '<td><input type="text" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." style="width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()"/></td>';
-    var pdfBtn = (!isViewer && e.contract==='qowa') ? '<button class="icon-btn pdf" data-id="' + e.id + '" title="توليد قرار التعيين">&#128196;</button>' : '';
-    html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + pdfBtn + '</div></td></tr>';
+    html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
   }
   tbody.innerHTML = html;
 
-  tbody.onclick = function(ev) {
+  tbody.onclick = async function(ev) {
     var btn = ev.target.closest('button[data-id]');
     var tr = ev.target.closest('tr[data-id]');
     var id = btn ? parseInt(btn.dataset.id) : (tr ? parseInt(tr.dataset.id) : null);
     if (!id) return;
     if (btn) {
       ev.stopPropagation();
-      if (btn.classList.contains('edit'))     { openEmpEdit(id); return; }
+      if (btn.classList.contains('edit'))     { await openEmpEdit(id); return; }
       if (btn.classList.contains('delete'))   { deleteOne(id); return; }
       if (btn.classList.contains('appoint'))  { doAppoint(id); return; }
       if (btn.classList.contains('enter'))    { doEnter(id); return; }
@@ -1130,7 +1070,6 @@ function render() {
       if (btn.classList.contains('reset'))    { resetWorkflow(id, btn.dataset.to||''); return; }
       if (btn.classList.contains('send'))       { doSend(id); return; }
       if (btn.classList.contains('file'))       { doFile(id); return; }
-      if (btn.classList.contains('pdf'))        { openPdfModal(id); return; }
     } else if (tr) { rowClick(ev, id); }
   };
 
@@ -2204,224 +2143,859 @@ function exportExclExcel() {
 }
 
 
-/* ═══════════════════════════════ PDF GENERATOR ═══════════════════════════════ */
-var pdfTargetEmp = null;
+/* ── TASKS ── */
+async function openTaskModal() {
+  if(!users.length) await loadUsers();
+  document.getElementById('t-title').value='';
+  document.getElementById('t-desc').value='';
+  var sel=document.getElementById('t-to');
+  sel.innerHTML='<option value="">-- اختر المستخدم --</option>';
+  users.forEach(function(u){
+    if(u.username!==currentUser.username){
+      var o=document.createElement('option');
+      o.value=u.username;o.textContent=u.full_name;
+      o.setAttribute('data-name',u.full_name);
+      sel.appendChild(o);
+    }
+  });
+  document.getElementById('taskModalBg').classList.add('show');
+}
+function closeTaskModal(){document.getElementById('taskModalBg').classList.remove('show');}
 
-function openPdfModal(id) {
-  pdfTargetEmp = employees.find(function(x){ return x.id===id; });
-  if (!pdfTargetEmp) return;
-  // Pre-fill salary from employee data
-  var sal = Number(pdfTargetEmp.salary)||0;
-  document.getElementById('pdf-basic').value = sal;
-  ['pdf-housing','pdf-transport','pdf-food','pdf-fuel','pdf-comm','pdf-security','pdf-other','pdf-nature'].forEach(function(id){ document.getElementById(id).value='0'; });
-  ['pdf-position','pdf-nationality','pdf-mobile','pdf-location','pdf-sup-name','pdf-sup-id','pdf-mgr-name','pdf-mgr-id'].forEach(function(id){ document.getElementById(id).value=''; });
-  document.getElementById('pdf-recruit-type').value='جديد';
-  document.getElementById('pdf-marital').value='أعزب';
-  calcTotal();
-  document.getElementById('pdfModalBg').classList.add('show');
+async function sendTask(){
+  var sel=document.getElementById('t-to');
+  var toUser=sel.value;
+  var toName=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
+  var title=document.getElementById('t-title').value.trim();
+  var desc=document.getElementById('t-desc').value.trim();
+  if(!toUser||!title){showToast('يرجى تحديد المستخدم وكتابة العنوان');return;}
+  showLoading(true);
+  await fetch(TASK_API,{method:'POST',headers:H,body:JSON.stringify({title:title,description:desc,assigned_to:toUser,assigned_name:toName,created_by:currentUser.username,created_name:currentUser.full_name,status:'pending'})});
+  showLoading(false);closeTaskModal();showToast('✅ تم إرسال المهمة إلى '+toName);
+  await loadTasks();
 }
 
-function closePdfModal() { document.getElementById('pdfModalBg').classList.remove('show'); }
-
-function calcTotal() {
-  var ids = ['pdf-basic','pdf-housing','pdf-transport','pdf-food','pdf-fuel','pdf-comm','pdf-security','pdf-other','pdf-nature'];
-  var total = ids.reduce(function(s,id){ return s + (Number(document.getElementById(id).value)||0); },0);
-  document.getElementById('pdf-total').textContent = total.toLocaleString();
+async function loadTasks(){
+  var r=await fetch(TASK_API+'?order=created_at.desc',{headers:H});
+  tasks=await r.json()||[];
+  renderTasks();updateTasksBadge();
 }
 
-function generatePdf() {
-  var e = pdfTargetEmp;
-  if (!e) return;
+function updateTasksBadge(){
+  var myPending=tasks.filter(function(t){return t.assigned_to===currentUser.username&&t.status==='pending';});
+  var badge=document.getElementById('tasksBadge');
+  if(myPending.length>0){badge.style.display='inline';badge.textContent=myPending.length;}
+  else badge.style.display='none';
+}
 
-  var position   = document.getElementById('pdf-position').value.trim();
-  var recruitType= document.getElementById('pdf-recruit-type').value;
-  var marital    = document.getElementById('pdf-marital').value;
-  var nationality= document.getElementById('pdf-nationality').value.trim();
-  var mobile     = document.getElementById('pdf-mobile').value.trim();
-  var location   = document.getElementById('pdf-location').value.trim();
+function renderTasks(){
+  var isAdm=currentUser.role==='admin';
+  var myTasks=isAdm?tasks:tasks.filter(function(t){return t.assigned_to===currentUser.username||t.created_by===currentUser.username;});
+  var container=document.getElementById('tasksList');
+  if(!myTasks.length){container.innerHTML='<div class="empty">لا توجد مهام</div>';return;}
+  container.innerHTML=myTasks.map(function(t){
+    var isPending=t.status==='pending';
+    var isMyTask=t.assigned_to===currentUser.username;
+    var time=new Date(t.created_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
+    var completedTime=t.completed_at?' - اكتملت: '+new Date(t.completed_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'}):'';
+    var doneBtn=isMyTask&&isPending?'<button class="btn btn-success btn-sm" onclick="completeTask('+t.id+')">&#10003; تم</button>':'';
+    var deleteBtn=(isAdm||t.created_by===currentUser.username)?'<button class="btn btn-danger btn-sm" onclick="deleteTask('+t.id+')">&#128465;</button>':'';
+    return '<div class="task-card '+(isPending?'pending':'done')+'">' +
+      '<div class="task-header"><div class="task-title">'+t.title+'</div>' +
+      '<div style="display:flex;gap:6px;align-items:center;"><span class="task-status '+(isPending?'ts-pending':'ts-done')+'">'+(isPending?'⏳ قيد التنفيذ':'✅ مكتملة')+'</span>'+doneBtn+deleteBtn+'</div></div>' +
+      '<div class="task-meta">&#128100; إلى: <strong>'+t.assigned_name+'</strong> &nbsp;|&nbsp; &#128221; من: '+t.created_name+' &nbsp;|&nbsp; &#128336; '+time+completedTime+'</div>' +
+      (t.description?'<div class="task-desc">'+t.description+'</div>':'') +
+    '</div>';
+  }).join('');
+}
 
-  if (!position||!nationality||!mobile||!location) { showToast('❌ يرجى تعبئة الحقول المطلوبة'); return; }
+async function completeTask(id){
+  showLoading(true);
+  await fetch(TASK_API+'?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})});
+  await loadTasks();showLoading(false);showToast('✅ تم إنجاز المهمة');
+}
 
-  var basic    = Number(document.getElementById('pdf-basic').value)||0;
-  var housing  = Number(document.getElementById('pdf-housing').value)||0;
-  var transport= Number(document.getElementById('pdf-transport').value)||0;
-  var food     = Number(document.getElementById('pdf-food').value)||0;
-  var fuel     = Number(document.getElementById('pdf-fuel').value)||0;
-  var comm     = Number(document.getElementById('pdf-comm').value)||0;
-  var security = Number(document.getElementById('pdf-security').value)||0;
-  var other    = Number(document.getElementById('pdf-other').value)||0;
-  var nature   = Number(document.getElementById('pdf-nature').value)||0;
-  var total    = basic+housing+transport+food+fuel+comm+security+other+nature;
+async function deleteTask(id){
+  if(!confirm('حذف هذه المهمة؟'))return;
+  showLoading(true);
+  await fetch(TASK_API+'?id=eq.'+id,{method:'DELETE',headers:H});
+  await loadTasks();showLoading(false);showToast('تم الحذف');
+}
 
-  var supName  = document.getElementById('pdf-sup-name').value.trim();
-  var supId    = document.getElementById('pdf-sup-id').value.trim();
-  var mgrName  = document.getElementById('pdf-mgr-name').value.trim();
-  var mgrId    = document.getElementById('pdf-mgr-id').value.trim();
+function startTaskPoll(){
+  if(taskPollInterval)clearInterval(taskPollInterval);
+  taskPollInterval=setInterval(async function(){
+    var r=await fetch(TASK_API+'?order=created_at.desc',{headers:H});
+    tasks=await r.json()||[];updateTasksBadge();
+  },15000);
+}
 
-  var today = new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'2-digit',day:'2-digit',calendar:'gregory',numberingSystem:'latn'});
-  var dateStr = e.date ? e.date.split('-').reverse().join('/') : '';
-  var dept = e.dept||'';
-  var section = e.section||'';
-  var project = e.project||'';
 
-  var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"/>';
-  html += '<title>قرار تعيين - '+e.name+'</title>';
-  html += '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet"/>';
-  html += '<style>';
-  html += '*{box-sizing:border-box;margin:0;padding:0;}';
-  html += 'body{font-family:Tajawal,sans-serif;font-size:11px;color:#000;background:#fff;padding:20px;}';
-  html += '.page{max-width:210mm;margin:0 auto;padding:10mm;border:1px solid #ccc;}';
-  html += '@media print{body{padding:0;}.page{border:none;max-width:100%;padding:8mm;}@page{size:A4;margin:8mm;}}';
-  html += '.header-wrap{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;border-bottom:2px solid #000;padding-bottom:6px;}';
-  html += '.header-en{font-size:9px;line-height:1.6;text-align:left;direction:ltr;}';
-  html += '.header-ar{font-size:9px;line-height:1.6;text-align:right;}';
-  html += '.header-title{text-align:center;font-size:13px;font-weight:900;padding:4px 0;}';
-  html += 'table{width:100%;border-collapse:collapse;margin-bottom:8px;}';
-  html += 'td,th{border:1px solid #aaa;padding:4px 8px;font-size:10px;}';
-  html += '.section-title{background:#d0d0d0;font-weight:900;font-size:11px;padding:4px 8px;text-align:right;border:1px solid #aaa;margin-bottom:0;}';
-  html += '.lbl{font-weight:700;color:#333;width:130px;text-align:right;}';
-  html += '.val{text-align:center;}';
-  html += '.lbl-en{font-size:9px;color:#555;text-align:left;direction:ltr;width:120px;}';
-  html += '.num-cell{text-align:center;font-weight:700;}';
-  html += '.sign-box{border:1px solid #aaa;padding:6px;text-align:center;min-height:80px;font-size:10px;}';
-  html += '.sign-label{font-weight:900;font-size:10px;margin-bottom:4px;}';
-  html += '.sign-name{margin:4px 0;font-size:10px;}';
-  html += '.sign-line{border-top:1px solid #888;margin-top:20px;padding-top:3px;font-size:9px;color:#555;}';
-  html += '.footer-wrap{display:flex;justify-content:space-between;font-size:8px;margin-top:8px;padding-top:4px;border-top:1px solid #999;}';
-  html += '.no-print{position:fixed;top:10px;left:10px;z-index:999;}';
-  html += '</style></head><body>';
+/* ═══════════════════════════════ EXCLUSIONS ═══════════════════════════════ */
+var exclFiltered = [], exclCurrentPage = 1, EXCL_PER_PAGE = 50;
 
-  // Print button
-  html += '<div class="no-print"><button onclick="window.print()" style="padding:8px 18px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-family:Tajawal,sans-serif;font-size:14px;cursor:pointer;">🖨️ طباعة / حفظ PDF</button></div>';
+async function loadExcl() {
+  showLoading(true);
+  var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
+  exclusions = await r.json() || [];
+  applyExclFilters();
+  showLoading(false);
+}
 
-  html += '<div class="page">';
+function applyExclFilters() {
+  var q = (document.getElementById('exclSearch')||{value:''}).value.toLowerCase().trim();
+  var reason = (document.getElementById('exclReasonFilter')||{value:''}).value;
+  exclFiltered = exclusions.filter(function(e){
+    var ms = !q || (e.name||'').toLowerCase().includes(q) || (e.emp_id||'').toLowerCase().includes(q);
+    var mr = !reason || e.reason === reason;
+    return ms && mr;
+  });
+  exclCurrentPage = 1;
+  renderExcl();
+}
 
-  // ── HEADER ──
-  html += '<div class="header-wrap">';
-  html += '<div class="header-en">Arabian Security &amp; Safety Services Co.Ltd<br/>C.R 1010061647 &nbsp; C.C 64<br/>P.O.Box 61547, Riyadh 11575<br/>Tel: 966114160702 &nbsp; Fax: 966114163594<br/>Common No. 920007030</div>';
-  html += '<div class="header-title">بيانات الموظف<br/><span style="font-size:10px;font-weight:400;">Employee Information</span></div>';
-  html += '<div class="header-ar">الشركة العربية لخدمات الأمن والسلامة المحدودة<br/>س.ت 1010061647 &nbsp; ع.م 64<br/>ص.ب 61547 الرياض 11575<br/>هاتف: 966114160702 &nbsp; فاكس: 966114163594<br/>الرقم الموحد: 920007030</div>';
-  html += '</div>';
-
-  // ── SECTION 1: بيانات الموظف ──
-  html += '<div class="section-title">بيانات الموظف &nbsp;|&nbsp; Employee Information</div>';
-  html += '<table>';
-
-  function row(arLabel, enLabel, value) {
-    return '<tr><td class="lbl-en">'+enLabel+':</td><td class="val" style="min-width:200px;">'+value+'</td><td class="lbl">'+arLabel+':</td></tr>';
+function renderExcl() {
+  var tbody = document.getElementById('exclBody');
+  if (!exclFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">لا توجد سجلات استبعاد</div></td></tr>';
+    document.getElementById('exclPageInfo').textContent = '0 سجل';
+    document.getElementById('exclPageBtns').innerHTML = '';
+    return;
   }
+  var start = (exclCurrentPage-1)*EXCL_PER_PAGE, end = start+EXCL_PER_PAGE;
+  var page = exclFiltered.slice(start, end);
+  var isAdm = currentUser && currentUser.role === 'admin';
 
-  html += row('التاريخ','Date', today);
-  html += row('اسم الموظف','Employee Name', e.name||'');
-  html += row('الرقم الوظيفي','Badge Number', e.empId||'');
-  html += row('نوع التوظيف','Recruitment Type', recruitType);
-  html += row('الوظيفة','Position', position);
-  html += row('الحالة الاجتماعية','Marital Status', marital);
-  html += row('الجنسية','Nationality', nationality);
-  html += row('رقم الهوية','ID Number', e.idNum||'');
-  html += row('الجوال','Mobile', mobile);
-  html += row('منطقة العمل','Work Location', location);
-  html += '</table>';
+  tbody.innerHTML = page.map(function(e, i){
+    var lastDay = e.last_day ? e.last_day.split('-').reverse().join('/') : '—';
+    var createdAt = e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : '—';
+    var delBtn = isAdm ? '<button class="icon-btn delete" onclick="deleteExcl('+e.id+')" title="حذف">&#128465;</button>' : '';
+    return '<tr>' +
+      '<td class="num">' + (start+i+1) + '</td>' +
+      '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
+      '<td class="name">' + (e.name||'—') + '</td>' +
+      '<td>' + lastDay + '</td>' +
+      '<td><span class="reason-badge">' + (e.reason||'—') + '</span></td>' +
+      '<td style="font-size:12px;color:var(--sub);max-width:200px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--sub);">' + createdAt + '</td>' +
+      '<td><div class="actions">' +
+        '<button class="icon-btn edit" onclick="openExclEdit('+e.id+')" title="تعديل">&#9998;</button>' +
+        delBtn +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
 
-  // ── SECTION 2: البيانات الوظيفية والمزايا ──
-  html += '<div class="section-title">البيانات الوظيفية والمزايا</div>';
-  html += '<table>';
-  html += '<tr>';
-  html += '<td class="lbl">المشروع</td><td class="val">'+project+'</td>';
-  html += '<td class="lbl">الراتب الأساسي</td><td class="num-cell">'+basic.toLocaleString()+'</td>';
-  html += '<td class="lbl">بدل طبيعة العمل</td><td class="num-cell">'+nature.toLocaleString()+'</td>';
-  html += '</tr><tr>';
-  html += '<td class="lbl">القسم</td><td class="val">'+section+'</td>';
-  html += '<td class="lbl">بدل السكن</td><td class="num-cell">'+housing.toLocaleString()+'</td>';
-  html += '<td class="lbl">بدل الطعام</td><td class="num-cell">'+food.toLocaleString()+'</td>';
-  html += '</tr><tr>';
-  html += '<td class="lbl">الإدارة</td><td class="val">'+dept+'</td>';
-  html += '<td class="lbl">بدل المواصلات</td><td class="num-cell">'+transport.toLocaleString()+'</td>';
-  html += '<td class="lbl">بدل المحروقات</td><td class="num-cell">'+fuel.toLocaleString()+'</td>';
-  html += '</tr><tr>';
-  html += '<td class="lbl">تاريخ المباشرة</td><td class="val">'+dateStr+'</td>';
-  html += '<td class="lbl">بدلات أخرى</td><td class="num-cell">'+other.toLocaleString()+'</td>';
-  html += '<td class="lbl">بدل الاتصال</td><td class="num-cell">'+comm.toLocaleString()+'</td>';
-  html += '</tr><tr>';
-  html += '<td class="lbl">مدير المشروع / الإدارة</td><td class="val">'+(mgrName||'')+'</td>';
-  html += '<td class="lbl" colspan="2"></td>';
-  html += '<td class="lbl">بدل أمن</td><td class="num-cell">'+security.toLocaleString()+'</td>';
-  html += '</tr><tr>';
-  html += '<td colspan="3"></td>';
-  html += '<td class="lbl" style="font-weight:900;background:#eee;">الراتب الإجمالي</td>';
-  html += '<td class="num-cell" style="font-weight:900;font-size:13px;background:#eee;" colspan="2">'+total.toLocaleString()+'</td>';
-  html += '</tr>';
-  html += '</table>';
-
-  // ── SECTION 3: اعتماد الإدارة المعنية ──
-  html += '<div class="section-title">اعتماد الإدارة المعنية</div>';
-  html += '<table><tr>';
-  // 1- اعتماد الموظف
-  html += '<td style="width:33%;"><div class="sign-box">';
-  html += '<div class="sign-label">1- اعتماد الموظف</div>';
-  html += '<div class="sign-name">الاسم &nbsp; '+e.name+'</div>';
-  html += '<div class="sign-name">الرقم الوظيفي &nbsp; '+e.empId+'</div>';
-  html += '<div class="sign-line">التاريخ</div>';
-  html += '<div class="sign-line">التوقيع</div>';
-  html += '</div></td>';
-  // 2- مشرف مباشر
-  html += '<td style="width:33%;"><div class="sign-box">';
-  html += '<div class="sign-label">2- مشرف مباشر / مدير مشروع</div>';
-  html += '<div class="sign-name">الاسم &nbsp; '+(supName||'')+'</div>';
-  html += '<div class="sign-name">الرقم الوظيفي &nbsp; '+(supId||'')+'</div>';
-  html += '<div class="sign-line">التاريخ</div>';
-  html += '<div class="sign-line">التوقيع</div>';
-  html += '</div></td>';
-  // 3- المدير التنفيذي
-  html += '<td style="width:33%;"><div class="sign-box">';
-  html += '<div class="sign-label">3- المدير التنفيذي / مدير إدارة</div>';
-  html += '<div class="sign-name">الاسم &nbsp; '+(mgrName||'')+'</div>';
-  html += '<div class="sign-name">الرقم الوظيفي &nbsp; '+(mgrId||'')+'</div>';
-  html += '<div class="sign-line">التاريخ</div>';
-  html += '<div class="sign-line">التوقيع</div>';
-  html += '</div></td>';
-  html += '</tr></table>';
-
-  // ── SECTION 4: اعتماد الموارد البشرية ──
-  html += '<div class="section-title">اعتماد الموارد البشرية</div>';
-  html += '<table><tr>';
-  html += '<td style="width:33%;"><div class="sign-box">';
-  html += '<div class="sign-label">أخصائي التوظيف</div>';
-  html += '<div class="sign-name">الاسم &nbsp; سليمان هزاع</div>';
-  html += '<div class="sign-name">الرقم الوظيفي &nbsp;</div>';
-  html += '<div class="sign-line">التاريخ</div>';
-  html += '<div class="sign-line">التوقيع</div>';
-  html += '</div></td>';
-  html += '<td style="width:33%;"><div class="sign-box">';
-  html += '<div class="sign-label">مسؤول التوظيف</div>';
-  html += '<div class="sign-name">الاسم &nbsp; بندر العنزي</div>';
-  html += '<div class="sign-name">الرقم الوظيفي &nbsp;</div>';
-  html += '<div class="sign-line">التاريخ</div>';
-  html += '<div class="sign-line">التوقيع</div>';
-  html += '</div></td>';
-  html += '<td style="width:33%;"><div class="sign-box">';
-  html += '<div class="sign-label">مدير الموارد البشرية</div>';
-  html += '<div class="sign-name">الاسم &nbsp; بشار الحميد</div>';
-  html += '<div class="sign-name">الرقم الوظيفي &nbsp;</div>';
-  html += '<div class="sign-line">التاريخ</div>';
-  html += '<div class="sign-line">التوقيع</div>';
-  html += '</div></td>';
-  html += '</tr></table>';
-
-  // ── FOOTER ──
-  html += '<div class="footer-wrap">';
-  html += '<div style="direction:ltr;text-align:left;">Arabian Security &amp; Safety Services Co.Ltd<br/>C.R 1010061647 &nbsp; C.C 64 &nbsp; P.O.Box 61547, Riyadh 11575<br/>Saudia Arabia &nbsp; Tel: 966114160702 &nbsp; Fax: 966114163594 &nbsp; Common No. 920007030</div>';
-  html += '<div style="text-align:right;">الشركة العربية لخدمات الأمن والسلامة المحدودة<br/>س.ت 1010061647 &nbsp; ع.م 640 &nbsp; ص.ب 61547 الرياض 11575 المملكة العربية السعودية<br/>هاتف: 966114160702 &nbsp; فاكس: 966114163594 &nbsp; الرقم الموحد: 920007030</div>';
-  html += '</div>';
-
-  html += '</div></body></html>';
-
-  var win = window.open('','_blank');
-  win.document.write(html);
-  win.document.close();
-  closePdfModal();
+  var total = exclFiltered.length, pages = Math.ceil(total/EXCL_PER_PAGE)||1;
+  document.getElementById('exclPageInfo').textContent = 'عرض ' + Math.min(end,total) + ' من ' + total + ' سجل';
+  var pb = document.getElementById('exclPageBtns'); pb.innerHTML = '';
+  for (var p=1; p<=pages; p++) {
+    var b = document.createElement('button');
+    b.className = 'page-btn' + (p===exclCurrentPage?' active':'');
+    b.textContent = p;
+    (function(pg){ b.onclick = function(){ exclCurrentPage=pg; renderExcl(); }; })(p);
+    pb.appendChild(b);
+  }
 }
 
+function openExclModal() {
+  editingExclId = null;
+  ['ex-empid','ex-name','ex-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ex-lastday').value = '';
+  document.getElementById('ex-reason').value = '';
+  document.getElementById('exclModalTitle').textContent = '➕ إضافة استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function openExclEdit(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!ex) return;
+  editingExclId = id;
+  document.getElementById('ex-empid').value   = ex.emp_id || '';
+  document.getElementById('ex-name').value    = ex.name || '';
+  document.getElementById('ex-lastday').value = ex.last_day || '';
+  document.getElementById('ex-reason').value  = ex.reason || '';
+  document.getElementById('ex-notes').value   = ex.notes || '';
+  document.getElementById('exclModalTitle').textContent = '✏️ تعديل استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function closeExclModal() { document.getElementById('exclModalBg').classList.remove('show'); }
+
+async function saveExcl() {
+  var empId   = document.getElementById('ex-empid').value.trim();
+  var name    = document.getElementById('ex-name').value.trim();
+  var lastDay = document.getElementById('ex-lastday').value;
+  var reason  = document.getElementById('ex-reason').value;
+  var notes   = document.getElementById('ex-notes').value.trim();
+
+  if (!empId)   { showToast('❌ يرجى إدخال الرقم الوظيفي'); document.getElementById('ex-empid').focus(); return; }
+  if (!name)    { showToast('❌ يرجى إدخال الاسم'); document.getElementById('ex-name').focus(); return; }
+  if (!lastDay) { showToast('❌ يرجى تحديد آخر يوم عمل'); document.getElementById('ex-lastday').focus(); return; }
+  if (!reason)  { showToast('❌ يرجى اختيار سبب الانهاء'); document.getElementById('ex-reason').focus(); return; }
+
+  showLoading(true);
+  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes};
+  if (editingExclId) {
+    await fetch(EXCL_API + '?id=eq.' + editingExclId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
+    await logAction('تعديل استبعاد', 'تعديل استبعاد: ' + name);
+    showToast('✅ تم التعديل');
+  } else {
+    await fetch(EXCL_API, {method:'POST', headers:H, body:JSON.stringify(payload)});
+    await logAction('إضافة استبعاد', 'إضافة استبعاد: ' + name + ' - ' + reason);
+    showToast('✅ تم إضافة الاستبعاد');
+  }
+  closeExclModal();
+  await loadExcl();
+}
+
+async function deleteExcl(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!confirm('حذف سجل "' + (ex?ex.name:'') + '"؟')) return;
+  showLoading(true);
+  await fetch(EXCL_API + '?id=eq.' + id, {method:'DELETE', headers:H});
+  await loadExcl();
+  showToast('تم الحذف');
+}
+
+function downloadExclTemplate() {
+  var headers = [{'الرقم الوظيفي':'','الاسم':'','آخر يوم عمل':'','سبب الانهاء':'','ملاحظات':''}];
+  var ws = XLSX.utils.json_to_sheet(headers);
+  ws['!cols'] = [{wch:14},{wch:28},{wch:16},{wch:30},{wch:30}];
+  XLSX.utils.sheet_add_aoa(ws,[['','','DD/MM/YYYY','استقالة فورية / استقالة نظامية / انهاء فترة التجربة / ...','']],{origin:'A2'});
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'قالب الاستبعادات');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='قالب_الاستبعادات.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  showToast('تم تنزيل القالب');
+}
+
+function importExclExcel(ev) {
+  var file=ev.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    try {
+      var wb=XLSX.read(e.target.result,{type:'binary'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws);
+      showLoading(true);
+      var count=0;
+      for(var i=0;i<rows.length;i++){
+        var row=rows[i];
+        var dateVal=row['آخر يوم عمل'], dateStr='';
+        if(dateVal){
+          if(typeof dateVal==='number'){var j=new Date((dateVal-25569)*86400*1000);dateStr=j.toISOString().split('T')[0];}
+          else if(typeof dateVal==='string'&&dateVal.includes('/')){var p=dateVal.split('/');if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+          else{dateStr=dateVal;}
+        }
+        if(!row['الاسم'])continue;
+        await fetch(EXCL_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',last_day:dateStr,reason:row['سبب الانهاء']||'',notes:row['ملاحظات']||''})});
+        count++;
+      }
+      await loadExcl();
+      showToast('تم استيراد '+count+' سجل');
+    } catch(err){showToast('خطأ في قراءة الملف');showLoading(false);}
+  };
+  reader.readAsBinaryString(file);ev.target.value='';
+}
+
+function exportExclExcel() {
+  var rows = exclFiltered.map(function(e, i){
+    return {
+      'م': i+1,
+      'الرقم الوظيفي': e.emp_id||'',
+      'الاسم': e.name||'',
+      'آخر يوم عمل': e.last_day ? e.last_day.split('-').reverse().join('/') : '',
+      'سبب الانهاء': e.reason||'',
+      'ملاحظات': e.notes||'',
+      'تاريخ الإدخال': e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : ''
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:16},{wch:28},{wch:30},{wch:20}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الاستبعادات');
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbout], {type:'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='الاستبعادات.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('تم التصدير');
+}
+
+
+/* ── TASKS ── */
+async function openTaskModal() {
+  if(!users.length) await loadUsers();
+  document.getElementById('t-title').value='';
+  document.getElementById('t-desc').value='';
+  var sel=document.getElementById('t-to');
+  sel.innerHTML='<option value="">-- اختر المستخدم --</option>';
+  users.forEach(function(u){
+    if(u.username!==currentUser.username){
+      var o=document.createElement('option');
+      o.value=u.username;o.textContent=u.full_name;
+      o.setAttribute('data-name',u.full_name);
+      sel.appendChild(o);
+    }
+  });
+  document.getElementById('taskModalBg').classList.add('show');
+}
+function closeTaskModal(){document.getElementById('taskModalBg').classList.remove('show');}
+
+async function sendTask(){
+  var sel=document.getElementById('t-to');
+  var toUser=sel.value;
+  var toName=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
+  var title=document.getElementById('t-title').value.trim();
+  var desc=document.getElementById('t-desc').value.trim();
+  if(!toUser||!title){showToast('يرجى تحديد المستخدم وكتابة العنوان');return;}
+  showLoading(true);
+  await fetch(TASK_API,{method:'POST',headers:H,body:JSON.stringify({title:title,description:desc,assigned_to:toUser,assigned_name:toName,created_by:currentUser.username,created_name:currentUser.full_name,status:'pending'})});
+  showLoading(false);closeTaskModal();showToast('✅ تم إرسال المهمة إلى '+toName);
+  await loadTasks();
+}
+
+async function loadTasks(){
+  var r=await fetch(TASK_API+'?order=created_at.desc',{headers:H});
+  tasks=await r.json()||[];
+  renderTasks();updateTasksBadge();
+}
+
+function updateTasksBadge(){
+  var myPending=tasks.filter(function(t){return t.assigned_to===currentUser.username&&t.status==='pending';});
+  var badge=document.getElementById('tasksBadge');
+  if(myPending.length>0){badge.style.display='inline';badge.textContent=myPending.length;}
+  else badge.style.display='none';
+}
+
+function renderTasks(){
+  var isAdm=currentUser.role==='admin';
+  var myTasks=isAdm?tasks:tasks.filter(function(t){return t.assigned_to===currentUser.username||t.created_by===currentUser.username;});
+  var container=document.getElementById('tasksList');
+  if(!myTasks.length){container.innerHTML='<div class="empty">لا توجد مهام</div>';return;}
+  container.innerHTML=myTasks.map(function(t){
+    var isPending=t.status==='pending';
+    var isMyTask=t.assigned_to===currentUser.username;
+    var time=new Date(t.created_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
+    var completedTime=t.completed_at?' - اكتملت: '+new Date(t.completed_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'}):'';
+    var doneBtn=isMyTask&&isPending?'<button class="btn btn-success btn-sm" onclick="completeTask('+t.id+')">&#10003; تم</button>':'';
+    var deleteBtn=(isAdm||t.created_by===currentUser.username)?'<button class="btn btn-danger btn-sm" onclick="deleteTask('+t.id+')">&#128465;</button>':'';
+    return '<div class="task-card '+(isPending?'pending':'done')+'">' +
+      '<div class="task-header"><div class="task-title">'+t.title+'</div>' +
+      '<div style="display:flex;gap:6px;align-items:center;"><span class="task-status '+(isPending?'ts-pending':'ts-done')+'">'+(isPending?'⏳ قيد التنفيذ':'✅ مكتملة')+'</span>'+doneBtn+deleteBtn+'</div></div>' +
+      '<div class="task-meta">&#128100; إلى: <strong>'+t.assigned_name+'</strong> &nbsp;|&nbsp; &#128221; من: '+t.created_name+' &nbsp;|&nbsp; &#128336; '+time+completedTime+'</div>' +
+      (t.description?'<div class="task-desc">'+t.description+'</div>':'') +
+    '</div>';
+  }).join('');
+}
+
+async function completeTask(id){
+  showLoading(true);
+  await fetch(TASK_API+'?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})});
+  await loadTasks();showLoading(false);showToast('✅ تم إنجاز المهمة');
+}
+
+async function deleteTask(id){
+  if(!confirm('حذف هذه المهمة؟'))return;
+  showLoading(true);
+  await fetch(TASK_API+'?id=eq.'+id,{method:'DELETE',headers:H});
+  await loadTasks();showLoading(false);showToast('تم الحذف');
+}
+
+function startTaskPoll(){
+  if(taskPollInterval)clearInterval(taskPollInterval);
+  taskPollInterval=setInterval(async function(){
+    var r=await fetch(TASK_API+'?order=created_at.desc',{headers:H});
+    tasks=await r.json()||[];updateTasksBadge();
+  },15000);
+}
+
+
+/* ═══════════════════════════════ EXCLUSIONS ═══════════════════════════════ */
+var exclFiltered = [], exclCurrentPage = 1, EXCL_PER_PAGE = 50;
+
+async function loadExcl() {
+  showLoading(true);
+  var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
+  exclusions = await r.json() || [];
+  applyExclFilters();
+  showLoading(false);
+}
+
+function applyExclFilters() {
+  var q = (document.getElementById('exclSearch')||{value:''}).value.toLowerCase().trim();
+  var reason = (document.getElementById('exclReasonFilter')||{value:''}).value;
+  exclFiltered = exclusions.filter(function(e){
+    var ms = !q || (e.name||'').toLowerCase().includes(q) || (e.emp_id||'').toLowerCase().includes(q);
+    var mr = !reason || e.reason === reason;
+    return ms && mr;
+  });
+  exclCurrentPage = 1;
+  renderExcl();
+}
+
+function renderExcl() {
+  var tbody = document.getElementById('exclBody');
+  if (!exclFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">لا توجد سجلات استبعاد</div></td></tr>';
+    document.getElementById('exclPageInfo').textContent = '0 سجل';
+    document.getElementById('exclPageBtns').innerHTML = '';
+    return;
+  }
+  var start = (exclCurrentPage-1)*EXCL_PER_PAGE, end = start+EXCL_PER_PAGE;
+  var page = exclFiltered.slice(start, end);
+  var isAdm = currentUser && currentUser.role === 'admin';
+
+  tbody.innerHTML = page.map(function(e, i){
+    var lastDay = e.last_day ? e.last_day.split('-').reverse().join('/') : '—';
+    var createdAt = e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : '—';
+    var delBtn = isAdm ? '<button class="icon-btn delete" onclick="deleteExcl('+e.id+')" title="حذف">&#128465;</button>' : '';
+    return '<tr>' +
+      '<td class="num">' + (start+i+1) + '</td>' +
+      '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
+      '<td class="name">' + (e.name||'—') + '</td>' +
+      '<td>' + lastDay + '</td>' +
+      '<td><span class="reason-badge">' + (e.reason||'—') + '</span></td>' +
+      '<td style="font-size:12px;color:var(--sub);max-width:200px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--sub);">' + createdAt + '</td>' +
+      '<td><div class="actions">' +
+        '<button class="icon-btn edit" onclick="openExclEdit('+e.id+')" title="تعديل">&#9998;</button>' +
+        delBtn +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+
+  var total = exclFiltered.length, pages = Math.ceil(total/EXCL_PER_PAGE)||1;
+  document.getElementById('exclPageInfo').textContent = 'عرض ' + Math.min(end,total) + ' من ' + total + ' سجل';
+  var pb = document.getElementById('exclPageBtns'); pb.innerHTML = '';
+  for (var p=1; p<=pages; p++) {
+    var b = document.createElement('button');
+    b.className = 'page-btn' + (p===exclCurrentPage?' active':'');
+    b.textContent = p;
+    (function(pg){ b.onclick = function(){ exclCurrentPage=pg; renderExcl(); }; })(p);
+    pb.appendChild(b);
+  }
+}
+
+function openExclModal() {
+  editingExclId = null;
+  ['ex-empid','ex-name','ex-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ex-lastday').value = '';
+  document.getElementById('ex-reason').value = '';
+  document.getElementById('exclModalTitle').textContent = '➕ إضافة استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function openExclEdit(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!ex) return;
+  editingExclId = id;
+  document.getElementById('ex-empid').value   = ex.emp_id || '';
+  document.getElementById('ex-name').value    = ex.name || '';
+  document.getElementById('ex-lastday').value = ex.last_day || '';
+  document.getElementById('ex-reason').value  = ex.reason || '';
+  document.getElementById('ex-notes').value   = ex.notes || '';
+  document.getElementById('exclModalTitle').textContent = '✏️ تعديل استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function closeExclModal() { document.getElementById('exclModalBg').classList.remove('show'); }
+
+async function saveExcl() {
+  var empId   = document.getElementById('ex-empid').value.trim();
+  var name    = document.getElementById('ex-name').value.trim();
+  var lastDay = document.getElementById('ex-lastday').value;
+  var reason  = document.getElementById('ex-reason').value;
+  var notes   = document.getElementById('ex-notes').value.trim();
+
+  if (!empId)   { showToast('❌ يرجى إدخال الرقم الوظيفي'); document.getElementById('ex-empid').focus(); return; }
+  if (!name)    { showToast('❌ يرجى إدخال الاسم'); document.getElementById('ex-name').focus(); return; }
+  if (!lastDay) { showToast('❌ يرجى تحديد آخر يوم عمل'); document.getElementById('ex-lastday').focus(); return; }
+  if (!reason)  { showToast('❌ يرجى اختيار سبب الانهاء'); document.getElementById('ex-reason').focus(); return; }
+
+  showLoading(true);
+  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes};
+  if (editingExclId) {
+    await fetch(EXCL_API + '?id=eq.' + editingExclId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
+    await logAction('تعديل استبعاد', 'تعديل استبعاد: ' + name);
+    showToast('✅ تم التعديل');
+  } else {
+    await fetch(EXCL_API, {method:'POST', headers:H, body:JSON.stringify(payload)});
+    await logAction('إضافة استبعاد', 'إضافة استبعاد: ' + name + ' - ' + reason);
+    showToast('✅ تم إضافة الاستبعاد');
+  }
+  closeExclModal();
+  await loadExcl();
+}
+
+async function deleteExcl(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!confirm('حذف سجل "' + (ex?ex.name:'') + '"؟')) return;
+  showLoading(true);
+  await fetch(EXCL_API + '?id=eq.' + id, {method:'DELETE', headers:H});
+  await loadExcl();
+  showToast('تم الحذف');
+}
+
+function downloadExclTemplate() {
+  var headers = [{'الرقم الوظيفي':'','الاسم':'','آخر يوم عمل':'','سبب الانهاء':'','ملاحظات':''}];
+  var ws = XLSX.utils.json_to_sheet(headers);
+  ws['!cols'] = [{wch:14},{wch:28},{wch:16},{wch:30},{wch:30}];
+  XLSX.utils.sheet_add_aoa(ws,[['','','DD/MM/YYYY','استقالة فورية / استقالة نظامية / انهاء فترة التجربة / ...','']],{origin:'A2'});
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'قالب الاستبعادات');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='قالب_الاستبعادات.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  showToast('تم تنزيل القالب');
+}
+
+function importExclExcel(ev) {
+  var file=ev.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    try {
+      var wb=XLSX.read(e.target.result,{type:'binary'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws);
+      showLoading(true);
+      var count=0;
+      for(var i=0;i<rows.length;i++){
+        var row=rows[i];
+        var dateVal=row['آخر يوم عمل'], dateStr='';
+        if(dateVal){
+          if(typeof dateVal==='number'){var j=new Date((dateVal-25569)*86400*1000);dateStr=j.toISOString().split('T')[0];}
+          else if(typeof dateVal==='string'&&dateVal.includes('/')){var p=dateVal.split('/');if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+          else{dateStr=dateVal;}
+        }
+        if(!row['الاسم'])continue;
+        await fetch(EXCL_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',last_day:dateStr,reason:row['سبب الانهاء']||'',notes:row['ملاحظات']||''})});
+        count++;
+      }
+      await loadExcl();
+      showToast('تم استيراد '+count+' سجل');
+    } catch(err){showToast('خطأ في قراءة الملف');showLoading(false);}
+  };
+  reader.readAsBinaryString(file);ev.target.value='';
+}
+
+function exportExclExcel() {
+  var rows = exclFiltered.map(function(e, i){
+    return {
+      'م': i+1,
+      'الرقم الوظيفي': e.emp_id||'',
+      'الاسم': e.name||'',
+      'آخر يوم عمل': e.last_day ? e.last_day.split('-').reverse().join('/') : '',
+      'سبب الانهاء': e.reason||'',
+      'ملاحظات': e.notes||'',
+      'تاريخ الإدخال': e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : ''
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:16},{wch:28},{wch:30},{wch:20}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الاستبعادات');
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbout], {type:'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='الاستبعادات.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('تم التصدير');
+}
+
+
+/* ── TASKS ── */
+async function openTaskModal() {
+  if(!users.length) await loadUsers();
+  document.getElementById('t-title').value='';
+  document.getElementById('t-desc').value='';
+  var sel=document.getElementById('t-to');
+  sel.innerHTML='<option value="">-- اختر المستخدم --</option>';
+  users.forEach(function(u){
+    if(u.username!==currentUser.username){
+      var o=document.createElement('option');
+      o.value=u.username;o.textContent=u.full_name;
+      o.setAttribute('data-name',u.full_name);
+      sel.appendChild(o);
+    }
+  });
+  document.getElementById('taskModalBg').classList.add('show');
+}
+function closeTaskModal(){document.getElementById('taskModalBg').classList.remove('show');}
+
+async function sendTask(){
+  var sel=document.getElementById('t-to');
+  var toUser=sel.value;
+  var toName=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
+  var title=document.getElementById('t-title').value.trim();
+  var desc=document.getElementById('t-desc').value.trim();
+  if(!toUser||!title){showToast('يرجى تحديد المستخدم وكتابة العنوان');return;}
+  showLoading(true);
+  await fetch(TASK_API,{method:'POST',headers:H,body:JSON.stringify({title:title,description:desc,assigned_to:toUser,assigned_name:toName,created_by:currentUser.username,created_name:currentUser.full_name,status:'pending'})});
+  showLoading(false);closeTaskModal();showToast('✅ تم إرسال المهمة إلى '+toName);
+  await loadTasks();
+}
+
+async function loadTasks(){
+  var r=await fetch(TASK_API+'?order=created_at.desc',{headers:H});
+  tasks=await r.json()||[];
+  renderTasks();updateTasksBadge();
+}
+
+function updateTasksBadge(){
+  var myPending=tasks.filter(function(t){return t.assigned_to===currentUser.username&&t.status==='pending';});
+  var badge=document.getElementById('tasksBadge');
+  if(myPending.length>0){badge.style.display='inline';badge.textContent=myPending.length;}
+  else badge.style.display='none';
+}
+
+function renderTasks(){
+  var isAdm=currentUser.role==='admin';
+  var myTasks=isAdm?tasks:tasks.filter(function(t){return t.assigned_to===currentUser.username||t.created_by===currentUser.username;});
+  var container=document.getElementById('tasksList');
+  if(!myTasks.length){container.innerHTML='<div class="empty">لا توجد مهام</div>';return;}
+  container.innerHTML=myTasks.map(function(t){
+    var isPending=t.status==='pending';
+    var isMyTask=t.assigned_to===currentUser.username;
+    var time=new Date(t.created_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
+    var completedTime=t.completed_at?' - اكتملت: '+new Date(t.completed_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'}):'';
+    var doneBtn=isMyTask&&isPending?'<button class="btn btn-success btn-sm" onclick="completeTask('+t.id+')">&#10003; تم</button>':'';
+    var deleteBtn=(isAdm||t.created_by===currentUser.username)?'<button class="btn btn-danger btn-sm" onclick="deleteTask('+t.id+')">&#128465;</button>':'';
+    return '<div class="task-card '+(isPending?'pending':'done')+'">' +
+      '<div class="task-header"><div class="task-title">'+t.title+'</div>' +
+      '<div style="display:flex;gap:6px;align-items:center;"><span class="task-status '+(isPending?'ts-pending':'ts-done')+'">'+(isPending?'⏳ قيد التنفيذ':'✅ مكتملة')+'</span>'+doneBtn+deleteBtn+'</div></div>' +
+      '<div class="task-meta">&#128100; إلى: <strong>'+t.assigned_name+'</strong> &nbsp;|&nbsp; &#128221; من: '+t.created_name+' &nbsp;|&nbsp; &#128336; '+time+completedTime+'</div>' +
+      (t.description?'<div class="task-desc">'+t.description+'</div>':'') +
+    '</div>';
+  }).join('');
+}
+
+async function completeTask(id){
+  showLoading(true);
+  await fetch(TASK_API+'?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})});
+  await loadTasks();showLoading(false);showToast('✅ تم إنجاز المهمة');
+}
+
+async function deleteTask(id){
+  if(!confirm('حذف هذه المهمة؟'))return;
+  showLoading(true);
+  await fetch(TASK_API+'?id=eq.'+id,{method:'DELETE',headers:H});
+  await loadTasks();showLoading(false);showToast('تم الحذف');
+}
+
+function startTaskPoll(){
+  if(taskPollInterval)clearInterval(taskPollInterval);
+  taskPollInterval=setInterval(async function(){
+    var r=await fetch(TASK_API+'?order=created_at.desc',{headers:H});
+    tasks=await r.json()||[];updateTasksBadge();
+  },15000);
+}
+
+
+/* ═══════════════════════════════ EXCLUSIONS ═══════════════════════════════ */
+var exclFiltered = [], exclCurrentPage = 1, EXCL_PER_PAGE = 50;
+
+async function loadExcl() {
+  showLoading(true);
+  var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
+  exclusions = await r.json() || [];
+  applyExclFilters();
+  showLoading(false);
+}
+
+function applyExclFilters() {
+  var q = (document.getElementById('exclSearch')||{value:''}).value.toLowerCase().trim();
+  var reason = (document.getElementById('exclReasonFilter')||{value:''}).value;
+  exclFiltered = exclusions.filter(function(e){
+    var ms = !q || (e.name||'').toLowerCase().includes(q) || (e.emp_id||'').toLowerCase().includes(q);
+    var mr = !reason || e.reason === reason;
+    return ms && mr;
+  });
+  exclCurrentPage = 1;
+  renderExcl();
+}
+
+function renderExcl() {
+  var tbody = document.getElementById('exclBody');
+  if (!exclFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">لا توجد سجلات استبعاد</div></td></tr>';
+    document.getElementById('exclPageInfo').textContent = '0 سجل';
+    document.getElementById('exclPageBtns').innerHTML = '';
+    return;
+  }
+  var start = (exclCurrentPage-1)*EXCL_PER_PAGE, end = start+EXCL_PER_PAGE;
+  var page = exclFiltered.slice(start, end);
+  var isAdm = currentUser && currentUser.role === 'admin';
+
+  tbody.innerHTML = page.map(function(e, i){
+    var lastDay = e.last_day ? e.last_day.split('-').reverse().join('/') : '—';
+    var createdAt = e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : '—';
+    var delBtn = isAdm ? '<button class="icon-btn delete" onclick="deleteExcl('+e.id+')" title="حذف">&#128465;</button>' : '';
+    return '<tr>' +
+      '<td class="num">' + (start+i+1) + '</td>' +
+      '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
+      '<td class="name">' + (e.name||'—') + '</td>' +
+      '<td>' + lastDay + '</td>' +
+      '<td><span class="reason-badge">' + (e.reason||'—') + '</span></td>' +
+      '<td style="font-size:12px;color:var(--sub);max-width:200px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--sub);">' + createdAt + '</td>' +
+      '<td><div class="actions">' +
+        '<button class="icon-btn edit" onclick="openExclEdit('+e.id+')" title="تعديل">&#9998;</button>' +
+        delBtn +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+
+  var total = exclFiltered.length, pages = Math.ceil(total/EXCL_PER_PAGE)||1;
+  document.getElementById('exclPageInfo').textContent = 'عرض ' + Math.min(end,total) + ' من ' + total + ' سجل';
+  var pb = document.getElementById('exclPageBtns'); pb.innerHTML = '';
+  for (var p=1; p<=pages; p++) {
+    var b = document.createElement('button');
+    b.className = 'page-btn' + (p===exclCurrentPage?' active':'');
+    b.textContent = p;
+    (function(pg){ b.onclick = function(){ exclCurrentPage=pg; renderExcl(); }; })(p);
+    pb.appendChild(b);
+  }
+}
+
+function openExclModal() {
+  editingExclId = null;
+  ['ex-empid','ex-name','ex-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ex-lastday').value = '';
+  document.getElementById('ex-reason').value = '';
+  document.getElementById('exclModalTitle').textContent = '➕ إضافة استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function openExclEdit(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!ex) return;
+  editingExclId = id;
+  document.getElementById('ex-empid').value   = ex.emp_id || '';
+  document.getElementById('ex-name').value    = ex.name || '';
+  document.getElementById('ex-lastday').value = ex.last_day || '';
+  document.getElementById('ex-reason').value  = ex.reason || '';
+  document.getElementById('ex-notes').value   = ex.notes || '';
+  document.getElementById('exclModalTitle').textContent = '✏️ تعديل استبعاد';
+  document.getElementById('exclModalBg').classList.add('show');
+}
+
+function closeExclModal() { document.getElementById('exclModalBg').classList.remove('show'); }
+
+async function saveExcl() {
+  var empId   = document.getElementById('ex-empid').value.trim();
+  var name    = document.getElementById('ex-name').value.trim();
+  var lastDay = document.getElementById('ex-lastday').value;
+  var reason  = document.getElementById('ex-reason').value;
+  var notes   = document.getElementById('ex-notes').value.trim();
+
+  if (!empId)   { showToast('❌ يرجى إدخال الرقم الوظيفي'); document.getElementById('ex-empid').focus(); return; }
+  if (!name)    { showToast('❌ يرجى إدخال الاسم'); document.getElementById('ex-name').focus(); return; }
+  if (!lastDay) { showToast('❌ يرجى تحديد آخر يوم عمل'); document.getElementById('ex-lastday').focus(); return; }
+  if (!reason)  { showToast('❌ يرجى اختيار سبب الانهاء'); document.getElementById('ex-reason').focus(); return; }
+
+  showLoading(true);
+  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes};
+  if (editingExclId) {
+    await fetch(EXCL_API + '?id=eq.' + editingExclId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
+    await logAction('تعديل استبعاد', 'تعديل استبعاد: ' + name);
+    showToast('✅ تم التعديل');
+  } else {
+    await fetch(EXCL_API, {method:'POST', headers:H, body:JSON.stringify(payload)});
+    await logAction('إضافة استبعاد', 'إضافة استبعاد: ' + name + ' - ' + reason);
+    showToast('✅ تم إضافة الاستبعاد');
+  }
+  closeExclModal();
+  await loadExcl();
+}
+
+async function deleteExcl(id) {
+  var ex = exclusions.find(function(x){ return x.id===id; });
+  if (!confirm('حذف سجل "' + (ex?ex.name:'') + '"؟')) return;
+  showLoading(true);
+  await fetch(EXCL_API + '?id=eq.' + id, {method:'DELETE', headers:H});
+  await loadExcl();
+  showToast('تم الحذف');
+}
+
+function downloadExclTemplate() {
+  var headers = [{'الرقم الوظيفي':'','الاسم':'','آخر يوم عمل':'','سبب الانهاء':'','ملاحظات':''}];
+  var ws = XLSX.utils.json_to_sheet(headers);
+  ws['!cols'] = [{wch:14},{wch:28},{wch:16},{wch:30},{wch:30}];
+  XLSX.utils.sheet_add_aoa(ws,[['','','DD/MM/YYYY','استقالة فورية / استقالة نظامية / انهاء فترة التجربة / ...','']],{origin:'A2'});
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'قالب الاستبعادات');
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='قالب_الاستبعادات.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  showToast('تم تنزيل القالب');
+}
+
+function importExclExcel(ev) {
+  var file=ev.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    try {
+      var wb=XLSX.read(e.target.result,{type:'binary'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws);
+      showLoading(true);
+      var count=0;
+      for(var i=0;i<rows.length;i++){
+        var row=rows[i];
+        var dateVal=row['آخر يوم عمل'], dateStr='';
+        if(dateVal){
+          if(typeof dateVal==='number'){var j=new Date((dateVal-25569)*86400*1000);dateStr=j.toISOString().split('T')[0];}
+          else if(typeof dateVal==='string'&&dateVal.includes('/')){var p=dateVal.split('/');if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+          else{dateStr=dateVal;}
+        }
+        if(!row['الاسم'])continue;
+        await fetch(EXCL_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',last_day:dateStr,reason:row['سبب الانهاء']||'',notes:row['ملاحظات']||''})});
+        count++;
+      }
+      await loadExcl();
+      showToast('تم استيراد '+count+' سجل');
+    } catch(err){showToast('خطأ في قراءة الملف');showLoading(false);}
+  };
+  reader.readAsBinaryString(file);ev.target.value='';
+}
+
+function exportExclExcel() {
+  var rows = exclFiltered.map(function(e, i){
+    return {
+      'م': i+1,
+      'الرقم الوظيفي': e.emp_id||'',
+      'الاسم': e.name||'',
+      'آخر يوم عمل': e.last_day ? e.last_day.split('-').reverse().join('/') : '',
+      'سبب الانهاء': e.reason||'',
+      'ملاحظات': e.notes||'',
+      'تاريخ الإدخال': e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : ''
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:16},{wch:28},{wch:30},{wch:20}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الاستبعادات');
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbout], {type:'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='الاستبعادات.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('تم التصدير');
+}
+
+
+/* ═══════════════════════════════ PDF GENERATOR ═══════════════════════════════ */
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -2431,7 +3005,6 @@ document.getElementById('deptModalBg').addEventListener('click',function(e){if(e
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
-document.getElementById('pdfModalBg').addEventListener('click',function(e){if(e.target===this)closePdfModal();});
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
