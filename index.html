@@ -1616,7 +1616,7 @@ function exportExcel() {
       'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
       'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
       'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status,
-      'القسم':e.section||'','الإجراء المتخذ':e.actionTaken||'','ملاحظات':e.notes||''};
+      'القسم':e.section||'','ملاحظات':e.notes||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
@@ -1781,6 +1781,10 @@ async function saveFieldInline(id, field, value) {
   var payload = {};
   payload[field] = value;
   await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify(payload)});
+  // تسجيل من كتب الملاحظة
+  if (field === 'notes' && value) {
+    await logAction('ملاحظة', 'ملاحظة على "' + e.name + '": ' + value);
+  }
   // update in memory
   [employees,filtered].forEach(function(arr){
     var idx=arr.findIndex(function(x){ return x.id===id; });
