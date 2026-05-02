@@ -20,9 +20,10 @@
   --shadow:0 2px 16px rgba(37,99,235,0.08);
   --shadow-lg:0 8px 32px rgba(37,99,235,0.14);
 }
-body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-.login-card{background:var(--surface);border-radius:24px;padding:38px 34px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+body{font-family:'Tajawal',sans-serif;background:linear-gradient(135deg,#eef2ff 0%,#f0f4ff 40%,#fdf4ff 100%);color:var(--text);min-height:100vh;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 35%,#7c3aed 70%,#1e3a8a 100%);background-size:400% 400%;animation:gradientShift 8s ease infinite;}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.login-card{background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);border-radius:28px;padding:42px 38px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(37,99,235,0.18),0 0 0 1px rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.6);}
 .login-logo{width:58px;height:58px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;box-shadow:var(--shadow-lg);}
 .login-title{font-size:22px;font-weight:900;text-align:center;margin-bottom:4px;}
 .login-sub{font-size:13px;color:var(--sub);text-align:center;margin-bottom:26px;}
@@ -33,8 +34,8 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border:none;border-radius:12px;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.3);margin-top:6px;}
 .err-msg{background:var(--danger-light);color:var(--danger);border:1px solid #fca5a5;border-radius:10px;padding:9px 14px;font-size:13px;text-align:center;display:none;margin-top:10px;}
 .err-msg.show{display:block;}
-.app{display:none;padding:20px;}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.app{display:none;padding:24px;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);padding:16px 20px;border-radius:18px;box-shadow:0 2px 16px rgba(37,99,235,0.08);border:1px solid rgba(226,232,248,0.7);}
 .header-left{display:flex;align-items:center;gap:12px;}
 .icon-badge{width:42px;height:42px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:var(--shadow-lg);}
 .header h1{font-size:20px;font-weight:900;}
@@ -50,7 +51,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .main-tab{padding:9px 16px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-2px;}
 .main-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
 .stats{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 16px;flex:1;min-width:110px;box-shadow:var(--shadow);}
+.stat{background:rgba(255,255,255,0.9);border:1px solid rgba(226,232,248,0.7);border-radius:16px;padding:14px 16px;flex:1;min-width:110px;box-shadow:0 2px 12px rgba(37,99,235,0.08);backdrop-filter:blur(8px);}
 .stat-num{font-size:24px;font-weight:900;line-height:1;}
 .stat-lbl{font-size:11px;color:var(--sub);margin-top:3px;}
 .stat.blue .stat-num{color:var(--primary);}
@@ -76,7 +77,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .fsel{padding:6px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:12px;color:var(--text);outline:none;}
 .filter-status{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
 .fbtn{padding:5px 11px;border-radius:18px;font-family:'Tajawal',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:opacity .2s;}
-.table-wrapper{background:var(--surface);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border);}
+.table-wrapper{background:rgba(255,255,255,0.95);border-radius:20px;box-shadow:0 4px 24px rgba(37,99,235,0.1),0 0 0 1px rgba(37,99,235,0.06);overflow:hidden;border:1px solid rgba(226,232,248,0.8);backdrop-filter:blur(8px);}
 .table-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;min-width:1000px;}
 thead tr{background:linear-gradient(135deg,#f8faff,#eef2ff);}
@@ -113,6 +114,8 @@ td.id-num{font-family:monospace;font-size:12px;}
 .s-sent .status-dot{background:#0891b2;}
 .s-filed{background:#f0fdf4;color:#065f46;}
 .s-filed .status-dot{background:#059669;}
+.s-contract-sent{background:#fdf4ff;color:#7c3aed;}
+.s-contract-sent .status-dot{background:#7c3aed;}
 .contract-badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;}
 .c-qowa{background:#dbeafe;color:#1d4ed8;}
 .c-train{background:#f3e8ff;color:#7c3aed;}
@@ -134,6 +137,8 @@ td.id-num{font-family:monospace;font-size:12px;}
 .icon-btn.send:hover{background:#0891b2;color:#fff;}
 .icon-btn.file{background:#f0fdf4;color:#065f46;}
 .icon-btn.file:hover{background:#059669;color:#fff;}
+.icon-btn.contract-send{background:#fdf4ff;color:#7c3aed;}
+.icon-btn.contract-send:hover{background:#7c3aed;color:#fff;}
 .cb{width:16px;height:16px;cursor:pointer;accent-color:var(--primary);}
 .pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--sub);}
 .page-btns{display:flex;gap:5px;}
@@ -234,6 +239,15 @@ td.id-num{font-family:monospace;font-size:12px;}
 .excl-badge{padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;}
 .reason-badge{padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;background:#fee2e2;color:#dc2626;}
 
+
+/* ── DATE TIME CHIP ── */
+.datetime-chip{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(124,58,237,0.08));border:1px solid rgba(37,99,235,0.15);border-radius:14px;padding:8px 16px;font-size:12px;color:var(--text);}
+.datetime-chip .dt-date{font-weight:900;color:var(--primary);}
+.datetime-chip .dt-time{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--accent);font-size:13px;}
+.datetime-chip .dt-sep{color:var(--border);font-size:16px;}
+
+.la-delete{background:#fee2e2;color:#dc2626;}
+.la-note{background:#fdf4ff;color:#7c3aed;}
 </style>
 <!--
  هذا الإصدار:
@@ -284,6 +298,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       <div><h1>متابعة التوظيف</h1><div class="subtitle">إدارة بيانات الموظفين</div></div>
     </div>
     <div class="header-right">
+      <div class="datetime-chip"><span class="dt-date" id="dtDate">—</span><span class="dt-sep">|</span><span class="dt-time" id="dtTime">—</span></div>
       <span class="user-chip" id="appUserName">—</span>
       <span class="role-chip" id="appRoleChip">—</span>
       <button class="btn-chpass" onclick="openChangePass()">&#128273; تغيير كلمة السر</button>
@@ -327,8 +342,12 @@ td.id-num{font-family:monospace;font-size:12px;}
 
     <div class="select-bar" id="selectBar">
       <span class="select-count" id="selectCount">0 محدد</span>
-      <button class="btn btn-warning btn-sm" id="bulkAppointBtn" onclick="appointSelected()">📋 تم عمل قرار تعيين / عقد تدريب</button>
-      <button class="btn btn-outline btn-sm" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;" onclick="enterSelected()">🖥️ إدخال بالنظام</button>
+      <button class="btn btn-warning btn-sm" id="bulkAppointBtn" onclick="appointSelected()" style="display:none;">📋 قرار تعيين</button>
+      <button class="btn btn-sm" style="background:#cffafe;color:#0891b2;border:1.5px solid #67e8f9;display:none;" id="bulkSendBtn" onclick="bulkChangeStatus('sent','تم ارساله لادارته')">📨 ارسال لادارته</button>
+      <button class="btn btn-sm" style="background:#f0fdf4;color:#065f46;border:1.5px solid #86efac;display:none;" id="bulkFileBtn" onclick="bulkChangeStatus('filed','اكتمال الملف')">📁 اكتمال الملف</button>
+      <button class="btn btn-sm" style="background:#e0e7ff;color:#3730a3;border:1.5px solid #a5b4fc;display:none;" id="bulkEnterBtn" onclick="enterSelected()">🖥️ إدخال بالنظام</button>
+      <button class="btn btn-sm" style="background:#fdf4ff;color:#7c3aed;border:1.5px solid #d8b4fe;display:none;" id="bulkContractBtn" onclick="bulkChangeStatus('contract_sent','تم ارسال عقد قوى')">📄 ارسال عقد قوى</button>
+      <button class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:1.5px solid #6ee7b7;display:none;" id="bulkCompleteBtn" onclick="bulkComplete()">✔️ مكتمل</button>
       <button class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display:none;" onclick="deleteSelected()">🗑️ حذف</button>
       <button class="btn btn-outline btn-sm" onclick="clearSelection()">✕</button>
     </div>
@@ -357,6 +376,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="fbtn" id="filter-sent" onclick="filterByStatus('sent')" style="background:#cffafe;color:#0891b2;border-color:#67e8f9;">📨 تم ارساله لادارته</button>
       <button class="fbtn" id="filter-filed" onclick="filterByStatus('filed')" style="background:#f0fdf4;color:#065f46;border-color:#86efac;">📁 اكتمل الملف</button>
       <button class="fbtn" id="filter-entered" onclick="filterByStatus('entered')" style="background:#e0e7ff;color:#3730a3;border-color:#a5b4fc;">🖥️ تم الإدخال بالنظام</button>
+      <button class="fbtn" id="filter-contract_sent" onclick="filterByStatus('contract_sent')" style="background:#fdf4ff;color:#7c3aed;border-color:#d8b4fe;">📄 تم ارسال عقد قوى</button>
       <button class="fbtn" id="filter-contract-qowa" onclick="filterByContract('qowa')" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;">🔵 عقد قوى <span id="cnt-qowa">0</span></button>
       <button class="fbtn" id="filter-contract-train" onclick="filterByContract('train')" style="background:#f3e8ff;color:#7c3aed;border-color:#c4b5fd;">🟣 عقد تدريب <span id="cnt-train">0</span></button>
     </div>
@@ -488,6 +508,7 @@ td.id-num{font-family:monospace;font-size:12px;}
   <div id="tabLogs" style="display:none;">
     <div class="toolbar">
       <button class="btn btn-primary btn-sm" onclick="exportDailyReport()">📊 تقرير اليوم Excel</button>
+      <button class="btn btn-outline btn-sm" onclick="exportAllLogs()">📥 سحب كل السجل</button>
       <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑️ مسح السجل</button>
     </div>
     <div class="table-wrapper">
@@ -733,7 +754,7 @@ var activeStatusFilter = 'all', activeContractFilter = '';
 var editingEmpId = null, editingUserId = null, editingDeptId = null;
 var selectMode = false, selected = new Set();
 var currentUser = null;
-var tasks = [], taskPollInterval = null;
+var tasks = [], taskPollInterval = null, clockInterval = null;
 var exclusions = [], editingExclId = null;
 var chartStatusInst = null, chartContractInst = null, chartMonthlyInst = null;
 
@@ -748,7 +769,8 @@ var statusMap = {
   trained:   {label:'تم عمل عقد تدريب',    cls:'s-appointed'},
   sent:      {label:'تم ارساله لادارته',   cls:'s-sent'},
   filed:     {label:'اكتمل الملف',           cls:'s-filed'},
-  entered:   {label:'تم الإدخال بالنظام',  cls:'s-entered'}
+  entered:   {label:'تم الإدخال بالنظام',  cls:'s-entered'},
+  contract_sent: {label:'تم ارسال عقد - بانتظار القبول', cls:'s-contract-sent'}
 };
 var contractMap = {qowa:'عقد قوى', train:'عقد تدريب'};
 
@@ -821,6 +843,7 @@ async function enterApp() {
   var head = document.getElementById('empTableHead');
   head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>';
 
+  startClock();
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
   // Show/hide select-bar buttons based on permissions
@@ -836,6 +859,7 @@ function logout() {
   currentUser = null; selectMode = false; selected.clear();
   sessionStorage.removeItem('currentUser');
   if(taskPollInterval){clearInterval(taskPollInterval);taskPollInterval=null;}
+  if(clockInterval){clearInterval(clockInterval);clockInterval=null;}
   if(chartStatusInst){chartStatusInst.destroy();chartStatusInst=null;}
   if(chartContractInst){chartContractInst.destroy();chartContractInst=null;}
   if(chartMonthlyInst){chartMonthlyInst.destroy();chartMonthlyInst=null;}
@@ -1028,17 +1052,31 @@ function render() {
         }
         if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="" title="إرجاع">&#8617;</button>';
       } else if (as === 'entered') {
+        // عقد قوى: بعد الإدخال → ارسال عقد قوى
+        if (e.contract === 'qowa') {
+          if (userCan('can_complete')) {
+            workflowBtns = '<button class="icon-btn contract-send" data-id="' + e.id + '" title="تم ارسال عقد قوى - بانتظار القبول">&#128196;</button>';
+          }
+          if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="filed" title="إرجاع">&#8617;</button>';
+        } else {
+          // عقد تدريب: مباشرة مكتمل
+          if (userCan('can_complete')) {
+            workflowBtns = '<button class="icon-btn complete" data-id="' + e.id + '" title="ملف مكتمل">&#10003;</button>';
+          }
+          if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="trained" title="إرجاع">&#8617;</button>';
+        }
+      } else if (as === 'contract_sent') {
         if (userCan('can_complete')) {
           workflowBtns = '<button class="icon-btn complete" data-id="' + e.id + '" title="ملف مكتمل">&#10003;</button>';
         }
-        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="' + (e.contract==='qowa'?'filed':'trained') + '" title="إرجاع">&#8617;</button>';
+        if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="entered" title="إرجاع">&#8617;</button>';
       } else if (as === 'complete') {
-        if (isAdm) workflowBtns = '<button class="icon-btn reset" data-id="' + e.id + '" data-to="entered" title="إرجاع">&#8617;</button>';
+        if (isAdm) workflowBtns = '<button class="icon-btn reset" data-id="' + e.id + '" data-to="' + (e.contract==='qowa'?'contract_sent':'entered') + '" title="إرجاع">&#8617;</button>';
       }
     }
     var salary = e.salary ? '<span style="font-family:monospace;font-weight:700;color:var(--success);">' + Number(e.salary).toLocaleString() + ' ريال</span>' : '<span style="color:var(--sub);font-size:11px;"></span>';
     var dateStr = e.date ? e.date.split('-').reverse().join('/') : '';
-    var editBtn = !isViewer ? '<button class="icon-btn edit" data-id="' + e.id + '" title="تعديل">&#9998;</button>' : '';
+    var editBtn = isAdm ? '<button class="icon-btn edit" data-id="' + e.id + '" title="تعديل">&#9998;</button>' : '';
     html += '<tr class="' + (sel?'selected':'') + '" data-id="' + e.id + '">';
     html += cbCol + '<td class="num">' + (start+i+1) + '</td>';
     html += '<td class="emp-id">' + e.empId + '</td><td class="name">' + e.name + '</td>';
@@ -1070,8 +1108,9 @@ function render() {
       if (btn.classList.contains('enter'))    { doEnter(id); return; }
       if (btn.classList.contains('complete')) { doComplete(id); return; }
       if (btn.classList.contains('reset'))    { resetWorkflow(id, btn.dataset.to||''); return; }
-      if (btn.classList.contains('send'))       { doSend(id); return; }
-      if (btn.classList.contains('file'))       { doFile(id); return; }
+      if (btn.classList.contains('send'))         { doSend(id); return; }
+      if (btn.classList.contains('file'))         { doFile(id); return; }
+      if (btn.classList.contains('contract-send')) { doContractSend(id); return; }
     } else if (tr) { rowClick(ev, id); }
   };
 
@@ -1140,6 +1179,17 @@ async function doFile(id) {
   await logAction('اكتمال الملف', 'اكتمل ملف الموظف قبل الإدخال: '+e.name);
   updateEmpInMemory(e.id, {status:'filed', appointStatus:'filed', completedAt:now});
   showLoading(false); showToast('✅ تم تأكيد اكتمال الملف');
+}
+
+async function doContractSend(id) {
+  var e = employees.find(function(x){ return x.id===id; });
+  if (!confirm('تأكيد ارسال عقد قوى للموظف "'+e.name+'" - بانتظار القبول؟')) return;
+  showLoading(true);
+  var now = new Date().toISOString();
+  await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(e.empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'contract_sent',status:'contract_sent',completed_at:now})});
+  await logAction('ارسال عقد قوى', 'تم ارسال عقد قوى للموظف: '+e.name+' - بانتظار القبول');
+  updateEmpInMemory(e.id, {status:'contract_sent', appointStatus:'contract_sent', completedAt:now});
+  showLoading(false); showToast('✅ تم ارسال عقد القوى - بانتظار القبول');
 }
 
 async function doEnter(id) {
@@ -1213,6 +1263,8 @@ async function resetWorkflow(id, toStatus) {
     newStatus = 'filed'; newAppoint = 'filed';
   } else if (toStatus === 'entered') {
     newStatus = 'entered'; newAppoint = 'entered';
+  } else if (toStatus === 'contract_sent') {
+    newStatus = 'contract_sent'; newAppoint = 'contract_sent';
   } else {
     newStatus = 'active'; newAppoint = '';
   }
@@ -1290,8 +1342,26 @@ function toggleAll(cb) { if(cb.checked)filtered.forEach(function(e){selected.add
 function rowClick(ev,id) { if(!selectMode)return; if(selected.has(id))selected.delete(id);else selected.add(id); updateSelectBar(); render(); }
 function updateSelectBar() {
   var n=selected.size;
-  if (n>0) { document.getElementById('selectBar').classList.add('show'); document.getElementById('selectCount').textContent=n+' محدد'; }
-  else document.getElementById('selectBar').classList.remove('show');
+  if (n>0) {
+    document.getElementById('selectBar').classList.add('show');
+    document.getElementById('selectCount').textContent=n+' محدد';
+    var isAdm = currentUser && currentUser.role==='admin';
+    var btns = {
+      bulkAppointBtn: userCan('can_appoint'),
+      bulkSendBtn: userCan('can_send'),
+      bulkFileBtn: userCan('can_file'),
+      bulkEnterBtn: userCan('can_enter'),
+      bulkContractBtn: userCan('can_complete'),
+      bulkCompleteBtn: userCan('can_complete'),
+      bulkDeleteBtn: isAdm
+    };
+    Object.keys(btns).forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.style.display=btns[id]?'inline-flex':'none';
+    });
+  } else {
+    document.getElementById('selectBar').classList.remove('show');
+  }
 }
 function clearSelection() { selected.clear(); updateSelectBar(); render(); }
 
@@ -1573,9 +1643,9 @@ function renderLogs() {
   var end = start + LOG_PER_PAGE;
   var page = allLogs.slice(start, end);
   tbody.innerHTML = page.map(function(l, i) {
-    var cls = l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':'la-status';
+    var cls = l.action==='إضافة'?'la-add':l.action==='تعديل'?'la-edit':l.action&&l.action.indexOf('حذف')!==-1?'la-delete':l.action==='ملاحظة'?'la-note':'la-status';
     var time = new Date(l.created_at).toLocaleString('ar-SA', {calendar:'gregory',numberingSystem:'latn'});
-    var details = (l.details||'').replace(/\|/g,'<br>• ');
+    var details = (l.details||'').replace(/\|/g,'</span><br><span style="color:var(--primary);font-weight:700;">• </span>');
     return '<tr>' +
       '<td class="num">'+(start+i+1)+'</td>' +
       '<td class="name">'+(l.emp_name||'')+' <span style="color:var(--sub);font-size:11px;">('+( l.emp_id||'')+')</span></td>' +
@@ -2221,6 +2291,81 @@ var exclFiltered = [], exclCurrentPage = 1, EXCL_PER_PAGE = 50;
 
 
 
+
+function startClock() {
+  if(clockInterval) clearInterval(clockInterval);
+  function tick() {
+    var now = new Date();
+    var days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    var months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    var d = document.getElementById('dtDate');
+    var t = document.getElementById('dtTime');
+    if(d) d.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+    if(t) {
+      var h = now.getHours().toString().padStart(2,'0');
+      var m = now.getMinutes().toString().padStart(2,'0');
+      var s = now.getSeconds().toString().padStart(2,'0');
+      t.textContent = h + ':' + m + ':' + s;
+    }
+  }
+  tick();
+  clockInterval = setInterval(tick, 1000);
+}
+
+function exportAllLogs() {
+  if (!allLogs.length) { showToast('لا توجد سجلات'); return; }
+  var rows = allLogs.map(function(l, i){
+    var time = new Date(l.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    return {
+      'م': i+1,
+      'المستخدم': l.emp_name||'',
+      'اسم المستخدم': l.emp_id||'',
+      'الإجراء': l.action||'',
+      'التفاصيل': (l.details||'').replace(/\|/g,' | '),
+      'التاريخ والوقت': time
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:22},{wch:14},{wch:20},{wch:50},{wch:22}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'سجل التعديلات');
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbout], {type:'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url;
+  a.download = 'سجل_التعديلات_' + new Date().toISOString().split('T')[0] + '.xlsx';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('✅ تم سحب السجل كاملاً');
+}
+
+async function bulkChangeStatus(newStatus, label) {
+  var ids = employees.filter(function(e){ return selected.has(e.id); });
+  if (!ids.length) return;
+  if (!confirm('تغيير حالة '+ids.length+' موظف إلى "'+label+'"؟')) return;
+  showLoading(true);
+  var now = new Date().toISOString();
+  for (var i=0; i<ids.length; i++) {
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:newStatus,status:newStatus})});
+    updateEmpInMemory(ids[i].id, {status:newStatus, appointStatus:newStatus});
+  }
+  await logAction('تغيير جماعي', label+' لـ '+ids.length+' موظف');
+  clearSelection(); showLoading(false); showToast('✅ تم تغيير '+ids.length+' موظف إلى '+label);
+}
+
+async function bulkComplete() {
+  var ids = employees.filter(function(e){ return selected.has(e.id); });
+  if (!ids.length) return;
+  if (!confirm('تغيير حالة '+ids.length+' موظف إلى "مكتمل"؟')) return;
+  showLoading(true);
+  var now = new Date().toISOString();
+  for (var i=0; i<ids.length; i++) {
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'complete',status:'complete',completed_at:now})});
+    updateEmpInMemory(ids[i].id, {status:'complete', appointStatus:'complete', completedAt:now});
+  }
+  await logAction('إكمال جماعي', 'اكتمال ملفات '+ids.length+' موظف');
+  clearSelection(); showLoading(false); showToast('✅ تم اكتمال '+ids.length+' موظف');
+}
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
