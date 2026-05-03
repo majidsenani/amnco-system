@@ -2583,27 +2583,33 @@ async function bulkComplete() {
 
 /* ── EMPLOYEE OF MONTH ── */
 async function loadEom() {
+  // Try Supabase first (needs public read policy on settings table)
   try {
-    var r = await fetch(SETS_API + '?key=eq.employee_of_month&select=*', {
-      headers: Object.assign({}, H, {'Prefer': ''})
-    });
-    var d = await r.json();
-    if (d && d.length && d[0].value) {
-      var val = JSON.parse(d[0].value);
-      employeeOfMonth = val;
-      localStorage.setItem('eom_cache', JSON.stringify(val));
-      renderEom();
-      return;
+    var readH = {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json'
+    };
+    var r = await fetch(SETS_API + '?key=eq.employee_of_month&select=key,value', {headers: readH});
+    if (r.ok) {
+      var d = await r.json();
+      if (d && d.length && d[0].value) {
+        var val = JSON.parse(d[0].value);
+        employeeOfMonth = val;
+        localStorage.setItem('eom_cache', JSON.stringify(val));
+        renderEom();
+        return;
+      }
     }
-  } catch(e) { /* try cache */ }
-  // Fallback to localStorage cache
+  } catch(e) {}
+  // Fallback: localStorage cache (works across sessions on same browser)
   try {
     var cached = localStorage.getItem('eom_cache');
     if (cached) {
       employeeOfMonth = JSON.parse(cached);
     }
   } catch(e2) {}
-  renderEom(); // Always render for all users
+  renderEom();
 }
 
 function renderEom() {
