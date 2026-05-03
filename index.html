@@ -255,6 +255,43 @@ td.id-num{font-family:monospace;font-size:12px;}
 
 .la-delete{background:#fee2e2;color:#dc2626;}
 .la-note{background:#fdf4ff;color:#7c3aed;}
+
+/* ═══════════ EMPLOYEE OF MONTH ═══════════ */
+.eom-banner{position:relative;overflow:hidden;border-radius:24px;margin-bottom:22px;
+  background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 40%,#7c3aed 80%,#4f46e5 100%);
+  box-shadow:0 8px 40px rgba(37,99,235,0.35),0 0 0 1px rgba(255,255,255,0.1);
+  padding:28px 32px;display:flex;align-items:center;gap:28px;}
+.eom-banner::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,0.12) 0%,transparent 60%),
+  radial-gradient(ellipse at 80% 20%,rgba(124,58,237,0.3) 0%,transparent 50%);pointer-events:none;}
+.eom-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.eom-star{position:absolute;color:rgba(255,255,255,0.15);font-size:18px;animation:twinkle 3s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.5;transform:scale(1.2)}}
+.eom-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.2);
+  border:3px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;
+  font-size:36px;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,0.2);position:relative;z-index:1;}
+.eom-body{flex:1;position:relative;z-index:1;}
+.eom-tag{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.eom-name{font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.eom-month{font-size:13px;color:rgba(255,255,255,0.8);font-weight:700;}
+.eom-badge{position:relative;z-index:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);
+  border-radius:16px;padding:12px 20px;text-align:center;backdrop-filter:blur(8px);}
+.eom-badge-icon{font-size:32px;margin-bottom:4px;}
+.eom-badge-text{font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;}
+.eom-edit-btn{position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;cursor:pointer;
+  padding:5px 10px;font-size:11px;font-family:'Tajawal',sans-serif;font-weight:700;
+  backdrop-filter:blur(8px);transition:all .2s;z-index:2;}
+.eom-edit-btn:hover{background:rgba(255,255,255,0.3);}
+
+/* ═══════════ EXCL STAGES ═══════════ */
+.stage-bar{display:flex;gap:3px;margin:10px 0;flex-wrap:wrap;}
+.stage-pip{height:6px;border-radius:3px;flex:1;min-width:20px;background:#e2e8f8;transition:all .3s;}
+.stage-pip.done{background:linear-gradient(90deg,#059669,#10b981);}
+.stage-pip.current{background:linear-gradient(90deg,#2563eb,#6366f1);animation:pulse-pip 1.5s ease-in-out infinite;}
+@keyframes pulse-pip{0%,100%{opacity:1}50%{opacity:0.6}}
+.stage-label{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;white-space:nowrap;}
+.days-badge{font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;font-weight:700;margin-right:4px;}
 </style>
 <!--
  هذا الإصدار:
@@ -311,6 +348,23 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="btn-chpass" onclick="openChangePass()">&#128273; تغيير كلمة السر</button>
       <button class="btn-logout" onclick="logout()">خروج</button>
     </div>
+  </div>
+
+
+  <!-- EMPLOYEE OF MONTH -->
+  <div class="eom-banner" id="eomBanner" style="display:none;">
+    <div class="eom-stars" id="eomStars"></div>
+    <div class="eom-avatar">🏆</div>
+    <div class="eom-body">
+      <div class="eom-tag">⭐ موظف الشهر</div>
+      <div class="eom-name" id="eomName">—</div>
+      <div class="eom-month" id="eomMonth">—</div>
+    </div>
+    <div class="eom-badge">
+      <div class="eom-badge-icon">🥇</div>
+      <div class="eom-badge-text">تميّز واحترافية</div>
+    </div>
+    <button class="eom-edit-btn" id="eomEditBtn" style="display:none;" onclick="openEomModal()">✏️ تعديل</button>
   </div>
 
   <div class="main-tabs">
@@ -469,6 +523,9 @@ td.id-num{font-family:monospace;font-size:12px;}
               <th>الاسم</th>
               <th>آخر يوم عمل</th>
               <th>سبب الانهاء</th>
+              <th>المرحلة الحالية</th>
+              <th>مسار الإجراءات</th>
+              <th>مدة المرحلة</th>
               <th>ملاحظات</th>
               <th>تاريخ الإدخال</th>
               <th>إجراءات</th>
@@ -709,6 +766,19 @@ td.id-num{font-family:monospace;font-size:12px;}
           <option value="الوفاة">الوفاة</option>
         </select>
       </div>
+      <div class="fg2 full"><label>المرحلة الحالية *</label>
+        <select id="ex-stage">
+          <option value="1">🏢 الإدارة المعنية</option>
+          <option value="2">🛡️ إدارة السلاح</option>
+          <option value="3">📦 المستودع</option>
+          <option value="4">🔧 الحركة والصيانة</option>
+          <option value="5">💻 تقنية المعلومات</option>
+          <option value="6">🏥 التامين الطبي</option>
+          <option value="7">👥 الموارد البشرية</option>
+          <option value="8">💰 الإدارة المالية</option>
+          <option value="9">✅ المستحقات</option>
+        </select>
+      </div>
       <div class="fg2 full"><label>ملاحظات</label><input id="ex-notes" placeholder="أي ملاحظات إضافية..."/></div>
     </div>
     <div class="modal-footer">
@@ -719,6 +789,26 @@ td.id-num{font-family:monospace;font-size:12px;}
 </div>
 
 
+
+
+<!-- Employee of Month Modal -->
+<div class="modal-bg" id="eomModalBg">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">🏆 تعديل موظف الشهر</div>
+      <button class="modal-close" onclick="closeEomModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg2 full"><label>اسم الموظف/ة *</label><input id="eom-name" placeholder="مثال: مشاعل زياد العتيبي"/></div>
+      <div class="fg2 full"><label>الشهر *</label><input id="eom-month" placeholder="مثال: موظفة شهر أبريل 2026م"/></div>
+      <div class="fg2 full"><label>الإدارة / الوصف (اختياري)</label><input id="eom-dept" placeholder="مثال: إدارة الموارد البشرية"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeEomModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveEom()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-bg" id="changePassBg">
   <div class="modal" style="max-width:380px;">
@@ -753,6 +843,7 @@ var LOG_API  = SUPA_URL + '/rest/v1/activity_log';
 var DEPT_API = SUPA_URL + '/rest/v1/departments';
 var TASK_API = SUPA_URL + '/rest/v1/tasks';
 var EXCL_API = SUPA_URL + '/rest/v1/exclusions';
+var SETS_API = SUPA_URL + '/rest/v1/settings';
 var H = {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation'};
 
 var employees = [], filtered = [], users = [], departments = [];
@@ -763,6 +854,21 @@ var selectMode = false, selected = new Set();
 var currentUser = null;
 var tasks = [], taskPollInterval = null, clockInterval = null;
 var exclusions = [], editingExclId = null;
+
+var EXCL_STAGES = [
+  {id:1, label:'الإدارة المعنية',      icon:'🏢', color:'#6366f1'},
+  {id:2, label:'إدارة السلاح',         icon:'🛡️', color:'#dc2626'},
+  {id:3, label:'المستودع',             icon:'📦', color:'#d97706'},
+  {id:4, label:'الحركة والصيانة',      icon:'🔧', color:'#059669'},
+  {id:5, label:'تقنية المعلومات',      icon:'💻', color:'#0891b2'},
+  {id:6, label:'التامين الطبي',        icon:'🏥', color:'#7c3aed'},
+  {id:7, label:'الموارد البشرية',      icon:'👥', color:'#2563eb'},
+  {id:8, label:'الإدارة المالية',      icon:'💰', color:'#92400e'},
+  {id:9, label:'المستحقات',            icon:'✅', color:'#065f46'},
+];
+
+var employeeOfMonth = {name:'', month:'', dept:''};
+
 var chartStatusInst = null, chartContractInst = null, chartMonthlyInst = null;
 
 var statusMap = {
@@ -851,6 +957,7 @@ async function enterApp() {
   head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>';
 
   startClock();
+  loadEom();
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
   // Show/hide select-bar buttons based on permissions
@@ -2067,13 +2174,28 @@ function renderExcl() {
     var lastDay = e.last_day ? e.last_day.split('-').reverse().join('/') : '—';
     var createdAt = e.created_at ? new Date(e.created_at).toLocaleString('ar-SA',{calendar:'gregory',numberingSystem:'latn'}) : '—';
     var delBtn = isAdm ? '<button class="icon-btn delete" onclick="deleteExcl('+e.id+')" title="حذف">&#128465;</button>' : '';
+    // Stage logic
+    var stageNum = e.stage || 1;
+    var stageInfo = EXCL_STAGES[stageNum-1] || EXCL_STAGES[0];
+    var stageUpdated = e.stage_updated_at ? new Date(e.stage_updated_at) : new Date(e.created_at||Date.now());
+    var daysDiff = Math.floor((Date.now() - stageUpdated.getTime()) / (1000*60*60*24));
+    var daysLabel = daysDiff === 0 ? 'اليوم' : daysDiff === 1 ? 'يوم واحد' : daysDiff + ' يوم';
+    var daysColor = daysDiff > 7 ? '#dc2626' : daysDiff > 3 ? '#d97706' : '#059669';
+    // Stage progress bar
+    var pips = EXCL_STAGES.map(function(s){
+      var cls = s.id < stageNum ? 'done' : s.id === stageNum ? 'current' : '';
+      return '<div class="stage-pip ' + cls + '" title="' + s.label + '"></div>';
+    }).join('');
     return '<tr>' +
       '<td class="num">' + (start+i+1) + '</td>' +
       '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
       '<td class="name">' + (e.name||'—') + '</td>' +
       '<td>' + lastDay + '</td>' +
       '<td><span class="reason-badge">' + (e.reason||'—') + '</span></td>' +
-      '<td style="font-size:12px;color:var(--sub);max-width:200px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
+      '<td><span class="stage-label" style="background:'+stageInfo.color+'22;color:'+stageInfo.color+';border:1px solid '+stageInfo.color+'44;">' + stageInfo.icon + ' ' + stageInfo.label + '</span></td>' +
+      '<td style="min-width:140px;"><div class="stage-bar">' + pips + '</div></td>' +
+      '<td><span style="font-size:11px;font-weight:700;color:'+daysColor+';">⏱ ' + daysLabel + '</span></td>' +
+      '<td style="font-size:12px;color:var(--sub);max-width:150px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
       '<td style="font-size:11px;color:var(--sub);">' + createdAt + '</td>' +
       '<td><div class="actions">' +
         '<button class="icon-btn edit" onclick="openExclEdit('+e.id+')" title="تعديل">&#9998;</button>' +
@@ -2099,6 +2221,7 @@ function openExclModal() {
   ['ex-empid','ex-name','ex-notes'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('ex-lastday').value = '';
   document.getElementById('ex-reason').value = '';
+  document.getElementById('ex-stage').value = 1;
   document.getElementById('exclModalTitle').textContent = '➕ إضافة استبعاد';
   document.getElementById('exclModalBg').classList.add('show');
 }
@@ -2111,6 +2234,7 @@ function openExclEdit(id) {
   document.getElementById('ex-name').value    = ex.name || '';
   document.getElementById('ex-lastday').value = ex.last_day || '';
   document.getElementById('ex-reason').value  = ex.reason || '';
+  document.getElementById('ex-stage').value   = ex.stage || 1;
   document.getElementById('ex-notes').value   = ex.notes || '';
   document.getElementById('exclModalTitle').textContent = '✏️ تعديل استبعاد';
   document.getElementById('exclModalBg').classList.add('show');
@@ -2124,6 +2248,7 @@ async function saveExcl() {
   var lastDay = document.getElementById('ex-lastday').value;
   var reason  = document.getElementById('ex-reason').value;
   var notes   = document.getElementById('ex-notes').value.trim();
+  var stage   = parseInt(document.getElementById('ex-stage').value)||1;
 
   if (!empId)   { showToast('❌ يرجى إدخال الرقم الوظيفي'); document.getElementById('ex-empid').focus(); return; }
   if (!name)    { showToast('❌ يرجى إدخال الاسم'); document.getElementById('ex-name').focus(); return; }
@@ -2131,7 +2256,8 @@ async function saveExcl() {
   if (!reason)  { showToast('❌ يرجى اختيار سبب الانهاء'); document.getElementById('ex-reason').focus(); return; }
 
   showLoading(true);
-  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes};
+  var now2 = new Date().toISOString();
+  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes, stage:stage, stage_updated_at:now2};
   if (editingExclId) {
     await fetch(EXCL_API + '?id=eq.' + editingExclId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
     await logAction('تعديل استبعاد', 'تعديل استبعاد: ' + name);
@@ -2373,6 +2499,67 @@ async function bulkComplete() {
   await logAction('إكمال جماعي', 'اكتمال ملفات '+ids.length+' موظف');
   clearSelection(); showLoading(false); showToast('✅ تم اكتمال '+ids.length+' موظف');
 }
+
+/* ── EMPLOYEE OF MONTH ── */
+async function loadEom() {
+  try {
+    var r = await fetch(SETS_API + '?key=eq.employee_of_month', {headers:H});
+    var d = await r.json();
+    if (d && d.length && d[0].value) {
+      var val = JSON.parse(d[0].value);
+      employeeOfMonth = val;
+      renderEom();
+    }
+  } catch(e) { /* no settings yet */ }
+}
+
+function renderEom() {
+  var banner = document.getElementById('eomBanner');
+  if (!employeeOfMonth.name) { banner.style.display='none'; return; }
+  banner.style.display = 'flex';
+  document.getElementById('eomName').textContent = employeeOfMonth.name;
+  document.getElementById('eomMonth').textContent = (employeeOfMonth.month||'') + (employeeOfMonth.dept ? ' · ' + employeeOfMonth.dept : '');
+  // Stars animation
+  var stars = document.getElementById('eomStars');
+  stars.innerHTML = '';
+  var positions = [[10,20],[80,15],[20,70],[60,60],[90,40],[40,85],[70,90],[5,50],[50,10],[95,80]];
+  positions.forEach(function(p, i){
+    var s = document.createElement('div');
+    s.className = 'eom-star';
+    s.style.cssText = 'top:'+p[1]+'%;left:'+p[0]+'%;animation-delay:'+(i*0.3)+'s;';
+    s.textContent = ['⭐','✨','💫','🌟'][i%4];
+    stars.appendChild(s);
+  });
+  // Show edit button for admin
+  var isAdm = currentUser && currentUser.role === 'admin';
+  document.getElementById('eomEditBtn').style.display = isAdm ? 'block' : 'none';
+}
+
+function openEomModal() {
+  document.getElementById('eom-name').value  = employeeOfMonth.name  || '';
+  document.getElementById('eom-month').value = employeeOfMonth.month || '';
+  document.getElementById('eom-dept').value  = employeeOfMonth.dept  || '';
+  document.getElementById('eomModalBg').classList.add('show');
+}
+function closeEomModal() { document.getElementById('eomModalBg').classList.remove('show'); }
+
+async function saveEom() {
+  var name  = document.getElementById('eom-name').value.trim();
+  var month = document.getElementById('eom-month').value.trim();
+  var dept  = document.getElementById('eom-dept').value.trim();
+  if (!name || !month) { showToast('❌ يرجى إدخال الاسم والشهر'); return; }
+  showLoading(true);
+  var val = JSON.stringify({name:name, month:month, dept:dept});
+  // upsert
+  await fetch(SETS_API, {method:'POST', headers:Object.assign({},H,{'Prefer':'resolution=merge-duplicates'}),
+    body:JSON.stringify({key:'employee_of_month', value:val, updated_at:new Date().toISOString()})});
+  employeeOfMonth = {name:name, month:month, dept:dept};
+  renderEom();
+  closeEomModal();
+  showLoading(false);
+  showToast('✅ تم حفظ موظف الشهر');
+}
+
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -2382,6 +2569,7 @@ document.getElementById('deptModalBg').addEventListener('click',function(e){if(e
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
+document.getElementById('eomModalBg').addEventListener('click',function(e){if(e.target===this)closeEomModal();});
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
