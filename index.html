@@ -2624,6 +2624,7 @@ function renderEom() {
     return;
   }
   // Data exists - show for EVERYONE
+  banner.style.display = 'flex';
   document.getElementById('eomName').textContent = employeeOfMonth.name;
   document.getElementById('eomMonth').textContent = (employeeOfMonth.month||'') + (employeeOfMonth.dept ? ' · ' + employeeOfMonth.dept : '');
   // Stars animation
