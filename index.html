@@ -513,11 +513,30 @@ td.id-num{font-family:monospace;font-size:12px;}
       <label class="btn btn-success btn-sm">📤 رفع Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExclExcel(event)"/></label>
       <button class="btn btn-danger btn-sm" id="addExclBtn" onclick="openExclModal()">➕ إضافة استبعاد</button>
     </div>
+    <!-- Excl Select Bar -->
+    <div class="select-bar" id="exclSelectBar" style="margin-bottom:10px;">
+      <span class="select-count" id="exclSelectCount">0 محدد</span>
+      <span style="font-size:12px;font-weight:700;color:var(--primary);">تغيير المرحلة إلى:</span>
+      <select id="exclBulkStage" style="padding:5px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:Tajawal,sans-serif;font-size:12px;">
+        <option value="1">🏢 الإدارة المعنية</option>
+        <option value="2">🛡️ إدارة السلاح</option>
+        <option value="3">📦 المستودع</option>
+        <option value="4">🔧 الحركة والصيانة</option>
+        <option value="5">💻 تقنية المعلومات</option>
+        <option value="6">🏥 التامين الطبي</option>
+        <option value="7">👥 الموارد البشرية</option>
+        <option value="8">💰 الإدارة المالية</option>
+        <option value="9">✅ المستحقات</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="bulkChangeExclStage()">✔️ تطبيق</button>
+      <button class="btn btn-outline btn-sm" onclick="clearExclSelection()">✕</button>
+    </div>
     <div class="table-wrapper">
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
+              <th style="width:34px"><input type="checkbox" class="cb" id="exclCheckAll" onchange="toggleAllExcl(this)"/></th>
               <th>م</th>
               <th>الرقم الوظيفي</th>
               <th>الاسم</th>
@@ -958,6 +977,8 @@ async function enterApp() {
 
   startClock();
   loadEom();
+  // Show banner placeholder for admin immediately
+  if (currentUser && currentUser.role==='admin') renderEom();
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
   // Show/hide select-bar buttons based on permissions
@@ -2186,7 +2207,8 @@ function renderExcl() {
       var cls = s.id < stageNum ? 'done' : s.id === stageNum ? 'current' : '';
       return '<div class="stage-pip ' + cls + '" title="' + s.label + '"></div>';
     }).join('');
-    return '<tr>' +
+    return '<tr data-excl-id="'+e.id+'">' +
+      '<td><input type="checkbox" class="cb excl-cb" data-id="'+e.id+'" onchange="toggleExclSelect('+e.id+',this)" onclick="event.stopPropagation()"/></td>' +
       '<td class="num">' + (start+i+1) + '</td>' +
       '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
       '<td class="name">' + (e.name||'—') + '</td>' +
@@ -2515,8 +2537,16 @@ async function loadEom() {
 
 function renderEom() {
   var banner = document.getElementById('eomBanner');
-  if (!employeeOfMonth.name) { banner.style.display='none'; return; }
+  var isAdm = currentUser && currentUser.role === 'admin';
+  // Always show for admin (so they can add), show for others only if data exists
+  if (!employeeOfMonth.name && !isAdm) { banner.style.display='none'; return; }
   banner.style.display = 'flex';
+  if (!employeeOfMonth.name) {
+    document.getElementById('eomName').textContent = 'لم يُحدد بعد';
+    document.getElementById('eomMonth').textContent = 'اضغط تعديل لإضافة موظف الشهر';
+    document.getElementById('eomEditBtn').style.display = 'block';
+    return;
+  }
   document.getElementById('eomName').textContent = employeeOfMonth.name;
   document.getElementById('eomMonth').textContent = (employeeOfMonth.month||'') + (employeeOfMonth.dept ? ' · ' + employeeOfMonth.dept : '');
   // Stars animation
@@ -2558,6 +2588,58 @@ async function saveEom() {
   closeEomModal();
   showLoading(false);
   showToast('✅ تم حفظ موظف الشهر');
+}
+
+
+/* ── EXCL SELECTION ── */
+var exclSelected = new Set();
+
+function toggleExclSelect(id, cb) {
+  if (cb.checked) exclSelected.add(id); else exclSelected.delete(id);
+  updateExclSelectBar();
+}
+
+function toggleAllExcl(cb) {
+  exclFiltered.forEach(function(e){ if(cb.checked) exclSelected.add(e.id); else exclSelected.delete(e.id); });
+  document.querySelectorAll('.excl-cb').forEach(function(c){ c.checked = cb.checked; });
+  updateExclSelectBar();
+}
+
+function clearExclSelection() {
+  exclSelected.clear();
+  document.querySelectorAll('.excl-cb').forEach(function(c){ c.checked=false; });
+  var ca = document.getElementById('exclCheckAll');
+  if(ca) ca.checked = false;
+  updateExclSelectBar();
+}
+
+function updateExclSelectBar() {
+  var bar = document.getElementById('exclSelectBar');
+  var cnt = document.getElementById('exclSelectCount');
+  if (exclSelected.size > 0) {
+    bar.classList.add('show');
+    cnt.textContent = exclSelected.size + ' محدد';
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+async function bulkChangeExclStage() {
+  if (!exclSelected.size) return;
+  var stage = parseInt(document.getElementById('exclBulkStage').value);
+  var stageInfo = EXCL_STAGES[stage-1];
+  if (!confirm('تغيير مرحلة ' + exclSelected.size + ' سجل إلى "' + stageInfo.label + '"؟')) return;
+  showLoading(true);
+  var now = new Date().toISOString();
+  var ids = Array.from(exclSelected);
+  for (var i=0; i<ids.length; i++) {
+    await fetch(EXCL_API + '?id=eq.' + ids[i], {method:'PATCH', headers:H,
+      body:JSON.stringify({stage:stage, stage_updated_at:now})});
+  }
+  await logAction('تغيير مرحلة استبعاد', 'تغيير ' + ids.length + ' سجل إلى مرحلة: ' + stageInfo.label);
+  clearExclSelection();
+  await loadExcl();
+  showToast('✅ تم تغيير المرحلة لـ ' + ids.length + ' سجل');
 }
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
