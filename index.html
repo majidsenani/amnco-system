@@ -302,7 +302,8 @@ td.id-num{font-family:monospace;font-size:12px;}
     ADD COLUMN IF NOT EXISTS can_complete INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS can_excl INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS can_send INTEGER DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS can_file INTEGER DEFAULT 0;
+    ADD COLUMN IF NOT EXISTS can_file INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS can_contract INTEGER DEFAULT 0;
 
   ALTER TABLE employees
     ADD COLUMN IF NOT EXISTS appointed_at TIMESTAMP,
@@ -706,6 +707,10 @@ td.id-num{font-family:monospace;font-size:12px;}
           <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
             <input type="checkbox" id="u-can-file" style="accent-color:var(--primary);width:16px;height:16px;"/>
             <span style="font-size:12px;font-weight:700;">📁 اكتمال الملف</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
+            <input type="checkbox" id="u-can-contract" style="accent-color:var(--primary);width:16px;height:16px;"/>
+            <span style="font-size:12px;font-weight:700;">📄 ارسال عقد - بانتظار القبول</span>
           </label>
           <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);">
             <input type="checkbox" id="u-can-excl" style="accent-color:var(--primary);width:16px;height:16px;"/>
@@ -1199,7 +1204,7 @@ function render() {
       } else if (as === 'entered') {
         // عقد قوى: بعد الإدخال → ارسال عقد قوى
         if (e.contract === 'qowa') {
-          if (userCan('can_complete')) {
+          if (userCan('can_contract')) {
             workflowBtns = '<button class="icon-btn contract-send" data-id="' + e.id + '" title="تم ارسال عقد قوى - بانتظار القبول">&#128196;</button>';
           }
           if (isAdm) workflowBtns += '<button class="icon-btn reset" data-id="' + e.id + '" data-to="filed" title="إرجاع">&#8617;</button>';
@@ -1690,6 +1695,7 @@ function renderUsers() {
       if(u.can_complete==1||u.can_complete===true||u.can_complete==='1') perms.push('<span style="font-size:10px;background:#d1fae5;color:#065f46;padding:2px 7px;border-radius:6px;">✔️ اكتمال</span>');
       if(u.can_send==1||u.can_send===true||u.can_send==='1') perms.push('<span style="font-size:10px;background:#cffafe;color:#0891b2;padding:2px 7px;border-radius:6px;">📨 ارسال</span>');
       if(u.can_file==1||u.can_file===true||u.can_file==='1') perms.push('<span style="font-size:10px;background:#f0fdf4;color:#065f46;padding:2px 7px;border-radius:6px;">📁 ملف</span>');
+      if(u.can_contract==1||u.can_contract===true||u.can_contract==='1') perms.push('<span style="font-size:10px;background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:6px;">📄 عقد</span>');
       if(u.can_excl==1||u.can_excl===true||u.can_excl==='1') perms.push('<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:6px;">🚫 استبعاد</span>');
     }
     return '<tr>' +
@@ -1720,6 +1726,7 @@ function openUserEdit(id) {
   document.getElementById('u-can-excl').checked     = (u.can_excl==1||u.can_excl===true||u.can_excl==='1');
   document.getElementById('u-can-send').checked     = (u.can_send==1||u.can_send===true||u.can_send==='1');
   document.getElementById('u-can-file').checked     = (u.can_file==1||u.can_file===true||u.can_file==='1');
+  document.getElementById('u-can-contract').checked = (u.can_contract==1||u.can_contract===true||u.can_contract==='1');
   document.getElementById('userModalTitle').textContent='✏️ تعديل مستخدم';
   document.getElementById('userModalBg').classList.add('show');
 }
@@ -1734,6 +1741,7 @@ function clearUserForm() {
   document.getElementById('u-can-excl').checked=false;
   document.getElementById('u-can-send').checked=false;
   document.getElementById('u-can-file').checked=false;
+  document.getElementById('u-can-contract').checked=false;
 }
 async function saveUser() {
   var username=document.getElementById('u-username').value.trim();
@@ -1747,9 +1755,10 @@ async function saveUser() {
   var canEnter   = document.getElementById('u-can-enter').checked ? 1 : 0;
   var canComplete= document.getElementById('u-can-complete').checked ? 1 : 0;
   var canExcl    = document.getElementById('u-can-excl').checked ? 1 : 0;
-  var canSend    = document.getElementById('u-can-send').checked ? 1 : 0;
-  var canFile    = document.getElementById('u-can-file').checked ? 1 : 0;
-  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete,can_excl:canExcl,can_send:canSend,can_file:canFile};
+  var canSend     = document.getElementById('u-can-send').checked ? 1 : 0;
+  var canFile     = document.getElementById('u-can-file').checked ? 1 : 0;
+  var canContract = document.getElementById('u-can-contract').checked ? 1 : 0;
+  var payload={username:username,password:password,full_name:fullname,role:role,dept_access:deptAccess,can_appoint:canAppoint,can_enter:canEnter,can_complete:canComplete,can_excl:canExcl,can_send:canSend,can_file:canFile,can_contract:canContract};
   if (editingUserId) {
     await fetch(USR_API+'?id=eq.'+editingUserId, {method:'PATCH',headers:H,body:JSON.stringify(payload)});
     showToast('✅ تم تعديل المستخدم');
@@ -2592,15 +2601,14 @@ async function loadEom() {
     var cached = localStorage.getItem('eom_cache');
     if (cached) {
       employeeOfMonth = JSON.parse(cached);
-      renderEom();
     }
   } catch(e2) {}
+  renderEom(); // Always render for all users
 }
 
 function renderEom() {
   var banner = document.getElementById('eomBanner');
   var isAdm = currentUser && currentUser.role === 'admin';
-  // Always show for admin (so they can add), show for others only if data exists
   if (!employeeOfMonth.name && !isAdm) { banner.style.display='none'; return; }
   banner.style.display = 'flex';
   if (!employeeOfMonth.name) {
@@ -2609,6 +2617,7 @@ function renderEom() {
     document.getElementById('eomEditBtn').style.display = 'block';
     return;
   }
+  // Show for ALL users when data exists
   document.getElementById('eomName').textContent = employeeOfMonth.name;
   document.getElementById('eomMonth').textContent = (employeeOfMonth.month||'') + (employeeOfMonth.dept ? ' · ' + employeeOfMonth.dept : '');
   // Stars animation
