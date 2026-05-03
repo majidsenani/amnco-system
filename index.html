@@ -314,6 +314,7 @@ td.id-num{font-family:monospace;font-size:12px;}
     id BIGSERIAL PRIMARY KEY,
     emp_id TEXT,
     name TEXT NOT NULL,
+    dept TEXT,
     last_day DATE,
     reason TEXT,
     notes TEXT,
@@ -473,6 +474,11 @@ td.id-num{font-family:monospace;font-size:12px;}
       <h3>🏢 توزيع الموظفين حسب الإدارة</h3>
       <div class="table-scroll"><table class="dept-table"><thead><tr><th>الإدارة</th><th>العدد</th><th>نشط</th><th>قيد</th><th>مكتمل</th><th>النسبة</th></tr></thead><tbody id="deptBreakdownBody"></tbody></table></div>
     </div>
+    <!-- Exclusions Dashboard -->
+    <div class="dept-breakdown" id="exclDashSection" style="display:none;">
+      <h3>🚫 ملخص الاستبعادات</h3>
+      <div id="exclDashContent"></div>
+    </div>
     <div class="kpi-bottom">
       <div class="summary-card"><h3>🔄 مسار سير العمل</h3><div id="funnelContainer"></div></div>
       <div class="summary-card"><h3>💰 ملخص الرواتب</h3><div class="mini-list" id="salaryBreakdown"></div></div>
@@ -495,6 +501,7 @@ td.id-num{font-family:monospace;font-size:12px;}
         <span style="color:var(--sub)">🔍</span>
         <input type="text" id="exclSearch" placeholder="ابحث بالاسم أو الرقم الوظيفي..." oninput="applyExclFilters()"/>
       </div>
+      <select class="fsel" id="exclDeptFilter" onchange="applyExclFilters()" style="max-width:180px;"><option value="">كل الإدارات</option></select>
       <select class="fsel" id="exclReasonFilter" onchange="applyExclFilters()" style="max-width:200px;">
         <option value="">كل الأسباب</option>
         <option value="استقالة فورية">استقالة فورية</option>
@@ -529,6 +536,7 @@ td.id-num{font-family:monospace;font-size:12px;}
         <option value="9">✅ المستحقات</option>
       </select>
       <button class="btn btn-primary btn-sm" onclick="bulkChangeExclStage()">✔️ تطبيق</button>
+      <button class="btn btn-danger btn-sm" onclick="bulkDeleteExcl()">🗑️ حذف المحدد</button>
       <button class="btn btn-outline btn-sm" onclick="clearExclSelection()">✕</button>
     </div>
     <div class="table-wrapper">
@@ -540,6 +548,7 @@ td.id-num{font-family:monospace;font-size:12px;}
               <th>م</th>
               <th>الرقم الوظيفي</th>
               <th>الاسم</th>
+              <th>الإدارة</th>
               <th>آخر يوم عمل</th>
               <th>سبب الانهاء</th>
               <th>المرحلة الحالية</th>
@@ -769,6 +778,7 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="form-grid">
       <div class="fg2"><label>الرقم الوظيفي *</label><input id="ex-empid" placeholder="EMP-001"/></div>
       <div class="fg2"><label>الاسم الكامل *</label><input id="ex-name" placeholder="اسم الموظف"/></div>
+      <div class="fg2"><label>الإدارة</label><select id="ex-dept"><option value="">-- اختر الإدارة --</option></select></div>
       <div class="fg2"><label>آخر يوم عمل *</label><input type="date" id="ex-lastday"/></div>
       <div class="fg2"><label>سبب الانهاء *</label>
         <select id="ex-reason">
@@ -2037,6 +2047,8 @@ function renderDashboard(){
     html+='<div class="kpi-card" style="--kpi-color:'+card.color+';animation-delay:'+(i*0.06)+'s"><div class="kpi-card-icon" style="background:'+card.color+'22;">'+card.icon+'</div><div class="kpi-card-num">'+card.num+'</div><div class="kpi-card-label">'+card.label+'</div><div class="kpi-card-sub">'+card.sub+'</div></div>';
   });
   document.getElementById('kpiCards').innerHTML=html;
+  // Load and render excl stats in dashboard
+  renderExclDashboard();
   document.getElementById('chartStatusBadge').textContent=total;
   document.getElementById('chartContractBadge').textContent=qowa+train;
   requestAnimationFrame(function(){
@@ -2169,6 +2181,30 @@ async function loadExcl() {
   showLoading(true);
   var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
   exclusions = await r.json() || [];
+  // Populate dept filter
+  var deptSel = document.getElementById('exclDeptFilter');
+  if (deptSel) {
+    var cur = deptSel.value;
+    deptSel.innerHTML = '<option value="">كل الإدارات</option>';
+    departments.forEach(function(d){
+      var o = document.createElement('option');
+      o.value = d.name; o.textContent = d.name;
+      deptSel.appendChild(o);
+    });
+    deptSel.value = cur;
+  }
+  // Populate excl modal dept select
+  var exDept = document.getElementById('ex-dept');
+  if (exDept) {
+    var cur2 = exDept.value;
+    exDept.innerHTML = '<option value="">-- اختر الإدارة --</option>';
+    departments.forEach(function(d){
+      var o = document.createElement('option');
+      o.value = d.name; o.textContent = d.name;
+      exDept.appendChild(o);
+    });
+    exDept.value = cur2;
+  }
   applyExclFilters();
   showLoading(false);
 }
@@ -2176,10 +2212,12 @@ async function loadExcl() {
 function applyExclFilters() {
   var q = (document.getElementById('exclSearch')||{value:''}).value.toLowerCase().trim();
   var reason = (document.getElementById('exclReasonFilter')||{value:''}).value;
+  var dept = (document.getElementById('exclDeptFilter')||{value:''}).value;
   exclFiltered = exclusions.filter(function(e){
     var ms = !q || (e.name||'').toLowerCase().includes(q) || (e.emp_id||'').toLowerCase().includes(q);
     var mr = !reason || e.reason === reason;
-    return ms && mr;
+    var md = !dept || e.dept === dept;
+    return ms && mr && md;
   });
   exclCurrentPage = 1;
   renderExcl();
@@ -2218,6 +2256,7 @@ function renderExcl() {
       '<td class="num">' + (start+i+1) + '</td>' +
       '<td class="emp-id">' + (e.emp_id||'—') + '</td>' +
       '<td class="name">' + (e.name||'—') + '</td>' +
+      '<td style="font-size:12px;">' + (e.dept||'—') + '</td>' +
       '<td>' + lastDay + '</td>' +
       '<td><span class="reason-badge">' + (e.reason||'—') + '</span></td>' +
       '<td><span class="stage-label" style="background:'+stageInfo.color+'22;color:'+stageInfo.color+';border:1px solid '+stageInfo.color+'44;">' + stageInfo.icon + ' ' + stageInfo.label + '</span></td>' +
@@ -2262,6 +2301,7 @@ function openExclEdit(id) {
   document.getElementById('ex-name').value    = ex.name || '';
   document.getElementById('ex-lastday').value = ex.last_day || '';
   document.getElementById('ex-reason').value  = ex.reason || '';
+  var exDeptEl = document.getElementById('ex-dept'); if(exDeptEl) exDeptEl.value = ex.dept || '';
   document.getElementById('ex-stage').value   = ex.stage || 1;
   document.getElementById('ex-notes').value   = ex.notes || '';
   document.getElementById('exclModalTitle').textContent = '✏️ تعديل استبعاد';
@@ -2284,8 +2324,9 @@ async function saveExcl() {
   if (!reason)  { showToast('❌ يرجى اختيار سبب الانهاء'); document.getElementById('ex-reason').focus(); return; }
 
   showLoading(true);
+  var exDeptVal = (document.getElementById('ex-dept')||{value:''}).value;
   var now2 = new Date().toISOString();
-  var payload = {emp_id:empId, name:name, last_day:lastDay, reason:reason, notes:notes, stage:stage, stage_updated_at:now2};
+  var payload = {emp_id:empId, name:name, dept:exDeptVal, last_day:lastDay, reason:reason, notes:notes, stage:stage, stage_updated_at:now2};
   if (editingExclId) {
     await fetch(EXCL_API + '?id=eq.' + editingExclId, {method:'PATCH', headers:H, body:JSON.stringify(payload)});
     await logAction('تعديل استبعاد', 'تعديل استبعاد: ' + name);
@@ -2674,6 +2715,84 @@ async function bulkChangeExclStage() {
   showToast('✅ تم تغيير المرحلة لـ ' + ids.length + ' سجل');
 }
 
+
+async function bulkDeleteExcl() {
+  if (!exclSelected.size) return;
+  if (!confirm('حذف ' + exclSelected.size + ' سجل نهائياً؟')) return;
+  showLoading(true);
+  var ids = Array.from(exclSelected);
+  await Promise.all(ids.map(function(id){
+    return fetch(EXCL_API + '?id=eq.' + id, {method:'DELETE', headers:H});
+  }));
+  await logAction('حذف استبعادات', 'حذف ' + ids.length + ' سجل استبعاد');
+  clearExclSelection();
+  await loadExcl();
+  showToast('تم حذف ' + ids.length + ' سجل');
+}
+
+async function renderExclDashboard() {
+  try {
+    var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
+    var exclData = await r.json() || [];
+    if (!exclData.length) { document.getElementById('exclDashSection').style.display='none'; return; }
+
+    document.getElementById('exclDashSection').style.display='block';
+
+    var total = exclData.length;
+    // By reason
+    var byReason = {};
+    exclData.forEach(function(e){ var r=e.reason||'غير محدد'; byReason[r]=(byReason[r]||0)+1; });
+    // By stage
+    var byStage = {};
+    exclData.forEach(function(e){ var s=e.stage||1; byStage[s]=(byStage[s]||0)+1; });
+    // By dept
+    var byDept = {};
+    exclData.forEach(function(e){ var d=e.dept||'غير محدد'; byDept[d]=(byDept[d]||0)+1; });
+
+    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">';
+
+    // Total + by reason
+    html += '<div>';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;">📊 إجمالي: <span style="color:var(--danger);font-size:18px;font-weight:900;">'+total+'</span> سجل</div>';
+    html += '<table class="dept-table"><thead><tr><th>سبب الانهاء</th><th>العدد</th><th>النسبة</th></tr></thead><tbody>';
+    Object.entries(byReason).sort(function(a,b){return b[1]-a[1];}).forEach(function(entry){
+      var pct = Math.round(entry[1]/total*100);
+      html += '<tr><td>'+entry[0]+'</td><td style="font-weight:700;color:var(--danger);">'+entry[1]+'</td><td>';
+      html += '<div style="display:flex;align-items:center;gap:6px;"><div style="height:6px;border-radius:3px;background:#fca5a5;width:'+pct+'%;max-width:80px;"></div><span style="font-size:11px;">'+pct+'%</span></div></td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // By stage
+    html += '<div>';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;">🔄 توزيع المراحل</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    EXCL_STAGES.forEach(function(stage){
+      var cnt = byStage[stage.id]||0;
+      if (!cnt) return;
+      var pct = Math.round(cnt/total*100);
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<span style="font-size:11px;font-weight:700;min-width:130px;color:'+stage.color+';">'+stage.icon+' '+stage.label+'</span>';
+      html += '<div style="flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;">';
+      html += '<div style="height:100%;background:'+stage.color+';width:'+pct+'%;border-radius:4px;transition:width 1s;"></div></div>';
+      html += '<span style="font-size:11px;font-weight:700;color:var(--sub);width:30px;">'+cnt+'</span></div>';
+    });
+    html += '</div></div>';
+
+    // By dept
+    if (Object.keys(byDept).length > 1 || !byDept['غير محدد']) {
+      html += '<div>';
+      html += '<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;">🏢 توزيع الإدارات</div>';
+      html += '<table class="dept-table"><thead><tr><th>الإدارة</th><th>العدد</th></tr></thead><tbody>';
+      Object.entries(byDept).sort(function(a,b){return b[1]-a[1];}).forEach(function(entry){
+        html += '<tr><td>'+entry[0]+'</td><td style="font-weight:700;color:var(--primary);">'+entry[1]+'</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+
+    html += '</div>';
+    document.getElementById('exclDashContent').innerHTML = html;
+  } catch(e) { console.log('excl dash error', e); }
+}
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
