@@ -2583,47 +2583,47 @@ async function bulkComplete() {
 
 /* ── EMPLOYEE OF MONTH ── */
 async function loadEom() {
-  // Try Supabase first (needs public read policy on settings table)
-  try {
-    var readH = {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json'
-    };
-    var r = await fetch(SETS_API + '?key=eq.employee_of_month&select=key,value', {headers: readH});
-    if (r.ok) {
-      var d = await r.json();
-      if (d && d.length && d[0].value) {
-        var val = JSON.parse(d[0].value);
-        employeeOfMonth = val;
-        localStorage.setItem('eom_cache', JSON.stringify(val));
-        renderEom();
-        return;
-      }
-    }
-  } catch(e) {}
-  // Fallback: localStorage cache (works across sessions on same browser)
+  // Try localStorage first (fastest)
   try {
     var cached = localStorage.getItem('eom_cache');
     if (cached) {
       employeeOfMonth = JSON.parse(cached);
+      renderEom();
     }
-  } catch(e2) {}
-  renderEom();
+  } catch(ex) {}
+
+  // Then try Supabase to get latest
+  try {
+    var r = await fetch(SETS_API + '?key=eq.employee_of_month', {
+      method: 'GET',
+      headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
+    });
+    if (r.ok) {
+      var d = await r.json();
+      if (Array.isArray(d) && d.length && d[0].value) {
+        var val = JSON.parse(d[0].value);
+        employeeOfMonth = val;
+        localStorage.setItem('eom_cache', JSON.stringify(val));
+        renderEom();
+      }
+    }
+  } catch(e) {}
 }
 
 function renderEom() {
   var banner = document.getElementById('eomBanner');
   var isAdm = currentUser && currentUser.role === 'admin';
-  if (!employeeOfMonth.name && !isAdm) { banner.style.display='none'; return; }
-  banner.style.display = 'flex';
-  if (!employeeOfMonth.name) {
+  // Hide banner if no data AND not admin
+  if (!employeeOfMonth || !employeeOfMonth.name) {
+    if (!isAdm) { banner.style.display='none'; return; }
+    // Admin: show placeholder
+    banner.style.display = 'flex';
     document.getElementById('eomName').textContent = 'لم يُحدد بعد';
     document.getElementById('eomMonth').textContent = 'اضغط تعديل لإضافة موظف الشهر';
     document.getElementById('eomEditBtn').style.display = 'block';
     return;
   }
-  // Show for ALL users when data exists
+  // Data exists - show for EVERYONE
   document.getElementById('eomName').textContent = employeeOfMonth.name;
   document.getElementById('eomMonth').textContent = (employeeOfMonth.month||'') + (employeeOfMonth.dept ? ' · ' + employeeOfMonth.dept : '');
   // Stars animation
