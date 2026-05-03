@@ -353,20 +353,19 @@ td.id-num{font-family:monospace;font-size:12px;}
   </div>
 
 
-  <!-- EMPLOYEE OF MONTH -->
-  <div class="eom-banner" id="eomBanner" style="display:none;">
+  <!-- EMPLOYEE OF MONTH - Static Card -->
+  <div class="eom-banner" id="eomBanner">
     <div class="eom-stars" id="eomStars"></div>
     <div class="eom-avatar">🏆</div>
     <div class="eom-body">
-      <div class="eom-tag">⭐ موظف الشهر</div>
-      <div class="eom-name" id="eomName">—</div>
-      <div class="eom-month" id="eomMonth">—</div>
+      <div class="eom-tag">⭐ موظفة الشهر</div>
+      <div class="eom-name">مشاعل زياد العتيبي</div>
+      <div class="eom-month">موظفة شهر أبريل 2026م</div>
     </div>
     <div class="eom-badge">
       <div class="eom-badge-icon">🥇</div>
       <div class="eom-badge-text">تميّز واحترافية</div>
     </div>
-    <button class="eom-edit-btn" id="eomEditBtn" style="display:none;" onclick="openEomModal()">✏️ تعديل</button>
   </div>
 
   <div class="main-tabs">
@@ -825,25 +824,6 @@ td.id-num{font-family:monospace;font-size:12px;}
 
 
 
-<!-- Employee of Month Modal -->
-<div class="modal-bg" id="eomModalBg">
-  <div class="modal" style="max-width:420px;">
-    <div class="modal-header">
-      <div class="modal-title">🏆 تعديل موظف الشهر</div>
-      <button class="modal-close" onclick="closeEomModal()">✕</button>
-    </div>
-    <div class="form-grid">
-      <div class="fg2 full"><label>اسم الموظف/ة *</label><input id="eom-name" placeholder="مثال: مشاعل زياد العتيبي"/></div>
-      <div class="fg2 full"><label>الشهر *</label><input id="eom-month" placeholder="مثال: موظفة شهر أبريل 2026م"/></div>
-      <div class="fg2 full"><label>الإدارة / الوصف (اختياري)</label><input id="eom-dept" placeholder="مثال: إدارة الموارد البشرية"/></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeEomModal()">إلغاء</button>
-      <button class="btn btn-primary" onclick="saveEom()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-bg" id="changePassBg">
   <div class="modal" style="max-width:380px;">
     <div class="modal-header">
@@ -877,7 +857,6 @@ var LOG_API  = SUPA_URL + '/rest/v1/activity_log';
 var DEPT_API = SUPA_URL + '/rest/v1/departments';
 var TASK_API = SUPA_URL + '/rest/v1/tasks';
 var EXCL_API = SUPA_URL + '/rest/v1/exclusions';
-var SETS_API = SUPA_URL + '/rest/v1/settings';
 var H = {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation'};
 
 var employees = [], filtered = [], users = [], departments = [];
@@ -901,7 +880,6 @@ var EXCL_STAGES = [
   {id:9, label:'المستحقات',            icon:'✅', color:'#065f46'},
 ];
 
-var employeeOfMonth = {name:'', month:'', dept:''};
 
 var chartStatusInst = null, chartContractInst = null, chartMonthlyInst = null;
 
@@ -991,9 +969,6 @@ async function enterApp() {
   head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>';
 
   startClock();
-  loadEom();
-  // Show banner placeholder for admin immediately
-  if (currentUser && currentUser.role==='admin') renderEom();
   loadDepartments().then(function(){ loadEmployees(); });
   loadUsers().then(function(){ loadTasks(); startTaskPoll(); });
   // Show/hide select-bar buttons based on permissions
@@ -2581,234 +2556,7 @@ async function bulkComplete() {
   clearSelection(); showLoading(false); showToast('✅ تم اكتمال '+ids.length+' موظف');
 }
 
-/* ── EMPLOYEE OF MONTH ── */
-async function loadEom() {
-  // Try localStorage first (fastest)
-  try {
-    var cached = localStorage.getItem('eom_cache');
-    if (cached) {
-      employeeOfMonth = JSON.parse(cached);
-      renderEom();
-    }
-  } catch(ex) {}
 
-  // Then try Supabase to get latest
-  try {
-    var r = await fetch(SETS_API + '?key=eq.employee_of_month', {
-      method: 'GET',
-      headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
-    });
-    if (r.ok) {
-      var d = await r.json();
-      if (Array.isArray(d) && d.length && d[0].value) {
-        var val = JSON.parse(d[0].value);
-        employeeOfMonth = val;
-        localStorage.setItem('eom_cache', JSON.stringify(val));
-        renderEom();
-      }
-    }
-  } catch(e) {}
-}
-
-function renderEom() {
-  var banner = document.getElementById('eomBanner');
-  var isAdm = currentUser && currentUser.role === 'admin';
-  // Hide banner if no data AND not admin
-  if (!employeeOfMonth || !employeeOfMonth.name) {
-    if (!isAdm) { banner.style.display='none'; return; }
-    // Admin: show placeholder
-    banner.style.display = 'flex';
-    document.getElementById('eomName').textContent = 'لم يُحدد بعد';
-    document.getElementById('eomMonth').textContent = 'اضغط تعديل لإضافة موظف الشهر';
-    document.getElementById('eomEditBtn').style.display = 'block';
-    return;
-  }
-  // Data exists - show for EVERYONE
-  banner.style.display = 'flex';
-  document.getElementById('eomName').textContent = employeeOfMonth.name;
-  document.getElementById('eomMonth').textContent = (employeeOfMonth.month||'') + (employeeOfMonth.dept ? ' · ' + employeeOfMonth.dept : '');
-  // Stars animation
-  var stars = document.getElementById('eomStars');
-  stars.innerHTML = '';
-  var positions = [[10,20],[80,15],[20,70],[60,60],[90,40],[40,85],[70,90],[5,50],[50,10],[95,80]];
-  positions.forEach(function(p, i){
-    var s = document.createElement('div');
-    s.className = 'eom-star';
-    s.style.cssText = 'top:'+p[1]+'%;left:'+p[0]+'%;animation-delay:'+(i*0.3)+'s;';
-    s.textContent = ['⭐','✨','💫','🌟'][i%4];
-    stars.appendChild(s);
-  });
-  // Show edit button for admin
-  var isAdm = currentUser && currentUser.role === 'admin';
-  document.getElementById('eomEditBtn').style.display = isAdm ? 'block' : 'none';
-}
-
-function openEomModal() {
-  document.getElementById('eom-name').value  = employeeOfMonth.name  || '';
-  document.getElementById('eom-month').value = employeeOfMonth.month || '';
-  document.getElementById('eom-dept').value  = employeeOfMonth.dept  || '';
-  document.getElementById('eomModalBg').classList.add('show');
-}
-function closeEomModal() { document.getElementById('eomModalBg').classList.remove('show'); }
-
-async function saveEom() {
-  var name  = document.getElementById('eom-name').value.trim();
-  var month = document.getElementById('eom-month').value.trim();
-  var dept  = document.getElementById('eom-dept').value.trim();
-  if (!name || !month) { showToast('❌ يرجى إدخال الاسم والشهر'); return; }
-  showLoading(true);
-  var val = JSON.stringify({name:name, month:month, dept:dept});
-  // Try PATCH first, then POST if not exists
-  var checkR = await fetch(SETS_API + '?key=eq.employee_of_month', {headers: Object.assign({},H,{'Prefer':''})});
-  var checkD = await checkR.json();
-  if (checkD && checkD.length) {
-    await fetch(SETS_API + '?key=eq.employee_of_month', {method:'PATCH',
-      headers: Object.assign({},H,{'Prefer':'return=representation'}),
-      body:JSON.stringify({value:val, updated_at:new Date().toISOString()})});
-  } else {
-    await fetch(SETS_API, {method:'POST',
-      headers: Object.assign({},H,{'Prefer':'return=representation'}),
-      body:JSON.stringify({key:'employee_of_month', value:val, updated_at:new Date().toISOString()})});
-  }
-  localStorage.setItem('eom_cache', val);
-  employeeOfMonth = {name:name, month:month, dept:dept};
-  renderEom();
-  closeEomModal();
-  showLoading(false);
-  showToast('✅ تم حفظ موظف الشهر');
-}
-
-
-/* ── EXCL SELECTION ── */
-var exclSelected = new Set();
-
-function toggleExclSelect(id, cb) {
-  if (cb.checked) exclSelected.add(id); else exclSelected.delete(id);
-  updateExclSelectBar();
-}
-
-function toggleAllExcl(cb) {
-  exclFiltered.forEach(function(e){ if(cb.checked) exclSelected.add(e.id); else exclSelected.delete(e.id); });
-  document.querySelectorAll('.excl-cb').forEach(function(c){ c.checked = cb.checked; });
-  updateExclSelectBar();
-}
-
-function clearExclSelection() {
-  exclSelected.clear();
-  document.querySelectorAll('.excl-cb').forEach(function(c){ c.checked=false; });
-  var ca = document.getElementById('exclCheckAll');
-  if(ca) ca.checked = false;
-  updateExclSelectBar();
-}
-
-function updateExclSelectBar() {
-  var bar = document.getElementById('exclSelectBar');
-  var cnt = document.getElementById('exclSelectCount');
-  if (exclSelected.size > 0) {
-    bar.classList.add('show');
-    cnt.textContent = exclSelected.size + ' محدد';
-  } else {
-    bar.classList.remove('show');
-  }
-}
-
-async function bulkChangeExclStage() {
-  if (!exclSelected.size) return;
-  var stage = parseInt(document.getElementById('exclBulkStage').value);
-  var stageInfo = EXCL_STAGES[stage-1];
-  if (!confirm('تغيير مرحلة ' + exclSelected.size + ' سجل إلى "' + stageInfo.label + '"؟')) return;
-  showLoading(true);
-  var now = new Date().toISOString();
-  var ids = Array.from(exclSelected);
-  var promises = ids.map(function(id){
-    return fetch(EXCL_API + '?id=eq.' + id, {method:'PATCH', headers:H,
-      body:JSON.stringify({stage:stage, stage_updated_at:now})});
-  });
-  await Promise.all(promises);
-  await logAction('تغيير مرحلة استبعاد', 'تغيير ' + ids.length + ' سجل إلى مرحلة: ' + stageInfo.label);
-  clearExclSelection();
-  await loadExcl();
-  showToast('✅ تم تغيير المرحلة لـ ' + ids.length + ' سجل');
-}
-
-
-async function bulkDeleteExcl() {
-  if (!exclSelected.size) return;
-  if (!confirm('حذف ' + exclSelected.size + ' سجل نهائياً؟')) return;
-  showLoading(true);
-  var ids = Array.from(exclSelected);
-  await Promise.all(ids.map(function(id){
-    return fetch(EXCL_API + '?id=eq.' + id, {method:'DELETE', headers:H});
-  }));
-  await logAction('حذف استبعادات', 'حذف ' + ids.length + ' سجل استبعاد');
-  clearExclSelection();
-  await loadExcl();
-  showToast('تم حذف ' + ids.length + ' سجل');
-}
-
-async function renderExclDashboard() {
-  try {
-    var r = await fetch(EXCL_API + '?order=created_at.desc', {headers:H});
-    var exclData = await r.json() || [];
-    if (!exclData.length) { document.getElementById('exclDashSection').style.display='none'; return; }
-
-    document.getElementById('exclDashSection').style.display='block';
-
-    var total = exclData.length;
-    // By reason
-    var byReason = {};
-    exclData.forEach(function(e){ var r=e.reason||'غير محدد'; byReason[r]=(byReason[r]||0)+1; });
-    // By stage
-    var byStage = {};
-    exclData.forEach(function(e){ var s=e.stage||1; byStage[s]=(byStage[s]||0)+1; });
-    // By dept
-    var byDept = {};
-    exclData.forEach(function(e){ var d=e.dept||'غير محدد'; byDept[d]=(byDept[d]||0)+1; });
-
-    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">';
-
-    // Total + by reason
-    html += '<div>';
-    html += '<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;">📊 إجمالي: <span style="color:var(--danger);font-size:18px;font-weight:900;">'+total+'</span> سجل</div>';
-    html += '<table class="dept-table"><thead><tr><th>سبب الانهاء</th><th>العدد</th><th>النسبة</th></tr></thead><tbody>';
-    Object.entries(byReason).sort(function(a,b){return b[1]-a[1];}).forEach(function(entry){
-      var pct = Math.round(entry[1]/total*100);
-      html += '<tr><td>'+entry[0]+'</td><td style="font-weight:700;color:var(--danger);">'+entry[1]+'</td><td>';
-      html += '<div style="display:flex;align-items:center;gap:6px;"><div style="height:6px;border-radius:3px;background:#fca5a5;width:'+pct+'%;max-width:80px;"></div><span style="font-size:11px;">'+pct+'%</span></div></td></tr>';
-    });
-    html += '</tbody></table></div>';
-
-    // By stage
-    html += '<div>';
-    html += '<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;">🔄 توزيع المراحل</div>';
-    html += '<div style="display:flex;flex-direction:column;gap:6px;">';
-    EXCL_STAGES.forEach(function(stage){
-      var cnt = byStage[stage.id]||0;
-      if (!cnt) return;
-      var pct = Math.round(cnt/total*100);
-      html += '<div style="display:flex;align-items:center;gap:8px;">';
-      html += '<span style="font-size:11px;font-weight:700;min-width:130px;color:'+stage.color+';">'+stage.icon+' '+stage.label+'</span>';
-      html += '<div style="flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;">';
-      html += '<div style="height:100%;background:'+stage.color+';width:'+pct+'%;border-radius:4px;transition:width 1s;"></div></div>';
-      html += '<span style="font-size:11px;font-weight:700;color:var(--sub);width:30px;">'+cnt+'</span></div>';
-    });
-    html += '</div></div>';
-
-    // By dept
-    if (Object.keys(byDept).length > 1 || !byDept['غير محدد']) {
-      html += '<div>';
-      html += '<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;">🏢 توزيع الإدارات</div>';
-      html += '<table class="dept-table"><thead><tr><th>الإدارة</th><th>العدد</th></tr></thead><tbody>';
-      Object.entries(byDept).sort(function(a,b){return b[1]-a[1];}).forEach(function(entry){
-        html += '<tr><td>'+entry[0]+'</td><td style="font-weight:700;color:var(--primary);">'+entry[1]+'</td></tr>';
-      });
-      html += '</tbody></table></div>';
-    }
-
-    html += '</div>';
-    document.getElementById('exclDashContent').innerHTML = html;
-  } catch(e) { console.log('excl dash error', e); }
-}
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -2818,7 +2566,21 @@ document.getElementById('deptModalBg').addEventListener('click',function(e){if(e
 document.getElementById('changePassBg').addEventListener('click',function(e){if(e.target===this)closeChangePass();});
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
-document.getElementById('eomModalBg').addEventListener('click',function(e){if(e.target===this)closeEomModal();});
+
+// Initialize EOM stars
+(function(){
+  var stars = document.getElementById('eomStars');
+  if(!stars) return;
+  var emojis=['⭐','✨','💫','🌟'];
+  var positions=[[10,20],[80,15],[20,70],[60,60],[90,40],[40,85],[70,90],[5,50],[50,10],[95,80]];
+  positions.forEach(function(p,i){
+    var s=document.createElement('div');
+    s.className='eom-star';
+    s.style.cssText='top:'+p[1]+'%;left:'+p[0]+'%;animation-delay:'+(i*0.3)+'s;';
+    s.textContent=emojis[i%4];
+    stars.appendChild(s);
+  });
+})();
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
