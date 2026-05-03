@@ -1505,13 +1505,16 @@ async function appointSelected() {
   if (!ids.length) return;
   if (!confirm('قرار تعيين لـ '+ids.length+' موظف؟')) return;
   showLoading(true);
-  for (var i=0;i<ids.length;i++) {
-    var nowB=new Date().toISOString();
-    var isTrainB=ids[i].contract==='train';
+  var nowB=new Date().toISOString();
+  var promises2 = ids.map(function(emp){
+    var isTrainB=emp.contract==='train';
     var bStatus=isTrainB?'trained':'appointed';
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:bStatus,status:bStatus,appointed_at:nowB})});
-    updateEmpInMemory(ids[i].id, {status:bStatus,appointStatus:bStatus,appointedAt:nowB});
-  }
+    return fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(emp.empId), {
+      method:'PATCH',headers:H,
+      body:JSON.stringify({appointment_status:bStatus,status:bStatus,appointed_at:nowB})
+    }).then(function(){ updateEmpInMemory(emp.id,{status:bStatus,appointStatus:bStatus,appointedAt:nowB}); });
+  });
+  await Promise.all(promises2);
   await logAction('قرار تعيين جماعي', 'قرار تعيين لـ '+ids.length+' موظف');
   clearSelection(); showLoading(false); showToast('✅ تم إصدار قرار التعيين لـ '+ids.length+' موظف');
 }
@@ -1521,11 +1524,14 @@ async function enterSelected() {
   if (!ids.length) return;
   if (!confirm('إدخال بالنظام لـ '+ids.length+' موظف؟')) return;
   showLoading(true);
-  for (var i=0;i<ids.length;i++) {
-    var nowE=new Date().toISOString();
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:'entered',status:'entered',entered_at:nowE})});
-    updateEmpInMemory(ids[i].id, {status:'entered',appointStatus:'entered',enteredAt:nowE});
-  }
+  var nowE=new Date().toISOString();
+  var promises3 = ids.map(function(emp){
+    return fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(emp.empId), {
+      method:'PATCH',headers:H,
+      body:JSON.stringify({appointment_status:'entered',status:'entered',entered_at:nowE})
+    }).then(function(){ updateEmpInMemory(emp.id,{status:'entered',appointStatus:'entered',enteredAt:nowE}); });
+  });
+  await Promise.all(promises3);
   await logAction('إدخال جماعي بالنظام', 'إدخال '+ids.length+' موظف بالنظام');
   showLoading(false);
   var qowaEmps=ids.filter(function(e){ return e.contract==='qowa'; });
@@ -2500,10 +2506,13 @@ async function bulkChangeStatus(newStatus, label) {
   if (!confirm('تغيير حالة '+ids.length+' موظف إلى "'+label+'"؟')) return;
   showLoading(true);
   var now = new Date().toISOString();
-  for (var i=0; i<ids.length; i++) {
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(ids[i].empId), {method:'PATCH',headers:H,body:JSON.stringify({appointment_status:newStatus,status:newStatus})});
-    updateEmpInMemory(ids[i].id, {status:newStatus, appointStatus:newStatus});
-  }
+  var promises = ids.map(function(emp){
+    return fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(emp.empId), {
+      method:'PATCH', headers:H,
+      body:JSON.stringify({appointment_status:newStatus, status:newStatus})
+    }).then(function(){ updateEmpInMemory(emp.id, {status:newStatus, appointStatus:newStatus}); });
+  });
+  await Promise.all(promises);
   await logAction('تغيير جماعي', label+' لـ '+ids.length+' موظف');
   clearSelection(); showLoading(false); showToast('✅ تم تغيير '+ids.length+' موظف إلى '+label);
 }
@@ -2525,14 +2534,26 @@ async function bulkComplete() {
 /* ── EMPLOYEE OF MONTH ── */
 async function loadEom() {
   try {
-    var r = await fetch(SETS_API + '?key=eq.employee_of_month', {headers:H});
+    var r = await fetch(SETS_API + '?key=eq.employee_of_month&select=*', {
+      headers: Object.assign({}, H, {'Prefer': ''})
+    });
     var d = await r.json();
     if (d && d.length && d[0].value) {
       var val = JSON.parse(d[0].value);
       employeeOfMonth = val;
+      localStorage.setItem('eom_cache', JSON.stringify(val));
+      renderEom();
+      return;
+    }
+  } catch(e) { /* try cache */ }
+  // Fallback to localStorage cache
+  try {
+    var cached = localStorage.getItem('eom_cache');
+    if (cached) {
+      employeeOfMonth = JSON.parse(cached);
       renderEom();
     }
-  } catch(e) { /* no settings yet */ }
+  } catch(e2) {}
 }
 
 function renderEom() {
@@ -2580,9 +2601,19 @@ async function saveEom() {
   if (!name || !month) { showToast('❌ يرجى إدخال الاسم والشهر'); return; }
   showLoading(true);
   var val = JSON.stringify({name:name, month:month, dept:dept});
-  // upsert
-  await fetch(SETS_API, {method:'POST', headers:Object.assign({},H,{'Prefer':'resolution=merge-duplicates'}),
-    body:JSON.stringify({key:'employee_of_month', value:val, updated_at:new Date().toISOString()})});
+  // Try PATCH first, then POST if not exists
+  var checkR = await fetch(SETS_API + '?key=eq.employee_of_month', {headers: Object.assign({},H,{'Prefer':''})});
+  var checkD = await checkR.json();
+  if (checkD && checkD.length) {
+    await fetch(SETS_API + '?key=eq.employee_of_month', {method:'PATCH',
+      headers: Object.assign({},H,{'Prefer':'return=representation'}),
+      body:JSON.stringify({value:val, updated_at:new Date().toISOString()})});
+  } else {
+    await fetch(SETS_API, {method:'POST',
+      headers: Object.assign({},H,{'Prefer':'return=representation'}),
+      body:JSON.stringify({key:'employee_of_month', value:val, updated_at:new Date().toISOString()})});
+  }
+  localStorage.setItem('eom_cache', val);
   employeeOfMonth = {name:name, month:month, dept:dept};
   renderEom();
   closeEomModal();
@@ -2632,10 +2663,11 @@ async function bulkChangeExclStage() {
   showLoading(true);
   var now = new Date().toISOString();
   var ids = Array.from(exclSelected);
-  for (var i=0; i<ids.length; i++) {
-    await fetch(EXCL_API + '?id=eq.' + ids[i], {method:'PATCH', headers:H,
+  var promises = ids.map(function(id){
+    return fetch(EXCL_API + '?id=eq.' + id, {method:'PATCH', headers:H,
       body:JSON.stringify({stage:stage, stage_updated_at:now})});
-  }
+  });
+  await Promise.all(promises);
   await logAction('تغيير مرحلة استبعاد', 'تغيير ' + ids.length + ' سجل إلى مرحلة: ' + stageInfo.label);
   clearExclSelection();
   await loadExcl();
