@@ -554,7 +554,7 @@ td.id-num{font-family:monospace;font-size:12px;}
               <th>المرحلة الحالية</th>
               <th>مسار الإجراءات</th>
               <th>مدة المرحلة</th>
-              <th>ملاحظات</th>
+              
               <th>تاريخ الإدخال</th>
               <th>إجراءات</th>
             </tr>
@@ -653,7 +653,6 @@ td.id-num{font-family:monospace;font-size:12px;}
           <option value="complete">✔️ مكتمل</option>
         </select>
       </div>
-      <div class="fg2 full"><label>ملاحظات</label><input id="f-notes" placeholder="أي ملاحظات إضافية..."/></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeEmpModal()">إلغاء</button>
@@ -966,7 +965,7 @@ async function enterApp() {
   document.getElementById('tabExclBtn').style.display = canExclUser ? 'block' : 'none';
 
   var head = document.getElementById('empTableHead');
-  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>';
+  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th>';
 
   startClock();
   loadDepartments().then(function(){ loadEmployees(); });
@@ -1108,7 +1107,7 @@ async function loadEmployees() {
       dept:e.dept||'', project:e.project||'', date:e.date||'',
       status:e.status||'active', contract:e.contract_type||'',
       salary:e.salary||'', appointStatus:e.appointment_status||'',
-      notes:e.notes||'', actionTaken:e.action_taken||'',
+       actionTaken:e.action_taken||'',
       appointedAt:e.appointed_at||'', enteredAt:e.entered_at||'', completedAt:e.completed_at||'',
       section:e.dept_section||''};
   }) : [];
@@ -1215,7 +1214,6 @@ function render() {
     if(e.completedAt) tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#10003; '+fmtDT(e.completedAt)+'</div>';
     html += '<td>' + statusBadge(e.status) + (tsHtml?'<div style="margin-top:4px;">'+tsHtml+'</div>':'') + '</td>';
 
-    html += '<td><input type="text" value="' + (e.notes||'').replace(/"/g,'&quot;') + '" placeholder="ملاحظات..." style="width:130px;padding:4px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:Tajawal,sans-serif;font-size:11px;" onchange="saveFieldInline(' + e.id + ',\'notes\',this.value)" onclick="event.stopPropagation()"/></td>';
     html += '<td><div class="actions">' + editBtn + delBtn + workflowBtns + '</div></td></tr>';
   }
   tbody.innerHTML = html;
@@ -1590,13 +1588,13 @@ async function openEmpEdit(id) {
   document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
   document.getElementById('f-status').value       = e.status||eMem.status||'active';
   document.getElementById('f-section').value = e.dept_section||eMem.section||'';
-  document.getElementById('f-notes').value        = e.notes||eMem.notes||'';
+  document.getElementById().value        = e.notes||eMem.notes||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
 }
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
 function clearEmpForm() {
-  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-notes',].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
+  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary',].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
   document.getElementById('f-dept').value=''; document.getElementById('f-section').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active';
 }
 
@@ -1623,25 +1621,25 @@ async function saveEmployee() {
     contract_type:document.getElementById('f-contract').value,
     salary:document.getElementById('f-salary').value.trim(),
     status:document.getElementById('f-status').value,
-    notes:document.getElementById('f-notes').value.trim(),
+    notes:document.getElementById().value.trim(),
     dept_section:document.getElementById('f-section').value};
   showLoading(true);
   if (editingEmpId) {
     var eOld=employees.find(function(x){ return x.id===editingEmpId; });
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes,dept_section:data.dept_section})});
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,dept_section:data.dept_section})});
     var fieldLabels={emp_id:'الرقم الوظيفي',name:'الاسم',id_num:'رقم الهوية',dept:'الإدارة',project:'المشروع',date:'تاريخ المباشرة',contract_type:'نوع العقد',salary:'الراتب',status:'الحالة',notes:'الملاحظات'};
     var sLbls={active:'نشط',pending:'قيد الإجراءات',resigned:'منهى خدماته',complete:'مكتمل',appointed:'تم عمل قرار تعيين',entered:'تم الإدخال بالنظام'};
     var cLbls={qowa:'عقد قوى',train:'عقد تدريب'};
     var oldV={emp_id:eOld.empId,name:eOld.name,id_num:eOld.idNum,dept:eOld.dept,project:eOld.project,date:eOld.date,contract_type:eOld.contract,salary:eOld.salary,status:eOld.status,notes:eOld.notes,action_taken:eOld.actionTaken};
-    var newV={emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,notes:data.notes};
+    var newV={emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status};
     var diffs=[];
     Object.keys(fieldLabels).forEach(function(k){var ov=String(oldV[k]||'').trim(),nv=String(newV[k]||'').trim();if(ov!==nv){var lb=fieldLabels[k];var od=k==='status'?(sLbls[ov]||ov):k==='contract_type'?(cLbls[ov]||ov):ov||'—';var nd=k==='status'?(sLbls[nv]||nv):k==='contract_type'?(cLbls[nv]||nv):nv||'—';diffs.push(lb+': '+od+' ← '+nd);}});
     var logMsg=diffs.length?'تعديل '+name+' | '+diffs.join(' | '):'تعديل بيانات: '+name;
     await logAction('تعديل', logMsg);
     var idx=employees.findIndex(function(x){ return x.id===editingEmpId; });
-    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes});
+    if (idx>=0) employees[idx]=Object.assign({},employees[idx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
     var fidx=filtered.findIndex(function(x){ return x.id===editingEmpId; });
-    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status,notes:data.notes});
+    if (fidx>=0) filtered[fidx]=Object.assign({},filtered[fidx],{empId:data.emp_id,name:data.name,idNum:data.id_num,dept:data.dept,section:data.dept_section,project:data.project,date:data.date,contract:data.contract_type,salary:data.salary,status:data.status});
     closeEmpModal(); render(); showLoading(false); showToast('✅ تم التعديل');
   } else {
     await fetch(EMP_API, {method:'POST',headers:H,body:JSON.stringify(data)});
@@ -1821,7 +1819,7 @@ function exportExcel() {
       'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
       'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
       'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status,
-      'القسم':e.section||'','ملاحظات':e.notes||''};
+      'القسم':e.section||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
   ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
@@ -2586,4 +2584,4 @@ document.getElementById('exclModalBg').addEventListener('click',function(e){if(e
 
 </script>
 </body>
-</html>
+        </html>
