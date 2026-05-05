@@ -1588,7 +1588,6 @@ async function openEmpEdit(id) {
   document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
   document.getElementById('f-status').value       = e.status||eMem.status||'active';
   document.getElementById('f-section').value = e.dept_section||eMem.section||'';
-  document.getElementById().value        = e.notes||eMem.notes||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
   document.getElementById('empModalBg').classList.add('show');
 }
@@ -1621,7 +1620,6 @@ async function saveEmployee() {
     contract_type:document.getElementById('f-contract').value,
     salary:document.getElementById('f-salary').value.trim(),
     status:document.getElementById('f-status').value,
-    notes:document.getElementById().value.trim(),
     dept_section:document.getElementById('f-section').value};
   showLoading(true);
   if (editingEmpId) {
@@ -2584,4 +2582,4 @@ document.getElementById('exclModalBg').addEventListener('click',function(e){if(e
 
 </script>
 </body>
-        </html>
+</html>
