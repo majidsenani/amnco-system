@@ -2247,7 +2247,7 @@ function applyExclFilters() {
 function renderExcl() {
   var tbody = document.getElementById('exclBody');
   if (!exclFiltered.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">لا توجد سجلات استبعاد</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13"><div class="empty">لا توجد سجلات استبعاد</div></td></tr>';
     document.getElementById('exclPageInfo').textContent = '0 سجل';
     document.getElementById('exclPageBtns').innerHTML = '';
     return;
@@ -2285,26 +2285,8 @@ function renderExcl() {
         '<div style="font-size:10px;font-weight:700;color:'+daysColor+';margin-top:3px;">⏱ في هذه المرحلة: ' + daysLabel + '</div></td>' +
       '<td style="min-width:160px;">' +
         '<div class="stage-bar">' + pips + '</div>' +
-        (function(){
-          var hist = [];
-          try { hist = JSON.parse(e.stage_history || '[]'); } catch(ex) {}
-          if (!hist.length) return '';
-          var rows2 = hist.map(function(h){
-            var stg = EXCL_STAGES[h.stage-1] || {label:h.label||'', color:'#64748b', icon:'•'};
-            var dur = h.days !== null ? h.days + ' يوم' : (h.ended_at ? '—' : '<span style="color:var(--primary)">جارية</span>');
-            var isActive = !h.ended_at;
-            var col = h.days > 7 ? '#dc2626' : h.days > 3 ? '#d97706' : stg.color;
-            return '<div class="stage-entry">' +
-              '<div class="stage-entry-dot" style="background:'+stg.color+';'+(isActive?'box-shadow:0 0 0 2px '+stg.color+'44;':'')+'"></div>' +
-              '<span class="stage-entry-label" style="'+(isActive?'color:var(--primary);':'')+'">'+stg.icon+' '+stg.label+'</span>' +
-              '<span class="stage-entry-days" style="color:'+col+';">'+dur+'</span>' +
-            '</div>';
-          }).join('');
-          return '<div class="stage-timeline">'+rows2+'</div>';
-        })() +
+        buildStageTimeline(e.stage_history) +
       '</td>' +
-      '<td style="display:none;"></td>' +
-      '<td style="font-size:12px;color:var(--sub);max-width:150px;word-break:break-word;">' + (e.notes||'—') + '</td>' +
       '<td style="font-size:11px;color:var(--sub);">' + createdAt + '</td>' +
       '<td><div class="actions">' +
         '<button class="icon-btn edit" onclick="openExclEdit('+e.id+')" title="تعديل">&#9998;</button>' +
@@ -2622,6 +2604,25 @@ async function bulkComplete() {
   clearSelection(); showLoading(false); showToast('✅ تم اكتمال '+ids.length+' موظف');
 }
 
+
+
+function buildStageTimeline(stageHistoryJson) {
+  var hist = [];
+  try { hist = JSON.parse(stageHistoryJson || '[]'); } catch(ex) { return ''; }
+  if (!hist.length) return '';
+  var rows2 = hist.map(function(h){
+    var stg = EXCL_STAGES[(h.stage||1)-1] || {label:h.label||'', color:'#64748b', icon:'•'};
+    var dur = (h.days !== null && h.days !== undefined) ? h.days + ' يوم' : (h.ended_at ? '—' : '<span style="color:var(--primary)">جارية</span>');
+    var isActive = !h.ended_at;
+    var col = h.days > 7 ? '#dc2626' : h.days > 3 ? '#d97706' : stg.color;
+    return '<div class="stage-entry">' +
+      '<div class="stage-entry-dot" style="background:'+stg.color+';'+(isActive?'box-shadow:0 0 0 2px '+stg.color+'44;':'')+'"></div>' +
+      '<span class="stage-entry-label" style="'+(isActive?'color:var(--primary);font-weight:900;':'')+'">'+stg.icon+' '+stg.label+'</span>' +
+      '<span class="stage-entry-days" style="color:'+col+';font-weight:900;">'+dur+'</span>' +
+    '</div>';
+  }).join('');
+  return '<div class="stage-timeline">'+rows2+'</div>';
+}
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
