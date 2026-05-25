@@ -268,32 +268,15 @@ td.id-num{font-family:monospace;font-size:12px;}
 .eom-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
 .eom-star{position:absolute;color:rgba(212,175,55,0.6);font-size:14px;animation:twinkle 2.5s ease-in-out infinite;}
 @keyframes twinkle{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:0.9;transform:scale(1.2)}}
-/* الجزء الأيمن - الحرم */
-.eom-haram-side{width:220px;flex-shrink:0;position:relative;overflow:hidden;
-  background:linear-gradient(180deg,#0a1a2e 0%,#1a3a6e 50%,#0f2a4a 100%);}
-.eom-haram-img{width:100%;height:100%;object-fit:cover;opacity:0.85;mix-blend-mode:luminosity;}
-.eom-haram-art{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:12px;}
-.haram-sky{position:absolute;top:0;left:0;right:0;height:60%;
-  background:linear-gradient(180deg,#0a0a1a 0%,#1a1a4a 60%,transparent 100%);}
-.haram-moon{position:absolute;top:12px;right:20px;font-size:28px;filter:drop-shadow(0 0 8px rgba(255,220,100,0.8));animation:moonGlow 3s ease-in-out infinite;}
-@keyframes moonGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(255,220,100,0.8))}50%{filter:drop-shadow(0 0 16px rgba(255,220,100,1));}}
-/* رسم الحرم بـ CSS */
-.haram-building{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;z-index:2;}
-.kaaba-wrap{position:relative;margin-bottom:4px;}
-.kaaba{width:40px;height:44px;background:#111;border:2px solid #d4af37;
-  box-shadow:0 0 20px rgba(212,175,55,0.5);position:relative;}
-.kaaba::after{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
-  width:14px;height:18px;background:rgba(212,175,55,0.3);border:1px solid rgba(212,175,55,0.6);}
-.kiswa-band{position:absolute;top:12px;left:0;right:0;height:2px;background:#d4af37;opacity:0.7;}
-.minarets{display:flex;gap:50px;justify-content:center;margin-bottom:2px;}
-.minaret{width:8px;height:36px;background:linear-gradient(180deg,#d4af37,#8B6914);
-  border-radius:2px 2px 0 0;position:relative;}
-.minaret::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
-  width:4px;height:8px;background:#d4af37;border-radius:50% 50% 0 0;}
-.mosque-base{width:140px;height:20px;background:linear-gradient(180deg,#c8a951,#8B6914);
-  border-radius:4px 4px 0 0;display:flex;align-items:flex-end;justify-content:center;gap:4px;padding:0 4px 2px;}
-.arch{width:10px;height:8px;border-radius:50% 50% 0 0;background:rgba(0,0,0,0.5);}
-.ground-line{width:100%;height:3px;background:linear-gradient(90deg,transparent,#d4af37,transparent);opacity:0.6;}
+/* الجزء الأيمن - صورة الحرم */
+.eom-haram-side{width:220px;flex-shrink:0;position:relative;overflow:hidden;}
+.eom-haram-side::before{content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to left,rgba(0,0,0,0.3),transparent 60%),
+  linear-gradient(to top,rgba(0,0,0,0.4),transparent 50%);}
+.eom-haram-img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;}
+.haram-moon{position:absolute;top:12px;right:14px;font-size:26px;z-index:2;
+  filter:drop-shadow(0 0 8px rgba(255,220,100,0.9));animation:moonGlow 3s ease-in-out infinite;}
+@keyframes moonGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(255,220,100,0.8))}50%{filter:drop-shadow(0 0 18px rgba(255,220,100,1));}}
 /* الجزء الأوسط - التكبيرات */
 .eom-body{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;padding:24px 28px;gap:8px;}
 .eid-takbeer{font-size:18px;font-weight:900;color:#d4af37;text-align:center;
@@ -396,7 +379,7 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="eom-badge">
       <div class="eid-lantern">🪔</div>
       <div class="eid-label">عيد مبارك</div>
-      <div class="eid-sub-label">1446 هـ</div>
+      <div class="eid-sub-label">1447 هـ</div>
     </div>
 
     <!-- الوسط - التكبيرات -->
@@ -411,26 +394,13 @@ td.id-num{font-family:monospace;font-size:12px;}
       <div class="eid-greeting">🌙 تقبّل الله منّا ومنكم صالح الأعمال 🌙</div>
     </div>
 
-    <!-- الجزء الأيمن - رسم الحرم -->
+    <!-- الجزء الأيمن - صورة الحرم -->
     <div class="eom-haram-side">
-      <div class="haram-sky"></div>
       <div class="haram-moon">🌙</div>
-      <div class="haram-art">
-        <div class="haram-building">
-          <div class="minarets">
-            <div class="minaret"></div>
-            <div class="minaret"></div>
-          </div>
-          <div class="kaaba-wrap">
-            <div class="kaaba"><div class="kiswa-band"></div></div>
-          </div>
-          <div class="mosque-base">
-            <div class="arch"></div><div class="arch"></div><div class="arch"></div>
-            <div class="arch"></div><div class="arch"></div><div class="arch"></div>
-          </div>
-          <div class="ground-line"></div>
-        </div>
-      </div>
+      <img class="eom-haram-img"
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Kaaba_mirror_edit_jj.jpg/480px-Kaaba_mirror_edit_jj.jpg"
+        alt="الكعبة المشرفة"
+        onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1a0a00,#3d2000,#1a0a00)'"/>
     </div>
   </div>
 
