@@ -256,32 +256,28 @@ td.id-num{font-family:monospace;font-size:12px;}
 .la-delete{background:#fee2e2;color:#dc2626;}
 .la-note{background:#fdf4ff;color:#7c3aed;}
 
-/* ═══════════ NEW EMPLOYEES BANNER ═══════════ */
-.new-emp-banner{position:relative;border-radius:20px;margin-bottom:22px;overflow:hidden;
-  background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#4f46e5 100%);
-  box-shadow:0 6px 30px rgba(37,99,235,0.3);padding:20px 24px;}
-.new-emp-banner::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 10% 50%,rgba(255,255,255,0.08) 0%,transparent 50%);
-  pointer-events:none;}
-.new-emp-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.new-emp-icon{width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:12px;
-  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.new-emp-title{font-size:16px;font-weight:900;color:#fff;}
-.new-emp-sub{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px;}
-.new-emp-count{margin-right:auto;background:rgba(255,255,255,0.2);border-radius:20px;
-  padding:4px 14px;font-size:12px;font-weight:900;color:#fff;}
-.new-emp-grid{display:flex;gap:8px;flex-wrap:wrap;}
-.new-emp-card{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
-  border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:8px;
-  backdrop-filter:blur(8px);transition:all .2s;}
-.new-emp-card:hover{background:rgba(255,255,255,0.2);}
-.new-emp-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.25);
-  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;
-  color:#fff;flex-shrink:0;}
-.new-emp-info{display:flex;flex-direction:column;}
-.new-emp-name{font-size:12px;font-weight:700;color:#fff;}
-.new-emp-dept{font-size:10px;color:rgba(255,255,255,0.65);}
-.new-emp-empty{font-size:13px;color:rgba(255,255,255,0.6);text-align:center;padding:8px;}
+/* ═══════════ EMPLOYEE OF MONTH ═══════════ */
+.eom-banner{position:relative;overflow:hidden;border-radius:24px;margin-bottom:22px;
+  background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 40%,#7c3aed 80%,#4f46e5 100%);
+  box-shadow:0 8px 40px rgba(37,99,235,0.35),0 0 0 1px rgba(255,255,255,0.1);
+  padding:28px 32px;display:flex;align-items:center;gap:28px;}
+.eom-banner::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,0.12) 0%,transparent 60%),
+  radial-gradient(ellipse at 80% 20%,rgba(124,58,237,0.3) 0%,transparent 50%);pointer-events:none;}
+.eom-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.eom-star{position:absolute;color:rgba(255,255,255,0.2);font-size:16px;animation:twinkle 3s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.5;transform:scale(1.2)}}
+.eom-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.2);
+  border:3px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;
+  font-size:36px;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,0.2);position:relative;z-index:1;}
+.eom-body{flex:1;position:relative;z-index:1;}
+.eom-tag{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.eom-name{font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.eom-month{font-size:13px;color:rgba(255,255,255,0.8);font-weight:700;}
+.eom-badge{position:relative;z-index:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);
+  border-radius:16px;padding:12px 20px;text-align:center;backdrop-filter:blur(8px);}
+.eom-badge-icon{font-size:32px;margin-bottom:4px;}
+.eom-badge-text{font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;}
 
 /* ═══════════ EXCL STAGES ═══════════ */
 .stage-bar{display:flex;gap:3px;margin:10px 0;flex-wrap:wrap;}
