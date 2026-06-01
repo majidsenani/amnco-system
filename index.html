@@ -256,42 +256,32 @@ td.id-num{font-family:monospace;font-size:12px;}
 .la-delete{background:#fee2e2;color:#dc2626;}
 .la-note{background:#fdf4ff;color:#7c3aed;}
 
-/* ═══════════ EID BANNER ═══════════ */
-.eom-banner{position:relative;overflow:hidden;border-radius:24px;margin-bottom:22px;
-  background:linear-gradient(135deg,#0c1a0e 0%,#1a3d20 25%,#0f4f2a 50%,#1a3d20 75%,#0c1a0e 100%);
-  box-shadow:0 8px 40px rgba(16,92,40,0.4),0 0 0 1px rgba(212,175,55,0.3);
-  padding:0;display:flex;align-items:stretch;min-height:160px;}
-.eom-banner::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 20% 50%,rgba(212,175,55,0.08) 0%,transparent 60%),
-  radial-gradient(ellipse at 80% 50%,rgba(212,175,55,0.08) 0%,transparent 60%);pointer-events:none;}
-/* النجوم */
-.eom-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-.eom-star{position:absolute;color:rgba(212,175,55,0.6);font-size:14px;animation:twinkle 2.5s ease-in-out infinite;}
-@keyframes twinkle{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:0.9;transform:scale(1.2)}}
-/* الجزء الأيمن - صورة الحرم */
-.eom-haram-side{width:220px;flex-shrink:0;position:relative;overflow:hidden;}
-.eom-haram-side::before{content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(to left,rgba(0,0,0,0.3),transparent 60%),
-  linear-gradient(to top,rgba(0,0,0,0.4),transparent 50%);}
-.eom-haram-img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;}
-.haram-moon{position:absolute;top:12px;right:14px;font-size:26px;z-index:2;
-  filter:drop-shadow(0 0 8px rgba(255,220,100,0.9));animation:moonGlow 3s ease-in-out infinite;}
-@keyframes moonGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(255,220,100,0.8))}50%{filter:drop-shadow(0 0 18px rgba(255,220,100,1));}}
-/* الجزء الأوسط - التكبيرات */
-.eom-body{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;padding:24px 28px;gap:8px;}
-.eid-takbeer{font-size:18px;font-weight:900;color:#d4af37;text-align:center;
-  text-shadow:0 0 20px rgba(212,175,55,0.5);line-height:1.8;letter-spacing:1px;
-  font-family:'Tajawal',sans-serif;}
-.eid-greeting{font-size:13px;color:rgba(255,255,255,0.75);text-align:center;font-weight:700;margin-top:4px;}
-.eid-divider{width:60%;height:1px;background:linear-gradient(90deg,transparent,#d4af37,transparent);margin:6px auto;}
-/* الجزء الأيسر - الزينة */
-.eom-badge{position:relative;z-index:1;width:120px;flex-shrink:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;padding:20px 16px;border-right:1px solid rgba(212,175,55,0.2);}
-.eid-lantern{font-size:42px;animation:swing 3s ease-in-out infinite;transform-origin:top center;filter:drop-shadow(0 0 8px rgba(212,175,55,0.6));}
-@keyframes swing{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
-.eid-label{font-size:11px;font-weight:900;color:#d4af37;text-align:center;letter-spacing:0.5px;}
-.eid-sub-label{font-size:10px;color:rgba(255,255,255,0.6);text-align:center;}
+/* ═══════════ NEW EMPLOYEES BANNER ═══════════ */
+.new-emp-banner{position:relative;border-radius:20px;margin-bottom:22px;overflow:hidden;
+  background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#4f46e5 100%);
+  box-shadow:0 6px 30px rgba(37,99,235,0.3);padding:20px 24px;}
+.new-emp-banner::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 10% 50%,rgba(255,255,255,0.08) 0%,transparent 50%);
+  pointer-events:none;}
+.new-emp-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.new-emp-icon{width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.new-emp-title{font-size:16px;font-weight:900;color:#fff;}
+.new-emp-sub{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px;}
+.new-emp-count{margin-right:auto;background:rgba(255,255,255,0.2);border-radius:20px;
+  padding:4px 14px;font-size:12px;font-weight:900;color:#fff;}
+.new-emp-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.new-emp-card{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+  border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:8px;
+  backdrop-filter:blur(8px);transition:all .2s;}
+.new-emp-card:hover{background:rgba(255,255,255,0.2);}
+.new-emp-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.25);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;
+  color:#fff;flex-shrink:0;}
+.new-emp-info{display:flex;flex-direction:column;}
+.new-emp-name{font-size:12px;font-weight:700;color:#fff;}
+.new-emp-dept{font-size:10px;color:rgba(255,255,255,0.65);}
+.new-emp-empty{font-size:13px;color:rgba(255,255,255,0.6);text-align:center;padding:8px;}
 
 /* ═══════════ EXCL STAGES ═══════════ */
 .stage-bar{display:flex;gap:3px;margin:10px 0;flex-wrap:wrap;}
@@ -398,9 +388,9 @@ td.id-num{font-family:monospace;font-size:12px;}
     <div class="eom-haram-side">
       <div class="haram-moon">🌙</div>
       <img class="eom-haram-img"
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Kaaba_mirror_edit_jj.jpg/480px-Kaaba_mirror_edit_jj.jpg"
+        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMjAgMTYwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE2MCI+CiAgPCEtLSBTa3kgZ3JhZGllbnQgLS0+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InNreSIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMGEwYTFhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNDAlIiBzdG9wLWNvbG9yPSIjMWExYTNhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzJhMTUwMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JvdW5kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMzYTI4MDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMWExMjAwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmMGQwNjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjYzg5MDBhIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJrYWFiYV9ncmFkIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTFhMWEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGEwYTBhIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJnbG93IiBjeD0iNTAlIiBjeT0iNTAlIiByPSI1MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZDRhZjM3IiBzdG9wLW9wYWNpdHk9IjAuMyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNkNGFmMzciIHN0b3Atb3BhY2l0eT0iMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImJsdXIiPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIyIi8+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CgogIDwhLS0gU2t5IC0tPgogIDxyZWN0IHdpZHRoPSIyMjAiIGhlaWdodD0iMTYwIiBmaWxsPSJ1cmwoI3NreSkiLz4KCiAgPCEtLSBTdGFycyAtLT4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjE1IiByPSIwLjgiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuOSIvPgogIDxjaXJjbGUgY3g9IjQ1IiBjeT0iOCIgcj0iMC42IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjciLz4KICA8Y2lyY2xlIGN4PSI3MCIgY3k9IjE4IiByPSIwLjkiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuOCIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjUiIHI9IjAuNyIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC42Ii8+CiAgPGNpcmNsZSBjeD0iMTMwIiBjeT0iMTIiIHI9IjAuOCIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC45Ii8+CiAgPGNpcmNsZSBjeD0iMTU1IiBjeT0iNiIgcj0iMC42IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjciLz4KICA8Y2lyY2xlIGN4PSIxODAiIGN5PSIyMCIgcj0iMC43IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjgiLz4KICA8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxMCIgcj0iMC41IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjYiLz4KICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIwLjUiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuNSIvPgogIDxjaXJjbGUgY3g9IjE2NSIgY3k9IjI4IiByPSIwLjYiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuNyIvPgogIDxjaXJjbGUgY3g9IjIxMCIgY3k9IjM1IiByPSIwLjUiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuNSIvPgoKICA8IS0tIE1vb24gZ2xvdyAtLT4KICA8Y2lyY2xlIGN4PSIxODUiIGN5PSIyMiIgcj0iMTgiIGZpbGw9InVybCgjZ2xvdykiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDwhLS0gTW9vbiAtLT4KICA8Y2lyY2xlIGN4PSIxODUiIGN5PSIyMiIgcj0iMTIiIGZpbGw9IiNmNWUwNzAiIG9wYWNpdHk9IjAuOTUiLz4KICA8Y2lyY2xlIGN4PSIxOTEiIGN5PSIxOCIgcj0iOSIgZmlsbD0iIzFhMWEzYSIvPgogIDwhLS0gTW9vbiBjcmVzY2VudCBlZmZlY3QgLS0+CgogIDwhLS0gR3JvdW5kIGFyZWEgLS0+CiAgPHJlY3QgeD0iMCIgeT0iMTEwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjUwIiBmaWxsPSJ1cmwoI2dyb3VuZCkiLz4KCiAgPCEtLSBHcm91bmQgZ2xvdyAtLT4KICA8ZWxsaXBzZSBjeD0iMTEwIiBjeT0iMTEyIiByeD0iODAiIHJ5PSI2IiBmaWxsPSIjZDRhZjM3IiBvcGFjaXR5PSIwLjE1IiBmaWx0ZXI9InVybCgjYmx1cikiLz4KCiAgPCEtLSBMZWZ0IG1pbmFyZXQgLS0+CiAgPHJlY3QgeD0iNDgiIHk9IjU1IiB3aWR0aD0iMTAiIGhlaWdodD0iNTYiIGZpbGw9InVybCgjZ29sZCkiLz4KICA8cmVjdCB4PSI0NiIgeT0iNTIiIHdpZHRoPSIxNCIgaGVpZ2h0PSI1IiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgPGVsbGlwc2UgY3g9IjUzIiBjeT0iNTIiIHJ4PSI3IiByeT0iNCIgZmlsbD0iI2YwZDA2MCIvPgogIDxwb2x5Z29uIHBvaW50cz0iNTMsNDAgNDksNTIgNTcsNTIiIGZpbGw9IiNmMGQwNjAiLz4KICA8Y2lyY2xlIGN4PSI1MyIgY3k9IjM5IiByPSIyIiBmaWxsPSIjZDRhZjM3Ii8+CgogIDwhLS0gUmlnaHQgbWluYXJldCAtLT4KICA8cmVjdCB4PSIxNjIiIHk9IjU1IiB3aWR0aD0iMTAiIGhlaWdodD0iNTYiIGZpbGw9InVybCgjZ29sZCkiLz4KICA8cmVjdCB4PSIxNjAiIHk9IjUyIiB3aWR0aD0iMTQiIGhlaWdodD0iNSIgZmlsbD0idXJsKCNnb2xkKSIvPgogIDxlbGxpcHNlIGN4PSIxNjciIGN5PSI1MiIgcng9IjciIHJ5PSI0IiBmaWxsPSIjZjBkMDYwIi8+CiAgPHBvbHlnb24gcG9pbnRzPSIxNjcsNDAgMTYzLDUyIDE3MSw1MiIgZmlsbD0iI2YwZDA2MCIvPgogIDxjaXJjbGUgY3g9IjE2NyIgY3k9IjM5IiByPSIyIiBmaWxsPSIjZDRhZjM3Ii8+CgogIDwhLS0gTW9zcXVlIGJhc2UgcGxhdGZvcm0gLS0+CiAgPHJlY3QgeD0iMzUiIHk9IjEwMCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxNCIgZmlsbD0iI2M4YTAzMCIgcng9IjIiLz4KICA8IS0tIEFyY2hlcyAtLT4KICA8cmVjdCB4PSI0NSIgeT0iODgiIHdpZHRoPSIxMzAiIGhlaWdodD0iMTUiIGZpbGw9IiNiODkwMjgiLz4KICA8IS0tIFNtYWxsIGFyY2hlcyBvbiB0b3Agb2YgYmFzZSAtLT4KICA8ZWxsaXBzZSBjeD0iNjAiIGN5PSI4OCIgcng9IjgiIHJ5PSI1IiBmaWxsPSIjMGEwYTBhIi8+CiAgPGVsbGlwc2UgY3g9IjgwIiBjeT0iODgiIHJ4PSI4IiByeT0iNSIgZmlsbD0iIzBhMGEwYSIvPgogIDxlbGxpcHNlIGN4PSIxMDAiIGN5PSI4OCIgcng9IjgiIHJ5PSI1IiBmaWxsPSIjMGEwYTBhIi8+CiAgPGVsbGlwc2UgY3g9IjEyMCIgY3k9Ijg4IiByeD0iOCIgcnk9IjUiIGZpbGw9IiMwYTBhMGEiLz4KICA8ZWxsaXBzZSBjeD0iMTQwIiBjeT0iODgiIHJ4PSI4IiByeT0iNSIgZmlsbD0iIzBhMGEwYSIvPgogIDxlbGxpcHNlIGN4PSIxNjAiIGN5PSI4OCIgcng9IjgiIHJ5PSI1IiBmaWxsPSIjMGEwYTBhIi8+CgogIDwhLS0gS2FhYmEgZ2xvdyAtLT4KICA8ZWxsaXBzZSBjeD0iMTEwIiBjeT0iODUiIHJ4PSIyOCIgcnk9IjIwIiBmaWxsPSJ1cmwoI2dsb3cpIiBmaWx0ZXI9InVybCgjYmx1cikiIG9wYWNpdHk9IjAuOCIvPgoKICA8IS0tIEthYWJhIC0tPgogIDxyZWN0IHg9Ijg4IiB5PSI1OCIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQ2IiBmaWxsPSJ1cmwoI2thYWJhX2dyYWQpIi8+CiAgPCEtLSBLYWFiYSBnb2xkZW4gYmFuZCAoa2lzd2EpIC0tPgogIDxyZWN0IHg9Ijg4IiB5PSI3MiIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQiIGZpbGw9IiNkNGFmMzciIG9wYWNpdHk9IjAuOSIvPgogIDwhLS0gS2FhYmEgZ29sZGVuIGJvcmRlciAtLT4KICA8cmVjdCB4PSI4OCIgeT0iNTgiIHdpZHRoPSI0NCIgaGVpZ2h0PSI0NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDRhZjM3IiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC43Ii8+CiAgPCEtLSBLYWFiYSBkb29yIC0tPgogIDxyZWN0IHg9IjEwMiIgeT0iNzYiIHdpZHRoPSIxNiIgaGVpZ2h0PSIyMiIgZmlsbD0iI2Q0YWYzNyIgb3BhY2l0eT0iMC40Ii8+CiAgPHJlY3QgeD0iMTAzIiB5PSI3NyIgd2lkdGg9IjE0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjOEI2OTE0IiBvcGFjaXR5PSIwLjYiLz4KCiAgPCEtLSBHcm91bmQgbGluZSBnbG93IC0tPgogIDxsaW5lIHgxPSIwIiB5MT0iMTEzIiB4Mj0iMjIwIiB5Mj0iMTEzIiBzdHJva2U9IiNkNGFmMzciIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+CgogIDwhLS0gQXRtb3NwaGVyaWMgaGF6ZSBhdCBib3R0b20gLS0+CiAgPHJlY3QgeD0iMCIgeT0iMTMwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjMWExMjAwIiBvcGFjaXR5PSIwLjUiLz4KPC9zdmc+"
         alt="الكعبة المشرفة"
-        onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1a0a00,#3d2000,#1a0a00)'"/>
+        />
     </div>
   </div>
 
@@ -2648,6 +2638,7 @@ function buildStageTimeline(stageHistoryJson) {
   return '<div class="stage-timeline">'+rows2+'</div>';
 }
 
+
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
 
@@ -2658,20 +2649,7 @@ document.getElementById('changePassBg').addEventListener('click',function(e){if(
 document.getElementById('taskModalBg').addEventListener('click',function(e){if(e.target===this)closeTaskModal();});
 document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
 
-// Initialize EOM stars
-(function(){
-  var stars = document.getElementById('eomStars');
-  if(!stars) return;
-  var emojis=['✨','⭐','🌟','💫','⭐','✨'];
-  var positions=[[10,20],[80,15],[20,70],[60,60],[90,40],[40,85],[70,90],[5,50],[50,10],[95,80]];
-  positions.forEach(function(p,i){
-    var s=document.createElement('div');
-    s.className='eom-star';
-    s.style.cssText='top:'+p[1]+'%;left:'+p[0]+'%;animation-delay:'+(i*0.3)+'s;';
-    s.textContent=emojis[i%4];
-    stars.appendChild(s);
-  });
-})();
+
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
