@@ -217,7 +217,7 @@ td.id-num{font-family:monospace;font-size:12px;}
 .chart-card.wide{grid-column:1/-1;}
 .chart-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .chart-card h3 .badge{padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--primary-light);color:var(--primary);}
-.chart-wrap{position:relative;height:220px;width:100%;}.chart-wrap canvas{display:block;}
+.chart-wrap{position:relative;height:220px;width:100%;display:block;}.chart-wrap canvas{display:block;width:100%!important;height:100%!important;}
 .dept-breakdown{background:var(--surface);border-radius:20px;padding:22px;box-shadow:var(--shadow-lg);border:1px solid var(--border);margin-bottom:24px;animation:kpiFadeIn .6s ease .45s both;}
 .dept-breakdown h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;}
 .dept-table{width:100%;border-collapse:collapse;}
@@ -1031,7 +1031,7 @@ function switchTab(tab, btn) {
   if(tab==='logs')loadLogs();
   if(tab==='tasks')loadTasks();
   if(tab==='excl')loadExcl();
-  if(tab==='dashboard'){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ renderDashboard(); }); }); }
+  if(tab==='dashboard'){ document.getElementById('tabDashboard').style.display='block'; setTimeout(function(){ renderDashboard(); }, 100); }
 }
 
 // ── Departments ──
@@ -2615,6 +2615,8 @@ async function bulkSetActive() {
   await logAction('تحويل إلى نشط', 'تحويل '+ids.length+' موظف إلى نشط');
   clearSelection(); showLoading(false); showToast('✅ تم تحويل '+ids.length+' موظف إلى نشط');
 }
+
+function renderExclDashboard() { /* placeholder */ }
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
