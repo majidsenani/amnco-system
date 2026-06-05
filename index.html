@@ -404,6 +404,7 @@ td.id-num{font-family:monospace;font-size:12px;}
       <button class="btn btn-sm" style="background:#e0e7ff;color:#3730a3;border:1.5px solid #a5b4fc;display:none;" id="bulkEnterBtn" onclick="enterSelected()">🖥️ إدخال بالنظام</button>
       <button class="btn btn-sm" style="background:#fdf4ff;color:#7c3aed;border:1.5px solid #d8b4fe;display:none;" id="bulkContractBtn" onclick="bulkChangeStatus('contract_sent','تم ارسال عقد قوى')">📄 ارسال عقد قوى</button>
       <button class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:1.5px solid #6ee7b7;display:none;" id="bulkCompleteBtn" onclick="bulkComplete()">✔️ مكتمل</button>
+      <button class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:1.5px solid #6ee7b7;display:none;" id="bulkActiveBtn" onclick="bulkSetActive()">✅ تحويل إلى نشط</button>
       <button class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display:none;" onclick="deleteSelected()">🗑️ حذف</button>
       <button class="btn btn-outline btn-sm" onclick="clearSelection()">✕</button>
     </div>
@@ -1485,6 +1486,7 @@ function updateSelectBar() {
       bulkEnterBtn: userCan('can_enter'),
       bulkContractBtn: userCan('can_complete'),
       bulkCompleteBtn: userCan('can_complete'),
+      bulkActiveBtn: isAdm,
       bulkDeleteBtn: isAdm
     };
     Object.keys(btns).forEach(function(id){
@@ -2040,12 +2042,13 @@ function renderDashboard(){
   renderExclDashboard();
   document.getElementById('chartStatusBadge').textContent=total;
   document.getElementById('chartContractBadge').textContent=qowa+train;
-  // Force tab visible temporarily for chart rendering
+  // Force render charts correctly
   var dashEl = document.getElementById('tabDashboard');
-  var prevDisplay = dashEl.style.display;
-  dashEl.style.visibility = 'hidden';
-  dashEl.style.display = 'block';
-  requestAnimationFrame(function(){
+  var wasHidden = dashEl.style.display === 'none';
+  if (wasHidden) {
+    dashEl.style.cssText = 'display:block;position:fixed;top:-9999px;left:-9999px;width:1200px;visibility:hidden;';
+  }
+  setTimeout(function(){
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         Chart.defaults.font.family="'Tajawal', sans-serif";Chart.defaults.color='#64748b';
@@ -2063,16 +2066,19 @@ function renderDashboard(){
       var ctxM=document.getElementById('chartMonthly').getContext('2d');
       var gradM=ctxM.createLinearGradient(0,0,0,240);gradM.addColorStop(0,'rgba(37,99,235,0.4)');gradM.addColorStop(1,'rgba(37,99,235,0.02)');
       chartMonthlyInst=new Chart(ctxM,{type:'bar',data:{labels:monthNames,datasets:[{label:'عدد المباشرين',data:monthlyCounts,backgroundColor:gradM,borderColor:'#2563eb',borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}});
-        // Restore dashboard display
-        dashEl.style.display = prevDisplay;
-        dashEl.style.visibility = '';
-        // Force resize
-        if(chartStatusInst) chartStatusInst.resize();
-        if(chartContractInst) chartContractInst.resize();
-        if(chartMonthlyInst) chartMonthlyInst.resize();
+        // Restore
+        if (wasHidden) {
+          dashEl.style.cssText = 'display:none;';
+          document.getElementById('tabDashboard').style.display = 'none';
+        }
+        setTimeout(function(){
+          if(chartStatusInst) chartStatusInst.resize();
+          if(chartContractInst) chartContractInst.resize();
+          if(chartMonthlyInst) chartMonthlyInst.resize();
+        }, 100);
       });
     });
-  });
+  }, 50);
   var deptMap={};
   employees.forEach(function(e){var d=e.dept||'غير محدد';if(!deptMap[d])deptMap[d]={total:0,active:0,pending:0,complete:0};deptMap[d].total++;if(e.status==='active')deptMap[d].active++;if(e.status==='pending')deptMap[d].pending++;if(e.status==='complete')deptMap[d].complete++;});
   var deptArr=Object.keys(deptMap).map(function(k){return Object.assign({name:k},deptMap[k]);}).sort(function(a,b){return b.total-a.total;});
@@ -2606,6 +2612,23 @@ function buildStageTimeline(stageHistoryJson) {
   return '<div class="stage-timeline">'+rows2+'</div>';
 }
 
+
+
+async function bulkSetActive() {
+  var ids = employees.filter(function(e){ return selected.has(e.id); });
+  if (!ids.length) return;
+  if (!confirm('تحويل ' + ids.length + ' موظف إلى "نشط"؟')) return;
+  showLoading(true);
+  var promises = ids.map(function(emp){
+    return fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(emp.empId), {
+      method:'PATCH', headers:H,
+      body:JSON.stringify({status:'active', appointment_status:''})
+    }).then(function(){ updateEmpInMemory(emp.id, {status:'active', appointStatus:''}); });
+  });
+  await Promise.all(promises);
+  await logAction('تحويل إلى نشط', 'تحويل '+ids.length+' موظف إلى نشط');
+  clearSelection(); showLoading(false); showToast('✅ تم تحويل '+ids.length+' موظف إلى نشط');
+}
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
 function showToast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800); }
