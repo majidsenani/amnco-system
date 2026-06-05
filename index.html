@@ -1031,7 +1031,7 @@ function switchTab(tab, btn) {
   if(tab==='logs')loadLogs();
   if(tab==='tasks')loadTasks();
   if(tab==='excl')loadExcl();
-  if(tab==='dashboard')renderDashboard();
+  if(tab==='dashboard'){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ renderDashboard(); }); }); }
 }
 
 // ── Departments ──
@@ -2042,15 +2042,9 @@ function renderDashboard(){
   renderExclDashboard();
   document.getElementById('chartStatusBadge').textContent=total;
   document.getElementById('chartContractBadge').textContent=qowa+train;
-  // Force render charts correctly
-  var dashEl = document.getElementById('tabDashboard');
-  var wasHidden = dashEl.style.display === 'none';
-  if (wasHidden) {
-    dashEl.style.cssText = 'display:block;position:fixed;top:-9999px;left:-9999px;width:1200px;visibility:hidden;';
-  }
-  setTimeout(function(){
+  // Charts - tab is already visible when this runs
+  requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
         Chart.defaults.font.family="'Tajawal', sans-serif";Chart.defaults.color='#64748b';
       if(chartStatusInst)chartStatusInst.destroy();
       chartStatusInst=new Chart(document.getElementById('chartStatus').getContext('2d'),{type:'doughnut',data:{labels:['نشط','قيد الإجراءات','قرار تعيين','إدخال بالنظام','مكتمل','منهى خدماته'],datasets:[{data:[active,pending,appointed,entered,complete,resigned],backgroundColor:['#059669','#d97706','#92400e','#4f46e5','#065f46','#dc2626'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:11},usePointStyle:true}}}}});
@@ -2066,19 +2060,11 @@ function renderDashboard(){
       var ctxM=document.getElementById('chartMonthly').getContext('2d');
       var gradM=ctxM.createLinearGradient(0,0,0,240);gradM.addColorStop(0,'rgba(37,99,235,0.4)');gradM.addColorStop(1,'rgba(37,99,235,0.02)');
       chartMonthlyInst=new Chart(ctxM,{type:'bar',data:{labels:monthNames,datasets:[{label:'عدد المباشرين',data:monthlyCounts,backgroundColor:gradM,borderColor:'#2563eb',borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}});
-        // Restore
-        if (wasHidden) {
-          dashEl.style.cssText = 'display:none;';
-          document.getElementById('tabDashboard').style.display = 'none';
-        }
-        setTimeout(function(){
-          if(chartStatusInst) chartStatusInst.resize();
-          if(chartContractInst) chartContractInst.resize();
-          if(chartMonthlyInst) chartMonthlyInst.resize();
-        }, 100);
+        if(chartStatusInst) chartStatusInst.resize();
+        if(chartContractInst) chartContractInst.resize();
+        if(chartMonthlyInst) chartMonthlyInst.resize();
       });
     });
-  }, 50);
   var deptMap={};
   employees.forEach(function(e){var d=e.dept||'غير محدد';if(!deptMap[d])deptMap[d]={total:0,active:0,pending:0,complete:0};deptMap[d].total++;if(e.status==='active')deptMap[d].active++;if(e.status==='pending')deptMap[d].pending++;if(e.status==='complete')deptMap[d].complete++;});
   var deptArr=Object.keys(deptMap).map(function(k){return Object.assign({name:k},deptMap[k]);}).sort(function(a,b){return b.total-a.total;});
