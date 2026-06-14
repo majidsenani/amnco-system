@@ -295,6 +295,29 @@ td.id-num{font-family:monospace;font-size:12px;}
 .stage-entry-label{color:var(--sub);font-weight:700;flex:1;}
 .stage-entry-days{font-weight:900;white-space:nowrap;}
 .stage-entry-active{color:var(--primary);}
+
+/* ═══════════ EMPLOYEE OF MONTH ═══════════ */
+.eom-banner{position:relative;overflow:hidden;border-radius:24px;margin-bottom:22px;
+  background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 40%,#7c3aed 80%,#4f46e5 100%);
+  box-shadow:0 8px 40px rgba(37,99,235,0.35);
+  padding:28px 32px;display:flex;align-items:center;gap:28px;}
+.eom-banner::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,0.12) 0%,transparent 60%);pointer-events:none;}
+.eom-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.eom-star{position:absolute;color:rgba(255,255,255,0.25);font-size:16px;animation:twinkle 3s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.6;transform:scale(1.2)}}
+.eom-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.2);
+  border:3px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;
+  font-size:36px;flex-shrink:0;position:relative;z-index:1;}
+.eom-body{flex:1;position:relative;z-index:1;}
+.eom-tag{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:1.5px;margin-bottom:4px;}
+.eom-name{font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.eom-reason{font-size:13px;color:rgba(255,255,255,0.85);font-weight:700;}
+.eom-month{font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px;}
+.eom-badge{position:relative;z-index:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);
+  border-radius:16px;padding:14px 22px;text-align:center;backdrop-filter:blur(8px);}
+.eom-badge-icon{font-size:34px;margin-bottom:4px;}
+.eom-badge-text{font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;}
 </style>
 <!--
  هذا الإصدار:
@@ -359,8 +382,22 @@ td.id-num{font-family:monospace;font-size:12px;}
 
   
 
-  <!-- BANNER -->
-  <div style="border-radius:20px;margin-bottom:22px;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#4f46e5 100%);box-shadow:0 6px 30px rgba(37,99,235,0.3);padding:28px 32px;min-height:80px;"></div>
+
+  <!-- EMPLOYEE OF MONTH -->
+  <div class="eom-banner" id="eomBanner">
+    <div class="eom-stars" id="eomStars"></div>
+    <div class="eom-avatar">🏆</div>
+    <div class="eom-body">
+      <div class="eom-tag">⭐ موظفة الشهر</div>
+      <div class="eom-name">شروق العتيبي</div>
+      <div class="eom-reason">🎯 لإغلاقها جميع العقود</div>
+      <div class="eom-month">موظفة شهر مايو 2026م</div>
+    </div>
+    <div class="eom-badge">
+      <div class="eom-badge-icon">🥇</div>
+      <div class="eom-badge-text">تميّز واحترافية</div>
+    </div>
+  </div>
 
   <div class="main-tabs">
     <button class="main-tab active" onclick="switchTab('employees',this)">👥 الموظفون</button>
@@ -2629,6 +2666,21 @@ document.getElementById('taskModalBg').addEventListener('click',function(e){if(e
 document.getElementById('exclModalBg').addEventListener('click',function(e){if(e.target===this)closeExclModal();});
 
 
+
+// Initialize EOM stars
+(function(){
+  var stars = document.getElementById('eomStars');
+  if(!stars) return;
+  var emojis=['⭐','✨','💫','🌟'];
+  var positions=[[10,20],[80,15],[20,70],[60,60],[90,40],[40,85],[70,90],[5,50],[50,10],[95,80]];
+  positions.forEach(function(p,i){
+    var s=document.createElement('div');
+    s.className='eom-star';
+    s.style.cssText='top:'+p[1]+'%;left:'+p[0]+'%;animation-delay:'+(i*0.3)+'s;';
+    s.textContent=emojis[i%4];
+    stars.appendChild(s);
+  });
+})();
 // Auto-restore on refresh
 (async function(){var s=sessionStorage.getItem('currentUser');if(s){try{currentUser=JSON.parse(s);await enterApp();}catch(e){sessionStorage.removeItem('currentUser');}}})();
 
