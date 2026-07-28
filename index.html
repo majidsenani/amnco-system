@@ -361,22 +361,19 @@ td.id-num{font-family:monospace;font-size:12px;}
   
 
 
-  <!-- WELCOME BANNER -->
-  <div style="position:relative;overflow:hidden;border-radius:20px;margin-bottom:22px;
-    background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#4f46e5 100%);
-    box-shadow:0 6px 30px rgba(37,99,235,0.3);padding:32px 40px;text-align:center;">
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,0.08) 0%,transparent 70%);pointer-events:none;"></div>
-    <div style="position:relative;z-index:1;">
-      <div style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:700;margin-bottom:10px;letter-spacing:1px;">🌟 رسالة ترحيبية 🌟</div>
-      <div style="font-size:17px;font-weight:900;color:#fff;line-height:1.9;text-shadow:0 2px 8px rgba(0,0,0,0.2);">
-        يسرنا أن نرحب بمدير الموارد البشرية الأستاذ <span style="color:#fde68a;font-size:20px;">وليد المنصور</span><br/>
-        ونحن على ثقة بأن خبرتكم وكفاءتكم ستمكّننا من تحقيق النجاح
+  <!-- NOTICE BANNER -->
+  <div style="position:relative;overflow:hidden;border-radius:16px;margin-bottom:22px;
+    background:linear-gradient(135deg,#451a03 0%,#92400e 50%,#b45309 100%);
+    box-shadow:0 6px 30px rgba(180,83,9,0.4);padding:20px 32px;display:flex;align-items:center;gap:18px;">
+    <div style="font-size:36px;flex-shrink:0;">⚠️</div>
+    <div>
+      <div style="font-size:13px;font-weight:900;color:#fde68a;letter-spacing:1px;margin-bottom:6px;">تنبيه هام</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;line-height:1.8;">
+        يتم إضافة الموظفين بالموقع فقط لغرض إدراج راتبه مع الرواتب الأساسية فقط
+        <span style="display:block;margin-top:4px;color:#fde68a;">الموظفون الذين يتم تصفية حقوقهم لا يتم إضافتهم</span>
       </div>
-      <div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.75);font-weight:700;">تحياتنا — فريق الموارد البشرية</div>
     </div>
-  </div>
-
-  <div class="main-tabs">
+  </div>  <div class="main-tabs">
     <button class="main-tab active" onclick="switchTab('employees',this)">👥 الموظفون</button>
     <button class="main-tab" id="tabDashBtn" style="display:none;" onclick="switchTab('dashboard',this)">📊 لوحة المؤشرات</button>
     <button class="main-tab" id="tabUsersBtn" style="display:none;" onclick="switchTab('users',this)">&#128100; المستخدمون</button>
