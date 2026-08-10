@@ -2627,6 +2627,92 @@ async function bulkSetActive() {
   clearSelection(); showLoading(false); showToast('✅ تم تحويل '+ids.length+' موظف إلى نشط');
 }
 
+
+// ── Excl Selection Functions ──
+var exclSelected = new Set();
+
+function toggleExclSelect(id, cb) {
+  if(cb.checked) exclSelected.add(id); else exclSelected.delete(id);
+  updateExclSelectBar();
+}
+
+function toggleAllExcl(cb) {
+  document.querySelectorAll('.excl-cb').forEach(function(box){
+    box.checked = cb.checked;
+    var id = parseInt(box.dataset.id);
+    if(cb.checked) exclSelected.add(id); else exclSelected.delete(id);
+  });
+  updateExclSelectBar();
+}
+
+function updateExclSelectBar() {
+  var n = exclSelected.size;
+  var bar = document.getElementById('exclSelectBar');
+  if(n > 0) {
+    bar.classList.add('show');
+    document.getElementById('exclSelectCount').textContent = n + ' محدد';
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function clearExclSelection() {
+  exclSelected.clear();
+  document.querySelectorAll('.excl-cb').forEach(function(b){ b.checked=false; });
+  var all = document.getElementById('exclCheckAll'); if(all) all.checked=false;
+  updateExclSelectBar();
+}
+
+async function bulkChangeExclStage() {
+  if(!exclSelected.size) return;
+  var stage = parseInt(document.getElementById('exclBulkStage').value)||1;
+  var stageInfo = EXCL_STAGES[stage-1];
+  if(!confirm('تغيير مرحلة '+exclSelected.size+' سجل إلى "'+stageInfo.label+'"؟')) return;
+  showLoading(true);
+  var now3 = new Date().toISOString();
+  var ids = Array.from(exclSelected);
+  var promises = ids.map(function(id){
+    var ex = exclusions.find(function(x){ return x.id===id; });
+    if(!ex) return Promise.resolve();
+    // Update stage history
+    var hist = [];
+    try { hist = JSON.parse(ex.stage_history||'[]'); } catch(e){}
+    if(hist.length) {
+      var last = hist[hist.length-1];
+      if(!last.ended_at) {
+        var days = Math.floor((Date.now()-new Date(last.started_at).getTime())/(1000*60*60*24));
+        last.ended_at = now3; last.days = days;
+      }
+    }
+    hist.push({stage:stage, label:stageInfo.label, started_at:now3, ended_at:null, days:null});
+    return fetch(EXCL_API+'?id=eq.'+id, {
+      method:'PATCH', headers:H,
+      body:JSON.stringify({stage:stage, stage_updated_at:now3, stage_history:JSON.stringify(hist)})
+    });
+  });
+  await Promise.all(promises);
+  await logAction('تغيير مرحلة جماعي', 'تغيير '+ids.length+' استبعاد إلى مرحلة '+stageInfo.label);
+  clearExclSelection();
+  await loadExcl();
+  showLoading(false);
+  showToast('✅ تم تغيير المرحلة لـ '+ids.length+' سجل');
+}
+
+async function bulkDeleteExcl() {
+  if(!exclSelected.size) return;
+  if(!confirm('حذف '+exclSelected.size+' سجل استبعاد؟')) return;
+  showLoading(true);
+  var ids = Array.from(exclSelected);
+  var promises = ids.map(function(id){
+    return fetch(EXCL_API+'?id=eq.'+id, {method:'DELETE', headers:H});
+  });
+  await Promise.all(promises);
+  clearExclSelection();
+  await loadExcl();
+  showLoading(false);
+  showToast('✅ تم الحذف');
+}
+
 function renderExclDashboard() { /* placeholder */ }
 
 function showLoading(s){ document.getElementById('loadingBar').style.display=s?'block':'none'; }
