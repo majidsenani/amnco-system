@@ -2350,7 +2350,14 @@ async function saveExcl() {
     // New record - init history with stage 1
     var initHistory = [{stage: stage, label: EXCL_STAGES[stage-1].label, started_at: now2, ended_at: null, days: null}];
     var newPayload = {emp_id:empId, name:name, dept:exDeptVal, section:exSectionVal, last_day:lastDay, reason:reason, notes:notes, stage:stage, stage_updated_at:now2, stage_history:JSON.stringify(initHistory)};
-    await fetch(EXCL_API, {method:'POST', headers:H, body:JSON.stringify(newPayload)});
+    var saveR = await fetch(EXCL_API, {method:'POST', headers:H, body:JSON.stringify(newPayload)});
+    if(!saveR.ok) {
+      var errData = await saveR.json().catch(function(){return {};});
+      showLoading(false);
+      showToast('❌ خطأ: ' + (errData.message || errData.hint || saveR.status));
+      console.error('Excl save error:', errData);
+      return;
+    }
     await logAction('إضافة استبعاد', 'إضافة استبعاد: ' + name + ' - ' + reason);
     showToast('✅ تم إضافة الاستبعاد');
   }
