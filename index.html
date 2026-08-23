@@ -328,6 +328,7 @@ td.id-num{font-family:monospace;font-size:12px;}
   );
   ═══════════════════════════════════════════════════════
 -->
+<body>
 <div id="loadingBar" class="loading-bar"></div>
 
 <div class="login-wrap" id="loginScreen" style="display:flex;">
@@ -1019,10 +1020,17 @@ async function doLogin() {
   var pass = document.getElementById('loginPass').value;
   if (!username||!pass) { showErr('يرجى إدخال اسم المستخدم وكلمة السر'); return; }
   showLoading(true);
-  var r = await fetch(USR_API + '?username=eq.' + encodeURIComponent(username) + '&password=eq.' + encodeURIComponent(pass), {headers:H});
-  var d = await r.json();
-  showLoading(false);
-  if (!d||!d.length) { showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة'); return; }
+  try {
+    var r = await fetch(USR_API + '?username=eq.' + encodeURIComponent(username) + '&password=eq.' + encodeURIComponent(pass), {headers:H});
+    if(!r.ok) { showLoading(false); showErr('❌ خطأ في الاتصال: ' + r.status); return; }
+    var d = await r.json();
+    showLoading(false);
+    if (!d||!d.length) { showErr('❌ اسم المستخدم أو كلمة السر غير صحيحة'); return; }
+  } catch(err) {
+    showLoading(false);
+    showErr('❌ تعذر الاتصال بالخادم — تحقق من الإنترنت');
+    return;
+  }
   currentUser = d[0];
   sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
   document.getElementById('errMsg').classList.remove('show');
@@ -1683,7 +1691,4 @@ async function openEmpEdit(id) {
   document.getElementById('f-project').value      = e.project||eMem.project||'';
   document.getElementById('f-date').value         = e.date||eMem.date||'';
   document.getElementById('f-contract').value     = e.contract_type||eMem.contract||'';
-  document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
-  document.getElementById('f-status').value       = e.status||eMem.status||'active';
-  document.getElementById('f-section').value = e.dept_section||eMem.section||'';
-  document.getElementById('emp
+  document.getElementById('f-salary').value      
