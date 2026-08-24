@@ -1109,7 +1109,7 @@ async function saveChangePass() {
 
 function switchTab(tab, btn) {
   ['tabEmployees','tabDashboard','tabTasks','tabExcl','tabSister','tabUsers','tabDepts','tabLogs'].forEach(function(t){ document.getElementById(t).style.display='none'; });
-  var idMap={employees:'tabEmployees',dashboard:'tabDashboard',tasks:'tabTasks',excl:'tabExcl',users:'tabUsers',depts:'tabDepts',logs:'tabLogs'};
+  var idMap={employees:'tabEmployees',dashboard:'tabDashboard',tasks:'tabTasks',excl:'tabExcl',sister:'tabSister',users:'tabUsers',depts:'tabDepts',logs:'tabLogs'};
   document.getElementById(idMap[tab]).style.display='block';
   document.querySelectorAll('.main-tab').forEach(function(t){ t.classList.remove('active'); });
   btn.classList.add('active');
