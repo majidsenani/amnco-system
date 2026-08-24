@@ -1944,9 +1944,20 @@ function importExcel(e) {
       for (var i=0;i<rows.length;i++) {
         var row=rows[i], dateVal=row['تاريخ المباشرة'], dateStr='';
         if (dateVal) {
-          if (typeof dateVal==='number'){var j=new Date((dateVal-25569)*86400*1000);dateStr=j.toISOString().split('T')[0];}
-          else if(typeof dateVal==='string'&&dateVal.includes('/')){var p=dateVal.split('/');if(p.length===3)dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
-          else{dateStr=dateVal;}
+          if(typeof dateVal==='number'){
+            var exd=dateVal>59?dateVal-1:dateVal;
+            var j=new Date((exd-25569)*86400*1000);
+            dateStr=j.toISOString().split('T')[0];
+          } else if(typeof dateVal==='string'){
+            var dv=dateVal.trim();
+            if(dv.includes('/')){
+              var p=dv.split('/');
+              if(p.length===3){
+                if(p[2].length===4) dateStr=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
+                else dateStr=p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');
+              }
+            } else { dateStr=dv.split('T')[0]; }
+          }
         }
         await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',id_num:String(row['رقم الهوية']||''),dept:row['الإدارة']||'',project:row['المشروع']||'',contract_type:cr[row['نوع العقد']]||'',date:dateStr,status:sr[row['الحالة']]||'active'})});
       }
