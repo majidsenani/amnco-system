@@ -1074,7 +1074,7 @@ async function enterApp() {
   document.getElementById('tabSisterBtn').style.display = isAdm ? 'block' : 'none';
 
   var head = document.getElementById('empTableHead');
-  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th>';
+  head.innerHTML = '<th style="width:34px"><input type="checkbox" class="cb" id="checkAll" onchange="toggleAll(this)"/></th><th>م</th><th>الرقم الوظيفي</th><th>الاسم</th><th>رقم الهوية</th><th>الإدارة</th><th>القسم</th><th>المشروع</th><th>تاريخ المباشرة</th><th>نوع العقد</th><th style="min-width:80px">الأساسي</th><th style="min-width:90px">بدل السكن</th><th style="min-width:100px">بدل مواصلات</th><th style="min-width:90px">بدلات أخرى</th><th style="min-width:80px">الإجمالي</th><th>الحالة</th><th>إجراءات</th>';
 
   startClock();
   loadDepartments().then(function(){ loadEmployees(); });
