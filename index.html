@@ -1938,14 +1938,16 @@ function exportExcel() {
   var source=(filtered.length&&filtered.length<employees.length)?filtered:employees;
   var rows=source.map(function(e,i){
     return {'م':i+1,'الرقم الوظيفي':e.empId,'الاسم':e.name,'رقم الهوية':e.idNum,
-      'الإدارة':e.dept||'','المشروع':e.project||'',
+      'الإدارة':e.dept||'','القسم':e.section||'','المشروع':e.project||'',
       'تاريخ المباشرة':e.date?e.date.split('-').reverse().join('/'):'',
-      'نوع العقد':contractMap[e.contract]||'','الراتب':e.salary||'',
-      'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status,
-      'القسم':e.section||''};
+      'نوع العقد':contractMap[e.contract]||'',
+      'الأساسي':e.basic||0,'بدل السكن':e.housing||0,
+      'بدل مواصلات':e.transport||0,'بدلات أخرى':e.other||0,
+      'الإجمالي':e.salary||'',
+      'الحالة':statusMap[e.status]?statusMap[e.status].label:e.status};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:14},{wch:20},{wch:15},{wch:14},{wch:12},{wch:12},{wch:12},{wch:12},{wch:18}];
   var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الموظفون');
   var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   var blob=new Blob([wbout],{type:'application/octet-stream'});
@@ -1985,7 +1987,7 @@ function importExcel(e) {
             } else { dateStr=dv.split('T')[0]; }
           }
         }
-        await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',id_num:String(row['رقم الهوية']||''),dept:row['الإدارة']||'',project:row['المشروع']||'',contract_type:cr[row['نوع العقد']]||'',date:dateStr,status:sr[row['الحالة']]||'active'})});
+        await fetch(EMP_API,{method:'POST',headers:H,body:JSON.stringify({emp_id:row['الرقم الوظيفي']||'',name:row['الاسم']||'',id_num:String(row['رقم الهوية']||''),dept:row['الإدارة']||'',dept_section:row['القسم']||'',project:row['المشروع']||'',contract_type:cr[row['نوع العقد']]||'',date:dateStr,status:sr[row['الحالة']]||'active',basic_salary:parseFloat(row['الأساسي'])||0,housing_allowance:parseFloat(row['بدل السكن'])||0,transport_allowance:parseFloat(row['بدل مواصلات'])||0,other_allowances:parseFloat(row['بدلات أخرى'])||0})});
       }
       await loadEmployees(); showToast('تم استيراد '+rows.length+' موظف');
     } catch(err){ showToast('خطأ في قراءة الملف'); showLoading(false); }
@@ -1994,10 +1996,10 @@ function importExcel(e) {
 }
 
 function downloadTemplate() {
-  var headers=[{'م':'','الرقم الوظيفي':'','الاسم':'','رقم الهوية':'','الإدارة':'','المشروع':'','تاريخ المباشرة':'','نوع العقد':'','الراتب':'','الحالة':''}];
+  var headers=[{'م':'','الرقم الوظيفي':'','الاسم':'','رقم الهوية':'','الإدارة':'','القسم':'','المشروع':'','تاريخ المباشرة':'','نوع العقد':'','الأساسي':'','بدل السكن':'','بدل مواصلات':'','بدلات أخرى':'','الحالة':''}];
   var ws=XLSX.utils.json_to_sheet(headers);
-  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:20},{wch:15},{wch:14},{wch:12},{wch:18}];
-  XLSX.utils.sheet_add_aoa(ws,[['','','','','','','DD/MM/YYYY','عقد قوى أو عقد تدريب','','نشط / قيد الإجراءات / مستقيل / مكتمل']],{origin:'A2'});
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:14},{wch:18},{wch:14},{wch:20},{wch:15},{wch:14},{wch:12},{wch:12},{wch:12},{wch:12},{wch:18}];
+  XLSX.utils.sheet_add_aoa(ws,[['','','','','','','','DD/MM/YYYY','عقد قوى أو عقد تدريب','0','0','0','0','نشط / قيد الإجراءات / مستقيل / مكتمل']],{origin:'A2'});
   var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'قالب الموظفين');
   var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   var blob=new Blob([wbout],{type:'application/octet-stream'});
