@@ -701,7 +701,11 @@ td.id-num{font-family:monospace;font-size:12px;}
           <option value="train">عقد تدريب</option>
         </select>
       </div>
-      <div class="fg2"><label>الراتب</label><input id="f-salary" placeholder="مثال: 5000"/></div>
+      <div class="fg2"><label>الأساسي</label><input id="f-basic" type="number" placeholder="0" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل السكن</label><input id="f-housing" type="number" placeholder="0" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدل مواصلات</label><input id="f-transport" type="number" placeholder="0" oninput="calcTotal()"/></div>
+      <div class="fg2"><label>بدلات أخرى</label><input id="f-other" type="number" placeholder="0" oninput="calcTotal()"/></div>
+      <div class="fg2 full"><label>الإجمالي</label><input id="f-salary" type="number" placeholder="0" readonly style="background:#f0f9ff;font-weight:900;color:var(--success);"/></div>
       <div class="fg2"><label>الحالة</label>
         <select id="f-status">
           <option value="active">✅ نشط</option>
@@ -1002,6 +1006,14 @@ function statusBadge(s) {
   var m = statusMap[s] || {label:s, cls:''};
   return '<span class="status ' + m.cls + '"><span class="status-dot"></span>' + m.label + '</span>';
 }
+
+function calcTotal() {
+  var basic    = parseFloat(document.getElementById('f-basic').value)||0;
+  var housing  = parseFloat(document.getElementById('f-housing').value)||0;
+  var transport= parseFloat(document.getElementById('f-transport').value)||0;
+  var other    = parseFloat(document.getElementById('f-other').value)||0;
+  document.getElementById('f-salary').value = basic+housing+transport+other || '';
+}
 function contractBadge(c) {
   if (!c) return '<span style="color:var(--sub);font-size:11px;">—</span>';
   return '<span class="contract-badge ' + (c==='qowa'?'c-qowa':'c-train') + '">' + (contractMap[c]||c) + '</span>';
@@ -1204,7 +1216,7 @@ async function loadEmployees() {
     return {id:i+1, empId:e.emp_id||'', name:e.name||'', idNum:e.id_num||'',
       dept:e.dept||'', project:e.project||'', date:e.date||'',
       status:e.status||'active', contract:e.contract_type||'',
-      salary:e.salary||'', appointStatus:e.appointment_status||'',
+      salary:e.salary||'', basic:e.basic_salary||0, housing:e.housing_allowance||0, transport:e.transport_allowance||0, other:e.other_allowances||0, appointStatus:e.appointment_status||'',
        actionTaken:e.action_taken||'',
       appointedAt:e.appointed_at||'', enteredAt:e.entered_at||'', completedAt:e.completed_at||'',
       section:e.dept_section||''};
@@ -1305,7 +1317,13 @@ function render() {
     html += '<td class="id-num">' + e.idNum + '</td><td>' + (e.dept||'-') + '</td>';
     html += '<td style="font-size:12px;color:var(--sub);">' + (e.section||'—') + '</td>';
     html += '<td>' + (e.project||'-') + '</td><td>' + dateStr + '</td>';
-    html += '<td>' + contractBadge(e.contract) + '</td><td>' + salary + '</td>';
+    var fmt = function(v){ return v ? Number(v).toLocaleString() : '—'; };
+    html += '<td>' + contractBadge(e.contract) + '</td>';
+    html += '<td style="font-family:monospace;font-size:12px;">' + fmt(e.basic) + '</td>';
+    html += '<td style="font-family:monospace;font-size:12px;">' + fmt(e.housing) + '</td>';
+    html += '<td style="font-family:monospace;font-size:12px;">' + fmt(e.transport) + '</td>';
+    html += '<td style="font-family:monospace;font-size:12px;">' + fmt(e.other) + '</td>';
+    html += '<td>' + salary + '</td>';
     var tsHtml = '';
     if(e.appointedAt) tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#128203; '+fmtDT(e.appointedAt)+'</div>';
     if(e.enteredAt)   tsHtml += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">&#128421; '+fmtDT(e.enteredAt)+'</div>';
@@ -1685,6 +1703,10 @@ async function openEmpEdit(id) {
   document.getElementById('f-date').value         = e.date||eMem.date||'';
   document.getElementById('f-contract').value     = e.contract_type||eMem.contract||'';
   document.getElementById('f-salary').value       = e.salary||eMem.salary||'';
+  document.getElementById('f-basic').value        = e.basic_salary||eMem.basic||0;
+  document.getElementById('f-housing').value      = e.housing_allowance||eMem.housing||0;
+  document.getElementById('f-transport').value    = e.transport_allowance||eMem.transport||0;
+  document.getElementById('f-other').value        = e.other_allowances||eMem.other||0;
   document.getElementById('f-status').value       = e.status||eMem.status||'active';
   document.getElementById('f-section').value = e.dept_section||eMem.section||'';
   document.getElementById('empModalTitle').textContent='✏️ تعديل بيانات الموظف';
@@ -1692,7 +1714,7 @@ async function openEmpEdit(id) {
 }
 function closeEmpModal() { document.getElementById('empModalBg').classList.remove('show'); }
 function clearEmpForm() {
-  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary',].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
+  ['f-empid','f-name','f-idnum','f-project','f-date','f-salary','f-basic','f-housing','f-transport','f-other'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
   document.getElementById('f-dept').value=''; document.getElementById('f-section').value=''; document.getElementById('f-contract').value=''; document.getElementById('f-status').value='active';
 }
 
@@ -1718,12 +1740,16 @@ async function saveEmployee() {
     date:document.getElementById('f-date').value,
     contract_type:document.getElementById('f-contract').value,
     salary:document.getElementById('f-salary').value.trim(),
+    basic_salary:parseFloat(document.getElementById('f-basic').value)||0,
+    housing_allowance:parseFloat(document.getElementById('f-housing').value)||0,
+    transport_allowance:parseFloat(document.getElementById('f-transport').value)||0,
+    other_allowances:parseFloat(document.getElementById('f-other').value)||0,
     status:document.getElementById('f-status').value,
     dept_section:document.getElementById('f-section').value};
   showLoading(true);
   if (editingEmpId) {
     var eOld=employees.find(function(x){ return x.id===editingEmpId; });
-    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,status:data.status,dept_section:data.dept_section})});
+    await fetch(EMP_API+'?emp_id=eq.'+encodeURIComponent(eOld.empId), {method:'PATCH',headers:H,body:JSON.stringify({emp_id:data.emp_id,name:data.name,id_num:data.id_num,dept:data.dept,project:data.project,date:data.date,contract_type:data.contract_type,salary:data.salary,basic_salary:data.basic_salary,housing_allowance:data.housing_allowance,transport_allowance:data.transport_allowance,other_allowances:data.other_allowances,status:data.status,dept_section:data.dept_section})});
     var fieldLabels={emp_id:'الرقم الوظيفي',name:'الاسم',id_num:'رقم الهوية',dept:'الإدارة',project:'المشروع',date:'تاريخ المباشرة',contract_type:'نوع العقد',salary:'الراتب',status:'الحالة',notes:'الملاحظات'};
     var sLbls={active:'نشط',pending:'قيد الإجراءات',resigned:'منهى خدماته',complete:'مكتمل',appointed:'تم عمل قرار تعيين',entered:'تم الإدخال بالنظام'};
     var cLbls={qowa:'عقد قوى',train:'عقد تدريب'};
